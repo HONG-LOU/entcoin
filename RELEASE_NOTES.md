@@ -101,6 +101,9 @@ clamp boundaries, extreme timestamps, wrong versions on both sides of
 activation, hash-rate arrival and departure, mining-template refresh, real
 SQLite connect/mine/reorg/rollback across activation, equal-work rejection,
 HTTP header/body sync across activation, and legacy peer-status compatibility.
+A fixed validated mainnet block now drives the public-network sync fixtures, so
+the Windows race gate no longer depends on stochastic proof-of-work completing
+within a 30-second test deadline.
 A read-consistent backup of a production archive Seed opened directly in the
 new binary, synchronized to the same public tip and work, remained archive and
 walletless, passed SQLite checks, and shut down cleanly.
@@ -193,9 +196,10 @@ HTTP/WebSocket 同步、重组、裁剪边界、内存池重建以及 SQLite 原
 
 自动化测试覆盖固定锚点哈希/PoW 与 DAA 向量、舍入和上下限、极端时间戳、激活点两侧的
 错误版本、算力进入与离开、挖矿模板刷新、真实 SQLite 跨激活连接/挖矿/重组/回滚、等工作量
-拒绝、跨激活 HTTP 区块头与区块体同步，以及旧节点状态消息兼容。新二进制还直接打开了
-线上归档 Seed 的一致性备份，无迁移追到相同公网 tip 和累计工作量，保持归档且无钱包，
-通过 SQLite 检查并正常关闭。
+拒绝、跨激活 HTTP 区块头与区块体同步，以及旧节点状态消息兼容。公网同步测试改为重放一个
+固定且已验证的主网区块，因此 Windows 竞态门禁不再依赖随机 PoW 必须在 30 秒测试期限内
+完成。新二进制还直接打开了线上归档 Seed 的一致性备份，无迁移追到相同公网 tip 和累计
+工作量，保持归档且无钱包，通过 SQLite 检查并正常关闭。
 
 发布门禁包括完整 Go 测试和竞态检测、`go vet`、可达代码漏洞扫描、前端与网站测试/构建、
 依赖审计、Linux 安装包与钱包冒烟测试、Windows/Linux 产物校验和，以及 GitHub 构建来源

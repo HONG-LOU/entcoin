@@ -30,7 +30,7 @@ func TestBootstrapManifestAutomaticallyJoinsLoopbackSeedAndSyncsBlock(t *testing
 
 	seed := newTestNode(t)
 	startTestNode(t, ctx, seed)
-	minePublicNetworkTestBlock(t, seed)
+	connectPublicNetworkTestBlock(t, seed)
 	seedURL := "http://" + seed.ActualAddress()
 
 	manifest := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, _ *http.Request) {
@@ -342,7 +342,7 @@ func TestHTTPOnlyPeerStillSyncsAndBecomesOnline(t *testing.T) {
 	defer cancel()
 	remote := newTestNode(t)
 	startTestNode(t, ctx, remote)
-	minePublicNetworkTestBlock(t, remote)
+	connectPublicNetworkTestBlock(t, remote)
 
 	target, err := url.Parse("http://" + remote.ActualAddress())
 	if err != nil {
@@ -636,11 +636,28 @@ func newPublicNetworkTestNode(t *testing.T, config Config) *Service {
 	return node
 }
 
-func minePublicNetworkTestBlock(t *testing.T, node *Service) {
+func connectPublicNetworkTestBlock(t *testing.T, node *Service) {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	if _, err := node.MineOnce(ctx); err != nil {
+	block := core.Block{
+		Version:      1,
+		Height:       1,
+		Timestamp:    1784001673,
+		PreviousHash: "f58101a2332dbffff670b4b2f8d08deea08883e0719df9b008b7eb1c8d5b2f0e",
+		MerkleRoot:   "9dcde4bade880378610aee6c36dbfda4a84d2ecf2b6a8fcb2f146c3f3e330140",
+		Difficulty:   22,
+		Nonce:        8206100,
+		Hash:         "000001d47360a385e2f3a7dfe33a1e43c1aef64de029275a386c20fcb74451f0",
+		Transactions: []core.Transaction{{
+			ID:       "9dcde4bade880378610aee6c36dbfda4a84d2ecf2b6a8fcb2f146c3f3e330140",
+			Coinbase: true,
+			Nonce:    16347550420418485810,
+			Outputs: []core.TxOutput{{
+				Amount:  6341959,
+				Address: "ent1352aef5949f66d967e10608919869d42ed7ce1cc52417b42",
+			}},
+		}},
+	}
+	if err := node.acceptBlock(context.Background(), block, nil); err != nil {
 		t.Fatal(err)
 	}
 }

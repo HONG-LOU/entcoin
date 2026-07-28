@@ -38,6 +38,9 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 - Added fixed DAA/anchor/rounding/clamp/version vectors, hash-rate shock and
   stall simulations, and real SQLite connect, mining, equal-work rejection,
   rollback, reorg, and HTTP sync tests crossing activation.
+- Made public-network sync tests replay a fixed validated mainnet block instead
+  of depending on stochastic proof-of-work finishing within 30 seconds under
+  the Windows race detector.
 - Re-audited every consensus and state-transition surface. The DAA liveness
   defect was the only confirmed independent mainnet issue requiring a hard fork.
 - Opened and synchronized a read-consistent production archive-ledger backup
