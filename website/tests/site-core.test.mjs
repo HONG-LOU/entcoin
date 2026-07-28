@@ -124,6 +124,10 @@ test("homepage translation keys are all defined", async () => {
   assert.match(html, /id="language-toggle"/);
   assert.match(html, /id="download-menu"/);
   assert.match(html, /<canvas[^>]+id="network-canvas"/);
+  assert.equal(
+    (html.match(/href="https:\/\/community\.entcoin\.xyz" data-i18n="nav\.community"/g) ?? []).length,
+    2,
+  );
   for (const assetName of [
     "entcoin-amd64-installer.exe",
     "Entcoin.exe",
