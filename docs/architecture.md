@@ -1,8 +1,8 @@
-# Entcoin v1.1.0 architecture
+# Entcoin v1.2.0 architecture
 
 ## Scope
 
-Entcoin v1.1.0 implements the `entropy-mainnet-v1` network. It is designed so
+Entcoin v1.2.0 implements the `entropy-mainnet-v1` network. It is designed so
 one Windows or Ubuntu application can be a wallet, a full validator, a relaying
 peer, and an optional proof-of-work miner without an external database service.
 
@@ -78,12 +78,15 @@ difficulty, nonce, and resulting hash. Proof of work requires the SHA-256 header
 hash to have at least `difficulty` leading zero bits. A block contributes
 `2^difficulty` work. Fork choice compares cumulative work, never height alone.
 
-The timestamp must be greater than median-time-past over the previous 11 blocks
-and no more than 120 seconds ahead of local time. Difficulty begins at 22
-leading zero bits, first adjusts at height 120, and then adjusts every 60
-blocks. This compact DAA is part of the mainnet consensus rules and has not had
-the long-duration or adversarial review expected of a production monetary
-network.
+Below height `160000`, timestamps must exceed median-time-past over the previous
+11 blocks and remain no more than 120 seconds ahead of local time. Difficulty
+begins at 22 leading zero bits, first adjusts at height 120, and then adjusts
+every 60 blocks. At height `160000`, centralized `RulesAtHeight` selection
+requires block version 2, timestamps greater than both MTP11 and the previous
+block, and the fixed-anchor 600-second integer ASERT rule. Historical blocks
+always replay with version-1 rules; unknown or wrong-side versions fail closed.
+The v1.2 audit documents the formula and fixed vectors. Neither DAA has received
+the independent economic review expected of a mature production network.
 
 Deterministic resource limits include a 1 MiB block, 64 KiB transaction, 2,000
 transactions per block, 256 inputs and outputs per transaction, and 5,000
@@ -217,6 +220,12 @@ Receiving or committing a new tip cancels every job built on the old tip so
 continuous mining immediately builds a fresh template. After proof of work is
 found, `CommitMinedBlock` still requires the active tip to equal the snapshot
 tip and then runs normal block validation.
+
+After activation, a mining job checks every five seconds whether advancing its
+candidate timestamp would lower ASERT difficulty. It cancels and transparently
+rebuilds only at an actual integer difficulty boundary. A chain-tip change still
+cancels the candidate immediately, and a found block commits only against its
+captured tip. Pre-activation mining behavior is unchanged.
 
 Mining is always opt-in. An outbound-only node validates and relays without
 mining, and a miner is not a network coordinator.

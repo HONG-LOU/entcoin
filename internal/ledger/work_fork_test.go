@@ -122,7 +122,7 @@ func buildWorkFork(t *testing.T, prefix []core.Block, count int, spacing int64, 
 			Timestamp:    previous.Timestamp + spacing,
 			PreviousHash: previous.Hash,
 			MerkleRoot:   core.MerkleRoot(transactions),
-			Difficulty:   core.ExpectedDifficulty(window, height),
+			Difficulty:   core.ExpectedDifficultyAt(window, height, previous.Timestamp+spacing),
 			Transactions: transactions,
 		}
 		mined, err := core.MineBlockWithWorkers(ctx, block, 1)

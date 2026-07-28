@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -597,6 +598,155 @@ func TestTipChangeCancelsMiningJobAndContinuousMiningRebuilds(t *testing.T) {
 		defer service.mu.RUnlock()
 		return !service.mining && service.miningJobs == 0
 	})
+}
+
+func TestMiningTemplateRefreshesOnlyAfterActivatedDifficultyDrops(t *testing.T) {
+	ideal := core.ASERTAnchorTimestamp + int64(core.ConsensusUpgradeHeight-core.ASERTAnchorHeight)*core.TargetBlockSeconds
+	candidate := core.Block{
+		Height:     core.ConsensusUpgradeHeight,
+		Timestamp:  ideal,
+		Difficulty: core.ASERTAnchorDifficulty,
+	}
+	if miningTemplateNeedsRefresh(candidate, ideal+core.ASERTHalfLifeSeconds/2-1) {
+		t.Fatal("template refreshed before the next ASERT boundary")
+	}
+	if !miningTemplateNeedsRefresh(candidate, ideal+core.ASERTHalfLifeSeconds/2) {
+		t.Fatal("template did not refresh at the next ASERT boundary")
+	}
+	candidate.Height = core.ConsensusUpgradeHeight - 1
+	if miningTemplateNeedsRefresh(candidate, math.MaxInt64) {
+		t.Fatal("legacy mining template used post-activation refresh rules")
+	}
+}
+
+func TestHTTPIncrementalSyncCrossesConsensusActivation(t *testing.T) {
+	service := newTestNode(t)
+	activationTime := nodeUpgradeTestActivationTime()
+	insertNodeUpgradeTestPrefix(t, service, activationTime-core.TargetBlockSeconds)
+	ctx := context.Background()
+	localTip, err := service.ledger.Tip(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	window, err := service.ledger.HeaderWindow(ctx, localTip.Height)
+	if err != nil {
+		t.Fatal(err)
+	}
+	coinbase, err := core.NewCoinbase(service.Address(), core.ConsensusUpgradeHeight, core.Subsidy(core.ConsensusUpgradeHeight))
+	if err != nil {
+		t.Fatal(err)
+	}
+	transactions := []core.Transaction{coinbase}
+	block := core.Block{
+		Version:      core.UpgradedBlockVersion,
+		Height:       core.ConsensusUpgradeHeight,
+		Timestamp:    activationTime,
+		PreviousHash: localTip.Hash,
+		MerkleRoot:   core.MerkleRoot(transactions),
+		Difficulty:   core.ExpectedDifficultyAt(window, core.ConsensusUpgradeHeight, activationTime),
+		Transactions: transactions,
+	}
+	block, err = core.MineBlockWithWorkers(ctx, block, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	header := block
+	header.Transactions = nil
+	peer := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		switch request.URL.Path {
+		case "/v2/headers":
+			writeJSON(writer, http.StatusOK, headersResponse{
+				Protocol: ledger.ProtocolName, CommonHeight: localTip.Height,
+				CommonHash: localTip.Hash, Headers: []core.Block{header},
+			})
+		case "/v2/blocks":
+			writeJSON(writer, http.StatusOK, blocksResponse{Protocol: ledger.ProtocolName, Blocks: []core.Block{block}})
+		default:
+			http.NotFound(writer, request)
+		}
+	}))
+	defer peer.Close()
+	if err := service.syncRemoteChainFromAtTime(
+		ctx,
+		httpRemoteSource{service: service, peer: peer.URL},
+		localTip,
+		activationTime+core.MaxFutureSeconds,
+	); err != nil {
+		t.Fatalf("sync activation block: %v", err)
+	}
+	dashboard, err := service.Dashboard()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dashboard.Height != core.ConsensusUpgradeHeight || dashboard.TipHash != block.Hash ||
+		dashboard.ConsensusVersion != core.UpgradedBlockVersion ||
+		dashboard.ConfirmedBalance != core.FormatAmount(core.Subsidy(core.ConsensusUpgradeHeight)) {
+		t.Fatalf("post-activation sync dashboard = %+v", dashboard)
+	}
+}
+
+func nodeUpgradeTestActivationTime() int64 {
+	ideal := core.ASERTAnchorTimestamp + int64(core.ConsensusUpgradeHeight-core.ASERTAnchorHeight)*core.TargetBlockSeconds
+	return ideal + int64(core.ASERTAnchorDifficulty-core.MinimumDifficulty)*core.ASERTHalfLifeSeconds
+}
+
+func insertNodeUpgradeTestPrefix(t *testing.T, service *Service, tipTimestamp int64) {
+	t.Helper()
+	database, err := sql.Open("sqlite", service.ledger.Path())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+	tx, err := database.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	work := new(big.Int).Lsh(big.NewInt(1), 40).Bytes()
+	nonce := make([]byte, 8)
+	insert := func(height uint64, hash, previous string, timestamp int64) {
+		t.Helper()
+		if _, err := tx.Exec(`
+			INSERT OR IGNORE INTO blocks(
+				height, hash, previous_hash, version, timestamp, merkle_root,
+				difficulty, nonce, cumulative_work, data, encoded_size
+			) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)
+		`, int64(height), hash, previous, int64(core.LegacyBlockVersion), timestamp,
+			core.MerkleRoot(nil), int64(core.ASERTAnchorDifficulty), nonce, work); err != nil {
+			t.Fatalf("insert node activation header %d: %v", height, err)
+		}
+	}
+
+	start := core.ConsensusUpgradeHeight - core.FirstAdjustment
+	previous := fmt.Sprintf("%064x", start)
+	for height := start; height < core.ConsensusUpgradeHeight; height++ {
+		hash := fmt.Sprintf("%064x", height+1)
+		timestamp := tipTimestamp - int64(core.ConsensusUpgradeHeight-1-height)*core.TargetBlockSeconds
+		insert(height, hash, previous, timestamp)
+		previous = hash
+	}
+
+	height := core.ConsensusUpgradeHeight - 1
+	step := uint64(1)
+	locatorCount := 0
+	for height > 0 && locatorCount < 64 {
+		if height < start {
+			hash := fmt.Sprintf("%064x", height+1)
+			insert(height, hash, fmt.Sprintf("%064x", height), tipTimestamp-int64(core.ConsensusUpgradeHeight-1-height)*core.TargetBlockSeconds)
+		}
+		locatorCount++
+		if locatorCount > 10 {
+			step *= 2
+		}
+		if step > height {
+			height = 0
+		} else {
+			height -= step
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func registerTestPeer(t *testing.T, service *Service, rawURL string) {

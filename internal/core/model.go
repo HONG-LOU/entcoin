@@ -6,6 +6,14 @@ const (
 	ChainSymbol                             = "ENT"
 	NetworkID                               = "entropy-mainnet-v1"
 	StateVersion                            = 1
+	LegacyBlockVersion               uint32 = 1
+	UpgradedBlockVersion             uint32 = 2
+	ConsensusUpgradeHeight           uint64 = 160_000
+	ASERTAnchorHeight                uint64 = 123_265
+	ASERTAnchorTimestamp             int64  = 1_785_201_853
+	ASERTAnchorDifficulty            uint8  = 35
+	ASERTHalfLifeSeconds             int64  = 600
+	ASERTAnchorHash                         = "000000000b6ffc20400cafe308ae13a73cead4c5a7cb232214d714ff2949dead"
 	InitialDifficulty                       = 22
 	AdjustmentBlocks                        = 60
 	FirstAdjustment                         = 120
@@ -69,3 +77,27 @@ type Outpoint struct {
 }
 
 type UTXO map[Outpoint]TxOutput
+
+type DifficultyAlgorithm uint8
+
+const (
+	LegacyEpochDifficulty DifficultyAlgorithm = iota + 1
+	IntegerASERTDifficulty
+)
+
+type ConsensusRules struct {
+	Version                   uint32
+	Difficulty                DifficultyAlgorithm
+	RequireMonotonicTimestamp bool
+}
+
+func RulesAtHeight(height uint64) ConsensusRules {
+	if height >= ConsensusUpgradeHeight {
+		return ConsensusRules{
+			Version:                   UpgradedBlockVersion,
+			Difficulty:                IntegerASERTDifficulty,
+			RequireMonotonicTimestamp: true,
+		}
+	}
+	return ConsensusRules{Version: LegacyBlockVersion, Difficulty: LegacyEpochDifficulty}
+}

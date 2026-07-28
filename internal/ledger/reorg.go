@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/HONG-LOU/entcoin/internal/core"
 )
@@ -107,6 +108,29 @@ func (l *Ledger) ReplaceFromSource(
 	blockCount int,
 	blockAt func(index int) (core.Block, error),
 ) error {
+	return l.replaceFromSourceAtTime(ctx, ancestorHeight, blockCount, blockAt, time.Now().Unix())
+}
+
+// ReplaceFromSourceAtTime applies one validation-time snapshot to every header
+// in a replacement. It keeps future-time decisions deterministic across a
+// potentially long atomic reorganization.
+func (l *Ledger) ReplaceFromSourceAtTime(
+	ctx context.Context,
+	ancestorHeight uint64,
+	blockCount int,
+	blockAt func(index int) (core.Block, error),
+	validationTime int64,
+) error {
+	return l.replaceFromSourceAtTime(ctx, ancestorHeight, blockCount, blockAt, validationTime)
+}
+
+func (l *Ledger) replaceFromSourceAtTime(
+	ctx context.Context,
+	ancestorHeight uint64,
+	blockCount int,
+	blockAt func(index int) (core.Block, error),
+	validationTime int64,
+) error {
 	if blockCount <= 0 || blockAt == nil {
 		return ErrInsufficientWork
 	}
@@ -146,7 +170,7 @@ func (l *Ledger) ReplaceFromSource(
 		if err != nil {
 			return fmt.Errorf("load replacement block %d: %w", index, err)
 		}
-		if err := connectBlock(ctx, tx, block); err != nil {
+		if err := connectBlockAtTime(ctx, tx, block, validationTime); err != nil {
 			return fmt.Errorf("connect replacement block %d: %w", index, err)
 		}
 	}

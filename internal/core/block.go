@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math"
+	"math/big"
 	"runtime"
 	"sort"
 	"strings"
@@ -33,7 +34,7 @@ func NewState() *State {
 
 func GenesisBlock() Block {
 	block := Block{
-		Version:      StateVersion,
+		Version:      LegacyBlockVersion,
 		Height:       0,
 		Timestamp:    genesisTimestamp,
 		PreviousHash: zeroHash,
@@ -175,8 +176,48 @@ func expectedDifficulty(blocks []Block, nextHeight uint64) uint8 {
 	return previous
 }
 
-func ExpectedDifficulty(blocks []Block, nextHeight uint64) uint8 {
-	return expectedDifficulty(blocks, nextHeight)
+func expectedDifficultyAt(blocks []Block, nextHeight uint64, nextTimestamp int64) uint8 {
+	if RulesAtHeight(nextHeight).Difficulty == LegacyEpochDifficulty {
+		return expectedDifficulty(blocks, nextHeight)
+	}
+	return asertDifficulty(nextHeight, nextTimestamp)
+}
+
+func asertDifficulty(nextHeight uint64, nextTimestamp int64) uint8 {
+	heightDelta := new(big.Int).SetUint64(nextHeight - ASERTAnchorHeight)
+	idealElapsed := heightDelta.Mul(heightDelta, big.NewInt(TargetBlockSeconds))
+	actualElapsed := new(big.Int).Sub(big.NewInt(nextTimestamp), big.NewInt(ASERTAnchorTimestamp))
+	deviation := new(big.Int).Sub(idealElapsed, actualElapsed)
+	correction := roundedQuotient(deviation, ASERTHalfLifeSeconds)
+
+	maximum := int64(MaximumDifficulty - ASERTAnchorDifficulty)
+	minimum := -int64(ASERTAnchorDifficulty - MinimumDifficulty)
+	if correction.Cmp(big.NewInt(maximum)) > 0 {
+		return MaximumDifficulty
+	}
+	if correction.Cmp(big.NewInt(minimum)) < 0 {
+		return MinimumDifficulty
+	}
+	return uint8(int64(ASERTAnchorDifficulty) + correction.Int64())
+}
+
+func roundedQuotient(numerator *big.Int, denominator int64) *big.Int {
+	adjusted := new(big.Int).Set(numerator)
+	half := big.NewInt(denominator / 2)
+	if adjusted.Sign() < 0 {
+		adjusted.Sub(adjusted, half)
+	} else {
+		adjusted.Add(adjusted, half)
+	}
+	return adjusted.Quo(adjusted, big.NewInt(denominator))
+}
+
+func ExpectedDifficultyAt(blocks []Block, nextHeight uint64, nextTimestamp int64) uint8 {
+	return expectedDifficultyAt(blocks, nextHeight, nextTimestamp)
+}
+
+func BlockVersion(height uint64) uint32 {
+	return RulesAtHeight(height).Version
 }
 
 func clampDifficulty(difficulty int) uint8 {
@@ -255,8 +296,15 @@ func leadingZeroBits(value []byte) int {
 }
 
 func nextTimestamp(blocks []Block) int64 {
-	now := time.Now().Unix()
+	return nextTimestampAt(blocks, time.Now().Unix())
+}
+
+func nextTimestampAt(blocks []Block, now int64) int64 {
 	minimum := medianTimePast(blocks) + 1
+	nextHeight := blocks[len(blocks)-1].Height + 1
+	if RulesAtHeight(nextHeight).RequireMonotonicTimestamp && blocks[len(blocks)-1].Timestamp >= minimum {
+		minimum = blocks[len(blocks)-1].Timestamp + 1
+	}
 	if now < minimum {
 		return minimum
 	}
@@ -269,4 +317,8 @@ func MineBlock(ctx context.Context, block Block) (Block, error) {
 
 func NextTimestamp(blocks []Block) int64 {
 	return nextTimestamp(blocks)
+}
+
+func NextTimestampAt(blocks []Block, now int64) int64 {
+	return nextTimestampAt(blocks, now)
 }

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"reflect"
 	"time"
@@ -200,13 +201,14 @@ func (s *State) Mine(ctx context.Context, address string) (Block, error) {
 	transactions = append(transactions, coinbase)
 	transactions = append(transactions, selected...)
 	previous := s.Blocks[len(s.Blocks)-1]
+	timestamp := nextTimestamp(s.Blocks)
 	block := Block{
-		Version:      StateVersion,
+		Version:      BlockVersion(height),
 		Height:       height,
-		Timestamp:    nextTimestamp(s.Blocks),
+		Timestamp:    timestamp,
 		PreviousHash: previous.Hash,
 		MerkleRoot:   merkleRoot(transactions),
-		Difficulty:   expectedDifficulty(s.Blocks, height),
+		Difficulty:   expectedDifficultyAt(s.Blocks, height, timestamp),
 		Transactions: transactions,
 	}
 	mined, err := mineBlock(ctx, block)
@@ -328,7 +330,11 @@ func (s *State) replay(includePending bool) (UTXO, outputOrigins, map[string]str
 }
 
 func validateBlockHeader(block, previous Block, priorBlocks []Block) error {
-	if err := validateHeader(block, previous, priorBlocks); err != nil {
+	return validateBlockHeaderAtTime(block, previous, priorBlocks, time.Now().Unix())
+}
+
+func validateBlockHeaderAtTime(block, previous Block, priorBlocks []Block, now int64) error {
+	if err := validateHeaderAtTime(block, previous, priorBlocks, now); err != nil {
 		return err
 	}
 	if len(block.Transactions) == 0 || len(block.Transactions) > MaxBlockTransactions {
@@ -352,7 +358,24 @@ func validateBlockHeader(block, previous Block, priorBlocks []Block) error {
 }
 
 func validateHeader(block, previous Block, priorBlocks []Block) error {
-	if block.Version != StateVersion {
+	return validateHeaderAtTime(block, previous, priorBlocks, time.Now().Unix())
+}
+
+func validateHeaderAtTime(block, previous Block, priorBlocks []Block, now int64) error {
+	if err := validateHeaderConsensusFields(block, previous, priorBlocks, now); err != nil {
+		return err
+	}
+	if block.Hash != block.ComputeHash() {
+		return fmt.Errorf("block hash mismatch")
+	}
+	if !block.HasValidWork() {
+		return fmt.Errorf("proof of work is insufficient")
+	}
+	return nil
+}
+
+func validateHeaderConsensusFields(block, previous Block, priorBlocks []Block, now int64) error {
+	if block.Version != BlockVersion(block.Height) {
 		return fmt.Errorf("unsupported block version")
 	}
 	if len(priorBlocks) == 0 || priorBlocks[len(priorBlocks)-1].Hash != previous.Hash {
@@ -367,20 +390,21 @@ func validateHeader(block, previous Block, priorBlocks []Block) error {
 	if block.Timestamp <= medianTimePast(priorBlocks) {
 		return fmt.Errorf("timestamp must exceed median time past")
 	}
-	if block.Timestamp > time.Now().Unix()+MaxFutureSeconds {
+	if RulesAtHeight(block.Height).RequireMonotonicTimestamp && block.Timestamp <= previous.Timestamp {
+		return fmt.Errorf("timestamp must exceed previous block time")
+	}
+	maximumTimestamp := int64(math.MaxInt64)
+	if now <= math.MaxInt64-MaxFutureSeconds {
+		maximumTimestamp = now + MaxFutureSeconds
+	}
+	if block.Timestamp > maximumTimestamp {
 		return fmt.Errorf("timestamp is too far in the future")
 	}
-	if block.Difficulty != expectedDifficulty(priorBlocks, block.Height) {
+	if block.Difficulty != expectedDifficultyAt(priorBlocks, block.Height, block.Timestamp) {
 		return fmt.Errorf("unexpected difficulty")
 	}
 	if _, err := decodeHash(block.MerkleRoot); err != nil {
 		return fmt.Errorf("invalid Merkle root")
-	}
-	if block.Hash != block.ComputeHash() {
-		return fmt.Errorf("block hash mismatch")
-	}
-	if !block.HasValidWork() {
-		return fmt.Errorf("proof of work is insufficient")
 	}
 	return nil
 }
@@ -389,11 +413,19 @@ func ValidateBlockHeader(block, previous Block, priorBlocks []Block) error {
 	return validateBlockHeader(block, previous, priorBlocks)
 }
 
+func ValidateBlockHeaderAtTime(block, previous Block, priorBlocks []Block, now int64) error {
+	return validateBlockHeaderAtTime(block, previous, priorBlocks, now)
+}
+
 // ValidateHeader verifies consensus fields and proof of work without requiring
 // a block body. The Merkle root is bound by the header and checked against
 // transactions later by ValidateBlockHeader.
 func ValidateHeader(block, previous Block, priorBlocks []Block) error {
 	return validateHeader(block, previous, priorBlocks)
+}
+
+func ValidateHeaderAtTime(block, previous Block, priorBlocks []Block, now int64) error {
+	return validateHeaderAtTime(block, previous, priorBlocks, now)
 }
 
 func applyRegularTransaction(tx Transaction, utxo UTXO, origins outputOrigins, height uint64) error {

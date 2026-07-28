@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -122,6 +123,32 @@ func TestTwoNodesPropagateTransactionAndBlockIncrementally(t *testing.T) {
 		return
 	}
 	t.Fatal("confirmed transaction details were missing")
+}
+
+func TestConsensusStatusIsSeparateFromLegacyPeerStatus(t *testing.T) {
+	service := newTestNode(t)
+	recorder := httptest.NewRecorder()
+	service.handleConsensus(recorder, httptest.NewRequest(http.MethodGet, "/v2/consensus", nil))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("GET /v2/consensus returned HTTP %d", recorder.Code)
+	}
+	var status consensusStatus
+	if err := json.NewDecoder(recorder.Body).Decode(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status.Protocol != ledger.ProtocolName || status.NextBlockRule != core.LegacyBlockVersion ||
+		status.ActivationHeight != core.ConsensusUpgradeHeight || status.AnchorHash != core.ASERTAnchorHash ||
+		status.HalfLifeSeconds != core.ASERTHalfLifeSeconds {
+		t.Fatalf("unexpected consensus status: %+v", status)
+	}
+
+	legacy, err := json.Marshal(statusFromTip(ledger.Tip{Height: 1}, 47821))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(legacy), "consensus") || strings.Contains(string(legacy), "activation") {
+		t.Fatalf("legacy peer status gained incompatible fields: %s", legacy)
+	}
 }
 
 func TestIncrementalSyncReorgChoosesStrongerFork(t *testing.T) {

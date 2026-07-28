@@ -1,4 +1,4 @@
-export const FALLBACK_RELEASE_URL = "https://github.com/HONG-LOU/entcoin/releases/tag/v1.1.0";
+export const FALLBACK_RELEASE_URL = "https://github.com/HONG-LOU/entcoin/releases/tag/v1.2.0";
 
 const en = {
   "meta.title": "Entcoin — Your wallet, your node.",
@@ -106,7 +106,7 @@ const en = {
   "download.cli.action": "CLI downloads",
   "download.checksums": "Checksums",
   "download.release": "View release notes",
-  "download.boundary": "v1.1.0 is unsigned and may trigger SmartScreen. Verify the published checksums and understand their limits.",
+  "download.boundary": "v1.2.0 may be unsigned and trigger SmartScreen. Upgrade before block 160000 and verify the published checksums.",
   "infrastructure.eyebrow": "06 / Live infrastructure",
   "infrastructure.title": "Inspect the public node.",
   "infrastructure.body": "This page reads the same bounded status endpoint other nodes use. No market ticker and no fabricated activity.",
@@ -249,7 +249,7 @@ const zh = {
   "download.cli.action": "选择命令行版本",
   "download.checksums": "核对文件完整性",
   "download.release": "查看版本说明",
-  "download.boundary": "v1.1.0 暂未购买代码签名证书，Windows 可能显示“未知发布者”或 SmartScreen 提醒。请只从本官网或官方 GitHub 下载，并核对 SHA-256。",
+  "download.boundary": "v1.2.0 可能显示“未知发布者”或 SmartScreen 提醒。请在高度 160000 前升级，并核对官方 SHA-256。",
   "infrastructure.eyebrow": "06 / 网络现状",
   "infrastructure.title": "公共节点现在是否在线？",
   "infrastructure.body": "这里直接读取公共节点的实时状态，显示它当前同步到的区块高度和最新区块摘要。公共节点用于帮助其他节点联网和同步，不托管用户钱包。",
@@ -383,7 +383,7 @@ function findGitHubAsset(assets, pattern) {
 
 function fallbackRelease() {
   return {
-    version: "v1.1.0",
+    version: "v1.2.0",
     release: FALLBACK_RELEASE_URL,
     windowsPortable: FALLBACK_RELEASE_URL,
     windowsInstaller: FALLBACK_RELEASE_URL,

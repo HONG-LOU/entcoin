@@ -25,6 +25,17 @@ type protocolStatus struct {
 	ListenPort int    `json:"listen_port,omitempty"`
 }
 
+type consensusStatus struct {
+	Protocol         string   `json:"protocol"`
+	SupportedRules   []uint32 `json:"supported_rules"`
+	NextBlockRule    uint32   `json:"next_block_rule"`
+	ActivationHeight uint64   `json:"activation_height"`
+	AnchorHeight     uint64   `json:"anchor_height"`
+	AnchorHash       string   `json:"anchor_hash"`
+	Algorithm        string   `json:"algorithm"`
+	HalfLifeSeconds  int64    `json:"half_life_seconds"`
+}
+
 type headersRequest struct {
 	Locator []string `json:"locator"`
 	Limit   int      `json:"limit"`

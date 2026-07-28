@@ -300,6 +300,222 @@ func TestDifficultyAdjustmentUsesMedianTime(t *testing.T) {
 	}
 }
 
+func TestDifficultyAdjustmentThresholdBoundaries(t *testing.T) {
+	tests := []struct {
+		name       string
+		span       int64
+		difficulty uint8
+	}{
+		{name: "quarter target", span: 150, difficulty: InitialDifficulty + 2},
+		{name: "above quarter target", span: 151, difficulty: InitialDifficulty + 1},
+		{name: "half target", span: 300, difficulty: InitialDifficulty},
+		{name: "twice target", span: 1_200, difficulty: InitialDifficulty},
+		{name: "above twice target", span: 1_201, difficulty: InitialDifficulty - 1},
+		{name: "four times target", span: 2_400, difficulty: InitialDifficulty - 2},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			blocks := blocksWithMedianSpan(test.span)
+			if got := expectedDifficulty(blocks, FirstAdjustment); got != test.difficulty {
+				t.Fatalf("difficulty for %d-second median span = %d, want %d", test.span, got, test.difficulty)
+			}
+		})
+	}
+}
+
+func TestConsensusUpgradeAnchorVector(t *testing.T) {
+	anchor := Block{
+		Version:      LegacyBlockVersion,
+		Height:       ASERTAnchorHeight,
+		Timestamp:    ASERTAnchorTimestamp,
+		PreviousHash: "0000000019ca169403b1163c95fc4da0fc6cf7bc7747173d8b18e83356d4746a",
+		MerkleRoot:   "b1a301231205d499d72b91a27959a28cb3fdd3d4a2aa7a17229a9889f07807c5",
+		Difficulty:   ASERTAnchorDifficulty,
+		Nonce:        24_601_635_115_426_568,
+		Hash:         ASERTAnchorHash,
+	}
+	if got := anchor.ComputeHash(); got != ASERTAnchorHash {
+		t.Fatalf("anchor hash = %s, want %s", got, ASERTAnchorHash)
+	}
+	if !anchor.HasValidWork() {
+		t.Fatal("anchor proof of work is invalid")
+	}
+}
+
+func TestConsensusUpgradeVersionBoundary(t *testing.T) {
+	if got := BlockVersion(ConsensusUpgradeHeight - 1); got != LegacyBlockVersion {
+		t.Fatalf("pre-activation block version = %d, want %d", got, LegacyBlockVersion)
+	}
+	if got := BlockVersion(ConsensusUpgradeHeight); got != UpgradedBlockVersion {
+		t.Fatalf("activation block version = %d, want %d", got, UpgradedBlockVersion)
+	}
+}
+
+func TestASERTDifficultyVectors(t *testing.T) {
+	ideal := ASERTAnchorTimestamp + int64(ConsensusUpgradeHeight-ASERTAnchorHeight)*TargetBlockSeconds
+	tests := []struct {
+		name       string
+		timestamp  int64
+		difficulty uint8
+	}{
+		{name: "on schedule", timestamp: ideal, difficulty: ASERTAnchorDifficulty},
+		{name: "just below early half life", timestamp: ideal - ASERTHalfLifeSeconds/2 + 1, difficulty: ASERTAnchorDifficulty},
+		{name: "early half life tie", timestamp: ideal - ASERTHalfLifeSeconds/2, difficulty: ASERTAnchorDifficulty + 1},
+		{name: "one half life early", timestamp: ideal - ASERTHalfLifeSeconds, difficulty: ASERTAnchorDifficulty + 1},
+		{name: "just below late half life", timestamp: ideal + ASERTHalfLifeSeconds/2 - 1, difficulty: ASERTAnchorDifficulty},
+		{name: "late half life tie", timestamp: ideal + ASERTHalfLifeSeconds/2, difficulty: ASERTAnchorDifficulty - 1},
+		{name: "one half life late", timestamp: ideal + ASERTHalfLifeSeconds, difficulty: ASERTAnchorDifficulty - 1},
+		{name: "minimum clamp", timestamp: math.MaxInt64, difficulty: MinimumDifficulty},
+		{name: "maximum clamp", timestamp: math.MinInt64, difficulty: MaximumDifficulty},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := expectedDifficultyAt(nil, ConsensusUpgradeHeight, test.timestamp); got != test.difficulty {
+				t.Fatalf("difficulty at timestamp %d = %d, want %d", test.timestamp, got, test.difficulty)
+			}
+		})
+	}
+}
+
+func TestASERTPublishedVectors(t *testing.T) {
+	tests := []struct {
+		height     uint64
+		timestamp  int64
+		difficulty uint8
+	}{
+		{height: 160_000, timestamp: 1_785_569_203, difficulty: 35},
+		{height: 160_000, timestamp: 1_785_569_083, difficulty: 35},
+		{height: 160_000, timestamp: 1_785_569_323, difficulty: 35},
+		{height: 160_000, timestamp: 1_785_568_903, difficulty: 36},
+		{height: 160_000, timestamp: 1_785_569_503, difficulty: 34},
+		{height: 160_000, timestamp: 1_785_574_003, difficulty: 27},
+		{height: 160_060, timestamp: 1_785_569_203, difficulty: 36},
+	}
+	for _, test := range tests {
+		if got := expectedDifficultyAt(nil, test.height, test.timestamp); got != test.difficulty {
+			t.Fatalf("published vector (%d, %d) = %d, want %d", test.height, test.timestamp, got, test.difficulty)
+		}
+	}
+}
+
+func TestASERTRecoversWithoutCompletingAnEpoch(t *testing.T) {
+	height := ConsensusUpgradeHeight
+	ideal := ASERTAnchorTimestamp + int64(height-ASERTAnchorHeight)*TargetBlockSeconds
+	if got := expectedDifficultyAt(nil, height, ideal); got != ASERTAnchorDifficulty {
+		t.Fatalf("on-schedule difficulty = %d, want %d", got, ASERTAnchorDifficulty)
+	}
+	recoveryDelay := int64(ASERTAnchorDifficulty-27) * ASERTHalfLifeSeconds
+	if got := expectedDifficultyAt(nil, height, ideal+recoveryDelay); got != 27 {
+		t.Fatalf("difficulty after %d-second stall = %d, want 27", recoveryDelay, got)
+	}
+}
+
+func TestASERTHeightTimeAndTimestampMonotonicity(t *testing.T) {
+	for height := ConsensusUpgradeHeight; height < ConsensusUpgradeHeight+10_000; height += 137 {
+		ideal := ASERTAnchorTimestamp + int64(height-ASERTAnchorHeight)*TargetBlockSeconds
+		if got := expectedDifficultyAt(nil, height, ideal); got != ASERTAnchorDifficulty {
+			t.Fatalf("on-schedule difficulty at height %d = %d, want %d", height, got, ASERTAnchorDifficulty)
+		}
+		if got := expectedDifficultyAt(nil, height+60, ideal); got != ASERTAnchorDifficulty+1 {
+			t.Fatalf("60-block early difficulty at height %d = %d, want %d", height+60, got, ASERTAnchorDifficulty+1)
+		}
+		previous := uint8(MaximumDifficulty)
+		for offset := int64(-10_000); offset <= 10_000; offset += 97 {
+			got := expectedDifficultyAt(nil, height, ideal+offset)
+			if got > previous {
+				t.Fatalf("difficulty increased as timestamp advanced at height %d: %d after %d", height, got, previous)
+			}
+			previous = got
+		}
+	}
+}
+
+func TestASERTRapidHashRateArrivalIsBounded(t *testing.T) {
+	ideal := ASERTAnchorTimestamp + int64(ConsensusUpgradeHeight-ASERTAnchorHeight)*TargetBlockSeconds
+	height := ConsensusUpgradeHeight
+	timestamp := ideal
+	for range 600 {
+		timestamp++
+		height++
+	}
+	if got := expectedDifficultyAt(nil, height, timestamp); got < ASERTAnchorDifficulty+8 {
+		t.Fatalf("difficulty after 600 minimum-time blocks = %d, want at least %d", got, ASERTAnchorDifficulty+8)
+	}
+	if elapsed := timestamp - ideal; elapsed > ASERTHalfLifeSeconds*2 {
+		t.Fatalf("rapid-hash simulation consumed %d seconds", elapsed)
+	}
+}
+
+func TestConsensusUpgradeTimestampRules(t *testing.T) {
+	ideal := ASERTAnchorTimestamp + int64(ConsensusUpgradeHeight-ASERTAnchorHeight)*TargetBlockSeconds
+	previous := Block{Height: ConsensusUpgradeHeight - 1, Hash: strings.Repeat("1", 64), Timestamp: ideal - 1}
+	prior := make([]Block, MedianTimeBlocks)
+	for index := range prior {
+		prior[index] = Block{Height: previous.Height - uint64(len(prior)-1-index), Timestamp: ideal - 20 + int64(index)}
+	}
+	prior[len(prior)-1] = previous
+	block := Block{
+		Version:      UpgradedBlockVersion,
+		Height:       ConsensusUpgradeHeight,
+		Timestamp:    ideal,
+		PreviousHash: previous.Hash,
+		MerkleRoot:   MerkleRoot(nil),
+		Difficulty:   ASERTAnchorDifficulty,
+	}
+	if err := validateHeaderConsensusFields(block, previous, prior, ideal); err != nil {
+		t.Fatalf("valid activation fields were rejected: %v", err)
+	}
+
+	block.Timestamp = previous.Timestamp
+	block.Difficulty = expectedDifficultyAt(prior, block.Height, block.Timestamp)
+	if err := validateHeaderConsensusFields(block, previous, prior, ideal); err == nil || !strings.Contains(err.Error(), "previous block time") {
+		t.Fatalf("non-increasing activation timestamp error = %v", err)
+	}
+
+	block.Timestamp = ideal
+	block.Difficulty = ASERTAnchorDifficulty
+	block.Version = LegacyBlockVersion
+	if err := validateHeaderConsensusFields(block, previous, prior, ideal); err == nil || !strings.Contains(err.Error(), "version") {
+		t.Fatalf("legacy activation version error = %v", err)
+	}
+
+	block.Height = ConsensusUpgradeHeight - 1
+	block.Version = UpgradedBlockVersion
+	if err := validateHeaderConsensusFields(block, previous, prior, ideal); err == nil || !strings.Contains(err.Error(), "version") {
+		t.Fatalf("upgraded pre-activation version error = %v", err)
+	}
+
+	block.Height = ConsensusUpgradeHeight
+	block.Version = UpgradedBlockVersion + 1
+	if err := validateHeaderConsensusFields(block, previous, prior, ideal); err == nil || !strings.Contains(err.Error(), "version") {
+		t.Fatalf("unknown activation version error = %v", err)
+	}
+}
+
+func TestConsensusFutureTimestampBoundDoesNotOverflow(t *testing.T) {
+	previous := Block{
+		Version:    UpgradedBlockVersion,
+		Height:     ConsensusUpgradeHeight,
+		Timestamp:  math.MaxInt64 - 1,
+		Hash:       strings.Repeat("1", 64),
+		Difficulty: MinimumDifficulty,
+	}
+	block := Block{
+		Version:      UpgradedBlockVersion,
+		Height:       previous.Height + 1,
+		Timestamp:    math.MaxInt64,
+		PreviousHash: previous.Hash,
+		MerkleRoot:   MerkleRoot(nil),
+		Difficulty:   MinimumDifficulty,
+	}
+	if err := validateHeaderConsensusFields(block, previous, []Block{previous}, math.MaxInt64); err != nil {
+		t.Fatalf("maximum timestamp at maximum validation time was rejected: %v", err)
+	}
+	if err := validateHeaderConsensusFields(block, previous, []Block{previous}, math.MaxInt64-MaxFutureSeconds-1); err == nil || !strings.Contains(err.Error(), "future") {
+		t.Fatalf("timestamp beyond saturated future bound error = %v", err)
+	}
+}
+
 func TestConsensusResourceAndTimestampLimits(t *testing.T) {
 	wallet, err := NewWallet()
 	if err != nil {
@@ -382,5 +598,17 @@ func blocksWithSpacing(seconds int64) []Block {
 		}
 	}
 	blocks[0].Difficulty = 0
+	return blocks
+}
+
+func blocksWithMedianSpan(span int64) []Block {
+	blocks := make([]Block, FirstAdjustment)
+	for index := range blocks {
+		blocks[index] = Block{Height: uint64(index), Difficulty: InitialDifficulty}
+	}
+	blocks[0].Difficulty = 0
+	for index := len(blocks) - MedianTimeBlocks; index < len(blocks); index++ {
+		blocks[index].Timestamp = span
+	}
 	return blocks
 }

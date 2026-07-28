@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"time"
 
 	"github.com/HONG-LOU/entcoin/internal/core"
 )
@@ -38,6 +39,10 @@ func (l *Ledger) ConnectBlock(ctx context.Context, block core.Block) error {
 }
 
 func connectBlock(ctx context.Context, tx *sql.Tx, block core.Block) error {
+	return connectBlockAtTime(ctx, tx, block, time.Now().Unix())
+}
+
+func connectBlockAtTime(ctx context.Context, tx *sql.Tx, block core.Block, validationTime int64) error {
 	tip, err := tipFromQuery(ctx, tx)
 	if err != nil {
 		return err
@@ -52,7 +57,7 @@ func connectBlock(ctx context.Context, tx *sql.Tx, block core.Block) error {
 	if len(priorHeaders) == 0 {
 		return fmt.Errorf("ledger has no previous block header")
 	}
-	if err := core.ValidateBlockHeader(block, priorHeaders[len(priorHeaders)-1], priorHeaders); err != nil {
+	if err := core.ValidateBlockHeaderAtTime(block, priorHeaders[len(priorHeaders)-1], priorHeaders, validationTime); err != nil {
 		return fmt.Errorf("validate block %d header: %w", block.Height, err)
 	}
 	if len(block.Transactions) == 0 || !block.Transactions[0].Coinbase {

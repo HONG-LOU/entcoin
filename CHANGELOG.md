@@ -5,6 +5,44 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-07-28
+
+### Consensus
+
+- Scheduled mandatory rule-version-2 activation at block 160000 while retaining
+  all historical v1 rules below activation and rejecting unknown/wrong-side
+  block versions.
+- Replaced the asymmetric 60-block DAA after activation with a fixed-anchor,
+  per-block integer ASERT using a 600-second half-life, signed nearest rounding,
+  existing difficulty clamps, and published deterministic vectors.
+- Required version-2 timestamps to exceed both MTP11 and the immediately
+  previous timestamp while retaining the 120-second future bound.
+- Centralized height-gated rule selection across replay, mining, direct connect,
+  import, HTTP/WebSocket sync, staged validation, and atomic reorganization.
+
+### Changed
+
+- Mining now derives timestamp and difficulty from one snapshot and
+  transparently rebuilds post-activation work when elapsed time lowers the
+  integer difficulty.
+- Added a compatibility-safe `/v2/consensus` endpoint and desktop diagnostic
+  display without adding fields to strict legacy peer-status messages.
+- Preserved genesis, network ID, wallet/key/address format, amount and
+  transaction encoding, SQLite schema/data, balances, history, peer records,
+  and normal in-app update/restart behavior.
+
+### Verification
+
+- Added fixed DAA/anchor/rounding/clamp/version vectors, hash-rate shock and
+  stall simulations, and real SQLite connect, mining, equal-work rejection,
+  rollback, reorg, and HTTP sync tests crossing activation.
+- Re-audited every consensus and state-transition surface. The DAA liveness
+  defect was the only confirmed independent mainnet issue requiring a hard fork.
+- Opened and synchronized a read-consistent production archive-ledger backup
+  with the v1.2 binary without migration, pruning, wallet creation, or state
+  divergence.
+- Added detailed English and Simplified Chinese release and operator guidance.
+
 ## [1.1.0] - 2026-07-22
 
 ### Added

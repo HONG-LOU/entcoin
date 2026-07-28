@@ -99,6 +99,8 @@ type Dashboard struct {
 	Name                string          `json:"name"`
 	Symbol              string          `json:"symbol"`
 	Protocol            string          `json:"protocol"`
+	ConsensusVersion    uint32          `json:"consensus_version"`
+	ConsensusActivation uint64          `json:"consensus_activation"`
 	Address             string          `json:"address"`
 	ConfirmedBalance    string          `json:"confirmed_balance"`
 	SpendableBalance    string          `json:"spendable_balance"`
@@ -669,6 +671,8 @@ func (s *Service) Dashboard() (Dashboard, error) {
 		Name:                core.ProductName,
 		Symbol:              core.ChainSymbol,
 		Protocol:            ledger.ProtocolName,
+		ConsensusVersion:    core.BlockVersion(tip.Height + 1),
+		ConsensusActivation: core.ConsensusUpgradeHeight,
 		Address:             address,
 		ConfirmedBalance:    core.FormatAmount(confirmed),
 		SpendableBalance:    core.FormatAmount(spendable),
@@ -812,42 +816,95 @@ func (s *Service) MineOnce(ctx context.Context) (core.Block, error) {
 		s.mu.Unlock()
 		s.wait.Done()
 	}()
-	jobContext, cancelJob := context.WithCancelCause(ctx)
-	watchDone := make(chan struct{})
-	go func() {
-		defer close(watchDone)
-		select {
-		case <-tipChanged:
-			cancelJob(errMiningTipChanged)
-		case <-jobContext.Done():
+	for {
+		jobContext, cancelJob := context.WithCancelCause(ctx)
+		candidate, expectedTip, err := chain.BuildMiningCandidate(jobContext, address)
+		if err != nil {
+			cancelJob(context.Canceled)
+			return core.Block{}, miningJobError(jobContext, err)
 		}
-	}()
-	defer func() {
+		watchDone := watchMiningTemplate(jobContext, cancelJob, tipChanged, candidate)
+		block, err := mineBlock(jobContext, candidate)
+		cause := context.Cause(jobContext)
 		cancelJob(context.Canceled)
 		<-watchDone
-	}()
-	candidate, expectedTip, err := chain.BuildMiningCandidate(jobContext, address)
-	if err != nil {
-		return core.Block{}, miningJobError(jobContext, err)
+		if errors.Is(cause, errMiningDifficultyChanged) {
+			continue
+		}
+		if errors.Is(cause, errMiningTipChanged) {
+			return core.Block{}, errMiningTipChanged
+		}
+		if err != nil {
+			return core.Block{}, miningJobError(jobContext, err)
+		}
+		if err := chain.CommitMinedBlock(ctx, block, expectedTip); err != nil {
+			return core.Block{}, err
+		}
+		s.notifyTipChanged()
+		s.maybePrune(chain)
+		s.broadcastBlock(block, nil)
+		return block, nil
 	}
-	block, err := mineBlock(jobContext, candidate)
-	if err != nil {
-		return core.Block{}, miningJobError(jobContext, err)
-	}
-	if err := chain.CommitMinedBlock(jobContext, block, expectedTip); err != nil {
-		return core.Block{}, miningJobError(jobContext, err)
-	}
-	s.notifyTipChanged()
-	s.maybePrune(chain)
-	s.broadcastBlock(block, nil)
-	return block, nil
 }
 
-var errMiningTipChanged = errors.New("mining template became stale after a chain tip change")
+var (
+	errMiningTipChanged        = errors.New("mining template became stale after a chain tip change")
+	errMiningDifficultyChanged = errors.New("mining template became stale after a difficulty decrease")
+)
+
+const miningDifficultyPollInterval = 5 * time.Second
+
+func watchMiningTemplate(
+	ctx context.Context,
+	cancel context.CancelCauseFunc,
+	tipChanged <-chan struct{},
+	candidate core.Block,
+) <-chan struct{} {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if core.RulesAtHeight(candidate.Height).Difficulty != core.IntegerASERTDifficulty {
+			select {
+			case <-tipChanged:
+				cancel(errMiningTipChanged)
+			case <-ctx.Done():
+			}
+			return
+		}
+		ticker := time.NewTicker(miningDifficultyPollInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-tipChanged:
+				cancel(errMiningTipChanged)
+				return
+			case now := <-ticker.C:
+				if miningTemplateNeedsRefresh(candidate, now.Unix()) {
+					cancel(errMiningDifficultyChanged)
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return done
+}
+
+func miningTemplateNeedsRefresh(candidate core.Block, now int64) bool {
+	if core.RulesAtHeight(candidate.Height).Difficulty != core.IntegerASERTDifficulty || candidate.Difficulty <= core.MinimumDifficulty {
+		return false
+	}
+	timestamp := max(now, candidate.Timestamp)
+	return core.ExpectedDifficultyAt(nil, candidate.Height, timestamp) < candidate.Difficulty
+}
 
 func miningJobError(ctx context.Context, err error) error {
-	if err != nil && errors.Is(context.Cause(ctx), errMiningTipChanged) {
-		return errMiningTipChanged
+	if err != nil {
+		cause := context.Cause(ctx)
+		if errors.Is(cause, errMiningTipChanged) || errors.Is(cause, errMiningDifficultyChanged) {
+			return cause
+		}
 	}
 	return err
 }

@@ -116,6 +116,7 @@ func (r *requestRateState) allowAtRate(now time.Time, rate, burst float64) bool 
 
 func (s *Service) registerProtocolHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("GET /v2/status", s.handleStatus)
+	mux.HandleFunc("GET /v2/consensus", s.handleConsensus)
 	mux.HandleFunc("POST /v2/headers", s.handleHeaders)
 	mux.HandleFunc("POST /v2/blocks", s.handleBlocks)
 	mux.HandleFunc("GET /v2/mempool", s.handleMempool)
@@ -167,6 +168,24 @@ func (s *Service) handleStatus(writer http.ResponseWriter, request *http.Request
 		return
 	}
 	writeJSON(writer, http.StatusOK, statusFromTip(tip, s.listenPort()))
+}
+
+func (s *Service) handleConsensus(writer http.ResponseWriter, request *http.Request) {
+	tip, err := s.ledger.Tip(request.Context())
+	if err != nil {
+		writeError(writer, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(writer, http.StatusOK, consensusStatus{
+		Protocol:         ledger.ProtocolName,
+		SupportedRules:   []uint32{core.LegacyBlockVersion, core.UpgradedBlockVersion},
+		NextBlockRule:    core.BlockVersion(tip.Height + 1),
+		ActivationHeight: core.ConsensusUpgradeHeight,
+		AnchorHeight:     core.ASERTAnchorHeight,
+		AnchorHash:       core.ASERTAnchorHash,
+		Algorithm:        "integer-asert",
+		HalfLifeSeconds:  core.ASERTHalfLifeSeconds,
+	})
 }
 
 func (s *Service) handleHeaders(writer http.ResponseWriter, request *http.Request) {
@@ -464,6 +483,15 @@ func (s *Service) syncRemoteChain(ctx context.Context, peer string, localTip led
 }
 
 func (s *Service) syncRemoteChainFrom(ctx context.Context, source remoteChainSource, localTip ledger.Tip) error {
+	return s.syncRemoteChainFromAtTime(ctx, source, localTip, time.Now().Unix())
+}
+
+func (s *Service) syncRemoteChainFromAtTime(
+	ctx context.Context,
+	source remoteChainSource,
+	localTip ledger.Tip,
+	validationTime int64,
+) error {
 	select {
 	case s.chainSyncSlot <- struct{}{}:
 		defer func() { <-s.chainSyncSlot }()
@@ -525,7 +553,7 @@ func (s *Service) syncRemoteChainFrom(ctx context.Context, source remoteChainSou
 			if len(header.Transactions) != 0 {
 				return fmt.Errorf("peer included block bodies in a header response")
 			}
-			if err := core.ValidateHeader(header, previous, priorHeaders); err != nil {
+			if err := core.ValidateHeaderAtTime(header, previous, priorHeaders, validationTime); err != nil {
 				return fmt.Errorf("validate peer header %d: %w", header.Height, err)
 			}
 			headers = append(headers, header)
@@ -570,7 +598,7 @@ func (s *Service) syncRemoteChainFrom(ctx context.Context, source remoteChainSou
 				return err
 			}
 			defer staged.Close()
-			if err := s.ledger.ReplaceFromSource(ctx, effectiveAncestor, len(candidateHeaders), staged.BlockAt); err != nil {
+			if err := s.ledger.ReplaceFromSourceAtTime(ctx, effectiveAncestor, len(candidateHeaders), staged.BlockAt, validationTime); err != nil {
 				return err
 			}
 			s.notifyTipChanged()

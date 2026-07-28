@@ -501,6 +501,7 @@ function renderDashboard(data) {
     ? `Block #${prunedThrough.toLocaleString(currentLocale())}`
     : pruneDepth > 0 ? "Retention enabled; no eligible blocks yet" : "Not pruned");
   setText("diagnostic-protocol", data.protocol || "Unknown");
+  setText("diagnostic-consensus", `v${asNumber(data.consensus_version, 1)} @ #${asNumber(data.consensus_activation).toLocaleString(currentLocale())}`);
   setText("diagnostic-listen", data.listen_address || "Not listening");
   setText("diagnostic-tip", data.tip_hash ? `#${localHeight.toLocaleString(currentLocale())} ${shortHash(data.tip_hash, 20)}` : "Unavailable");
   $("diagnostic-tip").title = String(data.tip_hash || "");
@@ -646,7 +647,7 @@ async function refreshDashboard() {
 function renderUpdate(status) {
   state.updateStatus = status;
   state.updateChecked = true;
-  setText("current-version", `v${status.current_version || "1.1.0"}`);
+  setText("current-version", `v${status.current_version || "1.2.0"}`);
   const available = Boolean(status.available);
   setText("update-status", available ? `Entcoin v${status.latest_version} is available` : "Entcoin is up to date");
   $("install-update").hidden = !available;

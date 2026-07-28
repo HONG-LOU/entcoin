@@ -8,11 +8,16 @@ import (
 	"fmt"
 	"math"
 	"math/bits"
+	"time"
 
 	"github.com/HONG-LOU/entcoin/internal/core"
 )
 
 func (l *Ledger) BuildMiningCandidate(ctx context.Context, address string) (core.Block, Tip, error) {
+	return l.buildMiningCandidateAtTime(ctx, address, time.Now().Unix())
+}
+
+func (l *Ledger) buildMiningCandidateAtTime(ctx context.Context, address string, now int64) (core.Block, Tip, error) {
 	if err := core.ValidateAddress(address); err != nil {
 		return core.Block{}, Tip{}, err
 	}
@@ -87,13 +92,14 @@ func (l *Ledger) BuildMiningCandidate(ctx context.Context, address string) (core
 	transactions := make([]core.Transaction, 0, len(selected)+1)
 	transactions = append(transactions, coinbase)
 	transactions = append(transactions, selected...)
+	timestamp := core.NextTimestampAt(headers, now)
 	block := core.Block{
-		Version:      core.StateVersion,
+		Version:      core.BlockVersion(height),
 		Height:       height,
-		Timestamp:    core.NextTimestamp(headers),
+		Timestamp:    timestamp,
 		PreviousHash: tip.Hash,
 		MerkleRoot:   core.MerkleRoot(transactions),
-		Difficulty:   core.ExpectedDifficulty(headers, height),
+		Difficulty:   core.ExpectedDifficultyAt(headers, height, timestamp),
 		Transactions: transactions,
 	}
 	block.Hash = block.ComputeHash()
@@ -101,6 +107,10 @@ func (l *Ledger) BuildMiningCandidate(ctx context.Context, address string) (core
 }
 
 func (l *Ledger) CommitMinedBlock(ctx context.Context, block core.Block, expectedTip Tip) error {
+	return l.commitMinedBlockAtTime(ctx, block, expectedTip, time.Now().Unix())
+}
+
+func (l *Ledger) commitMinedBlockAtTime(ctx context.Context, block core.Block, expectedTip Tip, validationTime int64) error {
 	l.writeMu.Lock()
 	defer l.writeMu.Unlock()
 
@@ -117,7 +127,7 @@ func (l *Ledger) CommitMinedBlock(ctx context.Context, block core.Block, expecte
 		return fmt.Errorf("%w: expected %d/%s, current %d/%s", ErrStaleTip,
 			expectedTip.Height, expectedTip.Hash, currentTip.Height, currentTip.Hash)
 	}
-	if err := connectBlock(ctx, tx, block); err != nil {
+	if err := connectBlockAtTime(ctx, tx, block, validationTime); err != nil {
 		return err
 	}
 	if err := rebuildMempool(ctx, tx, nil); err != nil {
