@@ -262,7 +262,8 @@ func (s *Service) registerSocket(socket *peerSocket) bool {
 		if existing := s.outboundSockets[socket.baseURL]; existing != nil {
 			return false
 		}
-		if len(s.outboundSockets)+len(s.dialing) > s.maxOutboundPeers {
+		delete(s.dialing, socket.baseURL)
+		if len(s.outboundSockets)+len(s.dialing) >= s.maxOutboundPeers {
 			return false
 		}
 		s.outboundSockets[socket.baseURL] = socket

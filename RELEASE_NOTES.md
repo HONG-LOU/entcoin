@@ -67,6 +67,9 @@ The exact formula and published vectors are in
   messages are unchanged so strict v1.1 peers remain connected before
   activation.
 - Desktop diagnostics show the next consensus rule and activation height.
+- Outbound WebSocket admission now atomically converts a dialing reservation
+  into a connected slot, so connected-plus-dialing state never transiently
+  exceeds the configured outbound limit.
 
 ## User upgrade experience
 
@@ -167,6 +170,8 @@ v1.1 及更早版本在激活前仍可兼容运行，但激活后无法验证版
   原有 `/v2/status` 与 WebSocket 状态消息保持不变，避免严格解析 JSON 的 v1.1 节点在
   激活前断开。
 - 桌面诊断页会显示下一块共识规则和激活高度。
+- 出站 WebSocket 建连会在同一把锁内把“拨号预留”原子转换为“已连接槽位”，因此
+  “已连接数 + 拨号中数量”不会在瞬间超过配置上限。
 
 ## 用户升级体验
 

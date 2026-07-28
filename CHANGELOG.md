@@ -27,6 +27,8 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
   integer difficulty.
 - Added a compatibility-safe `/v2/consensus` endpoint and desktop diagnostic
   display without adding fields to strict legacy peer-status messages.
+- Made outbound WebSocket dialing-to-connected slot transitions atomic and
+  removed random test-port collisions from the 48-candidate limit regression.
 - Preserved genesis, network ID, wallet/key/address format, amount and
   transaction encoding, SQLite schema/data, balances, history, peer records,
   and normal in-app update/restart behavior.

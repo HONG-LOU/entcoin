@@ -300,7 +300,7 @@ func TestFortyEightCandidatesRespectActiveAndOutboundLimits(t *testing.T) {
 			URL: server.URL(), Online: true, LastSeen: now,
 		}
 	}
-	for index := 0; index < 45; index++ {
+	for index := 0; len(node.peers) < 48; index++ {
 		peer := fmt.Sprintf("http://127.0.0.1:%d", 40000+index)
 		node.peers[peer] = &peerState{URL: peer}
 	}
