@@ -17,12 +17,15 @@
 
 ---
 
-Entcoin v1.2.0 是一个紧凑、可独立验证的 PoW 主网实现。启动一个桌面程序，
+Entcoin v1.2.1 是一个紧凑、可独立验证的 PoW 主网实现。启动一个桌面程序，
 即可同时运行钱包、SQLite 账本、完整区块与交易验证、节点同步、实时中继和可选矿工；
 无需外部数据库、后台守护进程或浏览器页面。
 
 > `entropy-mainnet-v1` 是主网的永久兼容标识。产品名称升级为 Entcoin 不改变创世块、
-> 地址、钱包派生方式或链数据；现有用户可原地升级到 v1.2.0。
+> 地址、钱包派生方式或链数据；现有用户可原地升级到 v1.2.1。
+
+> **强制更新：**v1.2.0 已被替代。它仍认为共识 v2 会在高度 160000 激活，因此会拒绝
+> v1.2.1 在高度 125555 提前启用的正式主链。所有 v1.2.0 节点和矿工都必须安装 v1.2.1。
 
 ## 核心能力
 
@@ -45,11 +48,11 @@ Entcoin v1.2.0 是一个紧凑、可独立验证的 PoW 主网实现。启动一
 | --- | --- |
 | Windows 10/11 x64 | `entcoin-amd64-installer.exe` |
 | Windows 便携版 | `Entcoin.exe` |
-| Ubuntu 24.04+ amd64 | `entcoin_1.2.0_amd64.deb` |
+| Ubuntu 24.04+ amd64 | `entcoin_1.2.1_amd64.deb` |
 | Windows / Linux 无头节点 | `entcoin-cli.exe` / `entcoin-cli-linux-amd64` |
 
 下载后应使用同一 Release 中的 `SHA256SUMS.txt` 或
-`SHA256SUMS-linux.txt` 校验。GitHub 还为 v1.2.0 产物发布构建来源证明。
+`SHA256SUMS-linux.txt` 校验。GitHub 还为 v1.2.1 产物发布构建来源证明。
 
 Windows 构建只有在发布环境配置可信 Authenticode 证书时才会签名；未签名构建可能触发
 SmartScreen。SHA-256 能证明文件与发布清单一致，但不能替代代码签名、独立审计或主机安全。
@@ -57,7 +60,7 @@ SmartScreen。SHA-256 能证明文件与发布清单一致，但不能替代代�
 Ubuntu 安装：
 
 ```bash
-sudo apt install ./entcoin_1.2.0_amd64.deb
+sudo apt install ./entcoin_1.2.1_amd64.deb
 entcoin
 ```
 
@@ -98,7 +101,7 @@ Ubuntu   ~/.config/Entcoin/mainnet-v1
 | Coinbase 成熟期 | 100 个区块 |
 | 最大区块体 | 1 MiB |
 | 分叉选择 | 最大累计工作量 |
-| 共识 v2 激活高度 | 160,000 |
+| 共识 v2 激活高度 | 125,555 |
 | 共识 v2 DAA 半衰期 | 600 秒 |
 
 发行公式为：
@@ -117,7 +120,7 @@ subsidy(h) = 0          , h = 0 或 h > N
 因此最后一个奖励高度的累计发行量严格等于 `MAX`，不存在浮点误差。手续费只是已有 ENT 的转移，
 不会增加总量。高度 1 的 Coinbase 在消费高度 100 仍不成熟，到高度 101 才可消费。
 
-难度以区块哈希的前导零位数表示。高度 160000 前沿用 v1 的 60 区块调整规则；从该高度
+难度以区块哈希的前导零位数表示。高度 125555 前沿用 v1 的 60 区块调整规则；从该高度
 开始强制区块版本 2，并使用半衰期 600 秒的逐区块整数 ASERT。新时间规则同时要求大于
 前 11 块中位时间和上一块时间戳，并继续拒绝超过本机时间 120 秒的区块。每个区块贡献
 `2^difficulty` 工作量。详细确定性编码与验证规则见[协议文档](docs/protocol.md)。
@@ -178,10 +181,10 @@ go build -trimpath -o build/bin/entcoin-cli ./cmd/entcoin
 
 ## 安全边界
 
-v1.2.0 已完成针对难度事件和全部共识路径的项目内部复审，并通过全量测试、竞态检测、
+v1.2.1 已完成针对难度事件和全部共识路径的项目内部复审，并通过全量测试、竞态检测、
 静态分析和可达漏洞扫描。基础安全审计与本次共识升级证据分别记录在
 [v1.1.0 安全审计报告](docs/security-audit-v1.1.0.md)和
-[v1.2.0 共识升级审计](docs/consensus-upgrade-audit-v1.2.md)。
+[v1.2.1 共识升级审计](docs/consensus-upgrade-audit-v1.2.md)。
 
 仍需清楚理解以下边界：
 
@@ -215,7 +218,7 @@ npm run build
 Linux 发布构建还需要 Wails v2.13.0、GTK3、WebKitGTK 4.1 与 `dpkg-deb`：
 
 ```bash
-./scripts/build-linux.sh 1.2.0
+./scripts/build-linux.sh 1.2.1
 ```
 
 ## 文档
@@ -226,7 +229,7 @@ Linux 发布构建还需要 Wails v2.13.0、GTK3、WebKitGTK 4.1 与 `dpkg-deb`�
 - [节点运维](docs/operations.md)
 - [公网 Seed](docs/public-seed.md)
 - [安全策略](SECURITY.md)
-- [v1.2.0 中英文发布说明](RELEASE_NOTES.md)
+- [v1.2.1 中英文发布说明](RELEASE_NOTES.md)
 - [后续路线图](docs/next-step.md)
 
 Entcoin 采用 [MIT License](LICENSE) 开源。

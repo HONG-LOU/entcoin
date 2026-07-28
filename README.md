@@ -17,7 +17,7 @@
 
 ---
 
-Entcoin v1.2.0 is a compact proof-of-work mainnet packaged as a Windows and
+Entcoin v1.2.1 is a compact proof-of-work mainnet packaged as a Windows and
 Ubuntu desktop full node. Starting one application starts the wallet, SQLite
 ledger, full block and transaction validation, peer synchronization, relay
 server, and optional miner in the same process. It does not require a separate
@@ -29,7 +29,11 @@ database server, browser tab, or background daemon.
 The source repository is public and MIT-licensed:
 <https://github.com/HONG-LOU/entcoin>.
 
-## What v1.2.0 includes
+> **Mandatory update:** v1.2.0 is superseded. It still expects consensus v2 at
+> block 160000 and will reject the v1.2.1 main chain when the same audited rules
+> activate at block 125555. Every v1.2.0 node and miner must install v1.2.1.
+
+## What v1.2.1 includes
 
 - A Wails desktop node with send, receive, automatic minimum fees, mining,
   network health, history, wallet recovery, database, and pruning controls.
@@ -56,7 +60,7 @@ The source repository is public and MIT-licensed:
   replayed by mainnet. A known recovery phrase or verified `.entwallet` backup
   can restore the same wallet key into a fresh mainnet ledger.
 - A headless CLI using the same node, consensus, wallet, ledger, and P2P code.
-- A mandatory height-160000 consensus upgrade that replaces the asymmetric
+- A mandatory height-125555 consensus upgrade that replaces the asymmetric
   epoch DAA with a 600-second integer ASERT rule while preserving all historical
   version-1 blocks, chain identity, wallets, balances, and storage.
 - An explicit archive-only `--seed-mode` for Linux or Windows public relays. It
@@ -97,7 +101,7 @@ The NSIS build is the `*installer*.exe` artifact in the same directory. The
 installer is the simplest distribution for other Windows users; the portable
 EXE can be launched directly. Windows 10/11 x64 and Microsoft WebView2 Runtime
 are required. The installer build downloads the WebView2 bootstrapper when
-needed. The current v1.2.0 release may be unsigned, so Windows SmartScreen may show
+needed. The current v1.2.1 release may be unsigned, so Windows SmartScreen may show
 an unknown-publisher warning. The build signs and timestamps the portable
 application, installer, and CLI before checksums are generated when a trusted
 Authenticode certificate is configured.
@@ -152,7 +156,7 @@ setup, backups, migration, pruning, and troubleshooting.
 Ubuntu 24.04+ amd64 users install the `.deb` from the current release:
 
 ```bash
-sudo apt install ./entcoin_1.2.0_amd64.deb
+sudo apt install ./entcoin_1.2.1_amd64.deb
 entcoin
 ```
 
@@ -213,7 +217,7 @@ Later heights                     transaction fees only
 Coinbase maturity                 100 blocks, enforced from height 1
 Maximum block body                1 MiB
 Fork choice                       greatest cumulative proof of work
-Consensus v2 activation           block 160,000
+Consensus v2 activation           block 125,555
 Consensus v2 DAA half-life        600 seconds
 ```
 
@@ -325,7 +329,7 @@ outside `%LOCALAPPDATA%\Entropy\mainnet-v1`.
 
 Wallet keys are separate from chain history. Before leaving the testnet app,
 record its 24-word recovery phrase or export and verify an encrypted
-`.entwallet` backup. Start v1.2.0 to create the mainnet directory, then use the
+`.entwallet` backup. Start v1.2.1 to create the mainnet directory, then use the
 desktop Wallet view to restore that phrase or backup. The address is recovered,
 while balances and history are rebuilt only from the mainnet chain.
 
@@ -367,7 +371,7 @@ reproducible.
 On Ubuntu 24.04:
 
 ```bash
-./scripts/build-linux.sh 1.2.0
+./scripts/build-linux.sh 1.2.1
 ```
 
 ## Documentation

@@ -8,7 +8,7 @@ const (
 	StateVersion                            = 1
 	LegacyBlockVersion               uint32 = 1
 	UpgradedBlockVersion             uint32 = 2
-	ConsensusUpgradeHeight           uint64 = 160_000
+	ConsensusUpgradeHeight           uint64 = 125_555
 	ASERTAnchorHeight                uint64 = 123_265
 	ASERTAnchorTimestamp             int64  = 1_785_201_853
 	ASERTAnchorDifficulty            uint8  = 35

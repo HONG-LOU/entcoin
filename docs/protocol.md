@@ -1,6 +1,6 @@
 # Entcoin mainnet protocol
 
-This document describes the v1.2.0 implementation. The consensus/network
+This document describes the v1.2.1 implementation. The consensus/network
 identity is `entropy-mainnet-v1`. The HTTP path prefix remains `/v2` because it
 denotes the second transport design; endpoint numbering and network identity
 are not the same version counter.
@@ -29,16 +29,16 @@ to peer protocol checks and the fixed genesis.
 
 ## Height-gated consensus rules
 
-Blocks below height `160000` retain version 1, MTP11 plus 120-second future
+Blocks below height `125555` retain version 1, MTP11 plus 120-second future
 timestamp validation, and the legacy 60-block epoch DAA. Blocks at height
-`160000` and later require version 2, additionally require a timestamp greater
+`125555` and later require version 2, additionally require a timestamp greater
 than the immediately preceding block, and use the integer ASERT rule specified
-in [the v1.2.0 consensus audit](consensus-upgrade-audit-v1.2.md). Unknown or
+in [the v1.2.1 consensus audit](consensus-upgrade-audit-v1.2.md). Unknown or
 wrong-side block versions are rejected.
 
 The v2 rule uses anchor height `123265`, anchor timestamp `1785201853`, anchor
 difficulty 35, and a 600-second half-life. Its activation-height on-schedule
-timestamp is `1785569203`. Network identity, genesis, block hashing, transaction
+timestamp is `1785224753`. Network identity, genesis, block hashing, transaction
 encoding, issuance, and cumulative-work fork choice remain unchanged.
 
 ## Transport overview
@@ -109,7 +109,7 @@ v1.1 peers strictly reject unknown JSON fields.
   "protocol": "entropy-mainnet-v1",
   "supported_rules": [1, 2],
   "next_block_rule": 1,
-  "activation_height": 160000,
+  "activation_height": 125555,
   "anchor_height": 123265,
   "anchor_hash": "000000000b6ffc20400cafe308ae13a73cead4c5a7cb232214d714ff2949dead",
   "algorithm": "integer-asert",

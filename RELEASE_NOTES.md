@@ -1,12 +1,14 @@
-# Entcoin v1.2.0
+# Entcoin v1.2.1
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.2.0 is a mandatory consensus upgrade for
-`entropy-mainnet-v1`. Rule version 2 activates at block **160000**. Upgrade all
+Entcoin v1.2.1 is a mandatory consensus upgrade for
+`entropy-mainnet-v1`. Rule version 2 activates at block **125555**. Upgrade all
 desktop, CLI, validating, relay, and mining nodes before that height. Nodes on
-v1.1 or earlier remain compatible below activation but cannot validate the
-version-2 chain after activation.
+v1.2.0, v1.1, or earlier remain compatible below activation but cannot validate
+the version-2 chain after activation. **v1.2.0 is superseded and must also be
+upgraded.** It still schedules activation at block 160000 and therefore rejects
+the earlier v1.2.1 fork at block 125555.
 
 This release does not reset the chain and does not migrate wallets or storage.
 Genesis, `NetworkID`, private keys, recovery phrases, wallet derivation,
@@ -26,10 +28,17 @@ while remaining compatible with v1. Old nodes reject blocks using any different
 difficulty result, so replacing the DAA necessarily changes block validity and
 requires a scheduled hard fork.
 
-## Consensus changes at block 160000
+v1.2.0 originally scheduled the same audited rule set for block 160000. That
+left more than 35,000 legacy-rule blocks during which the network could still
+depend on the dominant miner to reach activation. v1.2.1 moves only the
+activation boundary to block 125555 so the liveness fix takes effect promptly.
+The ASERT anchor, formula, rule version, and every non-consensus compatibility
+surface are unchanged.
 
-- Blocks below `160000` remain version 1 and replay under the unchanged legacy
-  60-block DAA. Blocks at and above `160000` must be version 2. Unknown and
+## Consensus changes at block 125555
+
+- Blocks below `125555` remain version 1 and replay under the unchanged legacy
+  60-block DAA. Blocks at and above `125555` must be version 2. Unknown and
   wrong-side versions fail closed.
 - Version 2 uses a fixed numerical anchor at height `123265`, timestamp
   `1785201853`, difficulty 35, and hash
@@ -74,7 +83,7 @@ The exact formula and published vectors are in
 ## User upgrade experience
 
 Existing desktop users only need to choose **Update and restart**. Entcoin
-closes, installs v1.2.0, relaunches, and opens the same wallet and ledger. No
+closes, installs v1.2.1, relaunches, and opens the same wallet and ledger. No
 address changes, seed import, rescan, balance migration, or manual file copying
 is required. As with every release, retain a verified 24-word phrase or
 `.entwallet` backup before upgrading.
@@ -82,7 +91,7 @@ is required. As with every release, retain a verified 24-word phrase or
 Headless operators replace the CLI binary and restart with the same service
 arguments and data directory. Public Seeds must remain archive nodes and should
 be rolled one at a time. If an old node reaches activation, it stops following
-the chain at height `159999`; install v1.2.0 and restart against the same data.
+the chain at height `125554`; install v1.2.1 and restart against the same data.
 Do not delete the ledger.
 
 ## Audit and verification
@@ -127,9 +136,11 @@ you cannot afford to lose.
 
 ## 简体中文
 
-Entcoin v1.2.0 是 `entropy-mainnet-v1` 的强制共识升级。规则版本 2 将在区块
-**160000** 激活。所有桌面端、CLI、验证、转发和挖矿节点都必须在该高度前升级。
-v1.1 及更早版本在激活前仍可兼容运行，但激活后无法验证版本 2 主链。
+Entcoin v1.2.1 是 `entropy-mainnet-v1` 的强制共识升级。规则版本 2 将在区块
+**125555** 激活。所有桌面端、CLI、验证、转发和挖矿节点都必须在该高度前升级。
+v1.2.0、v1.1 及更早版本在激活前仍可兼容运行，但激活后无法验证版本 2 主链。
+**v1.2.0 已被替代，也必须再次升级。**它仍把激活高度设为 160000，因此会拒绝
+v1.2.1 在高度 125555 提前启用的新规则。
 
 本次升级不重置区块链，也不迁移钱包或存储。创世块、`NetworkID`、私钥、恢复短语、
 钱包派生、地址、金额、交易编码、余额、历史记录、SQLite 结构、节点记录以及现有
@@ -144,9 +155,13 @@ v1.1 及更早版本在激活前仍可兼容运行，但激活后无法验证版
 审计没有发现能在保持 v1 兼容的前提下单机修复的算术或验证漏洞。旧节点会拒绝任何使用
 不同难度结果的区块，因此替换 DAA 必然改变区块有效性，必须通过预定高度硬分叉完成。
 
-## 高度 160000 的共识改动
+v1.2.0 原本计划在高度 160000 启用同一套已审计规则，但这会留下超过 35,000 个仍按旧规则
+运行的区块；在此期间，网络仍可能依赖主矿工把链推进到激活点。v1.2.1 只把激活边界前移到
+125555，让链活性修复尽快生效。ASERT 锚点、公式、规则版本以及所有非共识兼容面均未改变。
 
-- 高度 `160000` 之前继续使用版本 1 和原有 60 区块 DAA；从 `160000` 开始必须使用
+## 高度 125555 的共识改动
+
+- 高度 `125555` 之前继续使用版本 1 和原有 60 区块 DAA；从 `125555` 开始必须使用
   版本 2。未知版本以及出现在错误高度一侧的版本都会被拒绝。
 - 版本 2 使用固定数值锚点：高度 `123265`、时间戳 `1785201853`、难度 35、哈希
   `000000000b6ffc20400cafe308ae13a73cead4c5a7cb232214d714ff2949dead`。
@@ -178,12 +193,12 @@ v1.1 及更早版本在激活前仍可兼容运行，但激活后无法验证版
 
 ## 用户升级体验
 
-现有桌面用户只需点击“更新并重启”。Entcoin 会退出、安装 v1.2.0、重新启动，并直接打开
+现有桌面用户只需点击“更新并重启”。Entcoin 会退出、安装 v1.2.1、重新启动，并直接打开
 原钱包和账本。不需要更换地址、重新导入短语、扫描链、迁移余额或手工复制文件。与任何
 升级一样，操作前仍应保留已验证的 24 词恢复短语或 `.entwallet` 备份。
 
 无头节点只需替换 CLI 二进制，并使用原 systemd 参数和数据目录重启。公网 Seed 必须保持
-归档模式，并逐台滚动升级。如果旧节点运行到激活点，它会停在高度 `159999`；安装 v1.2.0
+归档模式，并逐台滚动升级。如果旧节点运行到激活点，它会停在高度 `125554`；安装 v1.2.1
 后使用同一数据目录重启即可，不要删除账本。
 
 ## 审计与验证

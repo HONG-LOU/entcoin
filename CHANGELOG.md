@@ -5,6 +5,27 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-07-28
+
+### Consensus
+
+- Moved mandatory rule-version-2 activation from block `160000` to block
+  `125555` so the audited ASERT liveness fix no longer waits through more than
+  35,000 additional legacy-rule blocks.
+- Kept the fixed anchor, integer ASERT formula, rule version, timestamp rules,
+  network identity, genesis, issuance, transaction validity, and fork-choice
+  rules unchanged from v1.2.0.
+
+### Upgrade
+
+- Superseded v1.2.0. Every desktop, CLI, validating, relay, and mining node must
+  install v1.2.1 before block `125555`; v1.2.0 still expects activation at
+  `160000` and will reject the earlier v1.2.1 chain.
+- Preserved the existing wallet, keys, addresses, balances, history, SQLite
+  ledger, peers, and in-place **Update and restart** workflow.
+- Updated the public consensus vectors, diagnostics, operator guidance, website,
+  update manifest, and bilingual release notes for the earlier boundary.
+
 ## [1.2.0] - 2026-07-28
 
 ### Consensus

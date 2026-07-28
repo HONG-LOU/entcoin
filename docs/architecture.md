@@ -1,8 +1,8 @@
-# Entcoin v1.2.0 architecture
+# Entcoin v1.2.1 architecture
 
 ## Scope
 
-Entcoin v1.2.0 implements the `entropy-mainnet-v1` network. It is designed so
+Entcoin v1.2.1 implements the `entropy-mainnet-v1` network. It is designed so
 one Windows or Ubuntu application can be a wallet, a full validator, a relaying
 peer, and an optional proof-of-work miner without an external database service.
 
@@ -78,10 +78,10 @@ difficulty, nonce, and resulting hash. Proof of work requires the SHA-256 header
 hash to have at least `difficulty` leading zero bits. A block contributes
 `2^difficulty` work. Fork choice compares cumulative work, never height alone.
 
-Below height `160000`, timestamps must exceed median-time-past over the previous
+Below height `125555`, timestamps must exceed median-time-past over the previous
 11 blocks and remain no more than 120 seconds ahead of local time. Difficulty
 begins at 22 leading zero bits, first adjusts at height 120, and then adjusts
-every 60 blocks. At height `160000`, centralized `RulesAtHeight` selection
+every 60 blocks. At height `125555`, centralized `RulesAtHeight` selection
 requires block version 2, timestamps greater than both MTP11 and the previous
 block, and the fixed-anchor 600-second integer ASERT rule. Historical blocks
 always replay with version-1 rules; unknown or wrong-side versions fail closed.

@@ -383,13 +383,13 @@ func TestASERTPublishedVectors(t *testing.T) {
 		timestamp  int64
 		difficulty uint8
 	}{
-		{height: 160_000, timestamp: 1_785_569_203, difficulty: 35},
-		{height: 160_000, timestamp: 1_785_569_083, difficulty: 35},
-		{height: 160_000, timestamp: 1_785_569_323, difficulty: 35},
-		{height: 160_000, timestamp: 1_785_568_903, difficulty: 36},
-		{height: 160_000, timestamp: 1_785_569_503, difficulty: 34},
-		{height: 160_000, timestamp: 1_785_574_003, difficulty: 27},
-		{height: 160_060, timestamp: 1_785_569_203, difficulty: 36},
+		{height: 125_555, timestamp: 1_785_224_753, difficulty: 35},
+		{height: 125_555, timestamp: 1_785_224_633, difficulty: 35},
+		{height: 125_555, timestamp: 1_785_224_873, difficulty: 35},
+		{height: 125_555, timestamp: 1_785_224_453, difficulty: 36},
+		{height: 125_555, timestamp: 1_785_225_053, difficulty: 34},
+		{height: 125_555, timestamp: 1_785_229_553, difficulty: 27},
+		{height: 125_615, timestamp: 1_785_224_753, difficulty: 36},
 	}
 	for _, test := range tests {
 		if got := expectedDifficultyAt(nil, test.height, test.timestamp); got != test.difficulty {

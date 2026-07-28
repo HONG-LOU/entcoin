@@ -1,4 +1,4 @@
-# Entcoin v1.2.0 consensus upgrade audit
+# Entcoin v1.2.1 consensus upgrade audit
 
 Date: 2026-07-28
 
@@ -17,11 +17,17 @@ independent hard-fork fix. This audit found no second live-mainnet defect in
 issuance, transaction validation, coinbase maturity, proof-of-work accounting,
 fork choice, or reorganization that must be repaired by a hard fork.
 
-The v1.2.0 fork includes a centralized, height-gated rule selection mechanism.
+The v1.2.1 fork includes a centralized, height-gated rule selection mechanism.
 That mechanism is not a second chain defect; it is required
 upgrade infrastructure. Without it, this fork and every later consensus change
 would remain scattered across constants, mining, header validation, sync, and
 status reporting.
+
+v1.2.0 scheduled this same rule set at height 160000. The implementation audit
+remains applicable, but the long transition left the network exposed to the
+legacy DAA until more than 35,000 additional blocks had been mined. v1.2.1
+supersedes v1.2.0 and moves only the activation boundary to 125555. Because
+v1.2.0 still requires version 1 at that height, v1.2.0 nodes must upgrade too.
 
 Timestamp behavior is changed and tested together with the new DAA.
 The current rule permits a block timestamp to be lower than its immediate
@@ -83,8 +89,8 @@ acceptance differences in the reviewed code.
 
 ## Activated rule specification
 
-- Activation height is `160000`. Heights below it use block version 1 and the
-  unchanged 60-block epoch DAA. Height `160000` and later use block version 2.
+- Activation height is `125555`. Heights below it use block version 1 and the
+  unchanged 60-block epoch DAA. Height `125555` and later use block version 2.
 - The fixed numerical anchor is height `123265`, timestamp `1785201853`,
   difficulty 35, and hash
   `000000000b6ffc20400cafe308ae13a73cead4c5a7cb232214d714ff2949dead`.
@@ -110,13 +116,13 @@ by at least eight bits, bounding a sudden high-hash-rate arrival.
 
 | Height | Candidate timestamp | Expected difficulty |
 | ---: | ---: | ---: |
-| 160000 | 1785568903 | 36 |
-| 160000 | 1785569083 | 35 |
-| 160000 | 1785569203 | 35 |
-| 160000 | 1785569323 | 35 |
-| 160000 | 1785569503 | 34 |
-| 160000 | 1785574003 | 27 |
-| 160060 | 1785569203 | 36 |
+| 125555 | 1785224453 | 36 |
+| 125555 | 1785224633 | 35 |
+| 125555 | 1785224753 | 35 |
+| 125555 | 1785224873 | 35 |
+| 125555 | 1785225053 | 34 |
+| 125555 | 1785229553 | 27 |
+| 125615 | 1785224753 | 36 |
 
 The table deliberately includes activation-time candidate drift of minus and
 plus 120 seconds. It cannot change difficulty on the on-schedule vector because
@@ -130,8 +136,8 @@ the nearest integer boundary is 300 seconds away.
 - Both public archive Seeds must be upgraded one at a time before activation and
   must agree on height, tip hash, and cumulative work after each restart.
 - Release artifacts, checksums, provenance, mirrors, and the in-app update path
-  must be complete before the public update manifest advertises v1.2.0.
-- Operators who miss activation must stop the obsolete node, install v1.2.0,
+  must be complete before the public update manifest advertises v1.2.1.
+- Operators who miss activation must stop the obsolete node, install v1.2.1,
   and restart against the same data directory. No wallet or ledger migration is
   required.
 
@@ -170,7 +176,7 @@ included in this activation.
   arrival, and stalled-network recovery.
 - Real SQLite connection, mining commit, equal-work rejection, rollback, and
   stronger-work reorganization across activation, plus HTTP header/body sync.
-- A production archive-ledger online backup opened without migration in v1.2
+- A production archive-ledger online backup opened without migration in v1.2.1
   Seed mode, synchronized to the same public tip/work, passed SQLite checks,
   remained walletless, and shut down cleanly.
 - `go test -count=1 ./...`
@@ -178,4 +184,4 @@ included in this activation.
 - `go vet ./...`
 
 Release publication, in-app upgrade, mirror validation, and rolling production
-Seed deployment remain operational gates until the v1.2.0 rollout is complete.
+Seed deployment remain operational gates until the v1.2.1 rollout is complete.

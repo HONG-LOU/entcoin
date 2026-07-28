@@ -1,6 +1,6 @@
 # Entcoin node operations
 
-This guide covers the v1.2.0 Windows/Ubuntu desktop node, headless CLI, and
+This guide covers the v1.2.1 Windows/Ubuntu desktop node, headless CLI, and
 optional public-seed deployment. The network identity is
 `entropy-mainnet-v1`; this compatibility label keeps existing Entcoin nodes,
 wallets, and chain data on the same network.
@@ -16,14 +16,14 @@ Release builds provide these Windows artifacts:
 
 Ubuntu 24.04+ amd64 releases additionally provide:
 
-- `entcoin_1.2.0_amd64.deb`: desktop application and CLI installer;
+- `entcoin_1.2.1_amd64.deb`: desktop application and CLI installer;
 - `entcoin-linux-amd64`: unpackaged desktop binary;
 - `entcoin-cli-linux-amd64`: unpackaged headless node;
 - `SHA256SUMS-linux.txt`: Linux artifact checksums.
 
 Verify Windows artifacts against `SHA256SUMS.txt` and Linux artifacts against
 `SHA256SUMS-linux.txt` from the same release before running them. Current
-v1.2.0 binaries may be unsigned, so a checksum proves only that the file matches
+v1.2.1 binaries may be unsigned, so a checksum proves only that the file matches
 the published release artifact, not that a trusted certificate authority
 verified its publisher.
 
@@ -48,7 +48,7 @@ strict `--listen` behavior so operator mistakes fail visibly.
 Microsoft WebView2 Runtime is required. It is normally present on current
 Windows 10/11 systems; the NSIS build can install the bootstrapper when needed.
 
-Install Ubuntu packages with `sudo apt install ./entcoin_1.2.0_amd64.deb`, then
+Install Ubuntu packages with `sudo apt install ./entcoin_1.2.1_amd64.deb`, then
 launch **Entcoin** from the desktop menu or run `entcoin`. Ubuntu stores mainnet
 state under `~/.config/Entcoin/mainnet-v1`. The logged-in desktop session must
 provide an unlocked Secret Service keyring; the standard Ubuntu Desktop session
@@ -96,9 +96,13 @@ recovery phrase or portable backup before deleting either one.
 Do not configure profile replication for the live mainnet directory. Copying
 SQLite WAL files between computers is not a supported backup method.
 
-## v1.2.0 consensus activation
+## v1.2.1 consensus activation
 
-Rule version 2 activates at block `160000`. Upgrade every validating or mining
+v1.2.0 is superseded and must not remain in service: it still expects rule 1 at
+block `125555` and will reject the v1.2.1 main chain. Upgrade v1.2.0, v1.1, and
+all earlier validating or mining nodes before activation.
+
+Rule version 2 activates at block `125555`. Upgrade every validating or mining
 node before that height. Desktop users use **Update and restart**; the process
 reopens the same `mainnet-v1` directory, wallet vault, SQLite ledger, peer set,
 balances, and history without a migration step. Headless operators replace only
@@ -106,12 +110,12 @@ the binary and restart with the existing flags and data directory.
 
 Before activation, rollback to v1.1 is technically possible but should be used
 only to diagnose a v1.2 startup failure. At or after activation, v1.1 cannot
-validate version-2 blocks and will stop at height `159999`; reinstall v1.2.0 and
+validate version-2 blocks and will stop at height `125554`; reinstall v1.2.1 and
 restart against the same ledger. Do not delete or rebuild the database merely
 because an obsolete node stopped syncing.
 
 Verify readiness on a node's private or public HTTP endpoint with
-`GET /v2/consensus`. The response must show activation `160000`, anchor
+`GET /v2/consensus`. The response must show activation `125555`, anchor
 `123265`, algorithm `integer-asert`, half-life `600`, and supported rules
 `[1,2]`. Public Seeds must remain archive nodes and be rolled one at a time so
 one remains reachable.
@@ -346,7 +350,7 @@ Remove-Item Env:\ENTCOIN_WALLET_PASSWORD
 ```
 
 The migration preserves the old P-256 key and address but does not migrate its
-testnet chain. There is intentionally no CLI restore command in v1.2.0; start
+testnet chain. There is intentionally no CLI restore command in v1.2.1; start
 the mainnet desktop app and restore the backup from the Wallet view.
 
 ## Data directory
@@ -380,7 +384,7 @@ while the node is live can omit committed data still present in its WAL.
 
 ## Wallet backup and recovery
 
-### New v1.2.0 wallet
+### New v1.2.1 wallet
 
 1. Open **Wallet** and reveal the 24-word recovery phrase.
 2. Record the words in order on offline media. Do not store a screenshot or
@@ -458,7 +462,7 @@ For a v0.2 mnemonic wallet, record the known 24 words or export and verify an
 copy of the old directory; the command validates the key and creates verified
 local OS protection and portable encrypted copies before removing plaintext.
 
-Then start v1.2.0 normally and restore the phrase or `.entwallet` from the
+Then start v1.2.1 normally and restore the phrase or `.entwallet` from the
 desktop Wallet view. This recovers only the P-256 key and address. Mainnet
 balances, spendable outputs, confirmations, and history are derived solely from
 the mainnet chain and begin independently of every testnet balance.
