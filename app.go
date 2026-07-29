@@ -198,7 +198,7 @@ func (a *App) InstallUpdate() (ActionResult, error) {
 		return ActionResult{}, err
 	}
 	wailsruntime.EventsEmit(ctx, "entcoin:update-progress", updater.Progress{Phase: "installing", Percent: 100})
-	if err := updater.LaunchInstaller(prepared.Path); err != nil {
+	if err := updater.LaunchInstaller(prepared.Path, prepared.Status.LatestVersion); err != nil {
 		return ActionResult{}, err
 	}
 	go func() {

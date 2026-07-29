@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const testReleaseVersion = "1.2.2"
+const testReleaseVersion = "1.2.3"
 
 func TestCompareVersions(t *testing.T) {
 	tests := []struct {
@@ -42,12 +42,12 @@ func TestCompareVersions(t *testing.T) {
 func TestLatestStableEntryIgnoresPrereleasesAndSelectsHighestVersion(t *testing.T) {
 	entries := []atomEntry{
 		{Title: "v1.0.7"},
-		{Title: "v1.2.2-rc1"},
+		{Title: "v1.2.3-rc1"},
 		{Title: "v1.0.9"},
 		{Title: "v1.0.10"},
 		{Title: "v1.0.15"},
 		{Title: "v1.0.16"},
-		{Title: "v1.2.2"},
+		{Title: "v1.2.3"},
 	}
 
 	entry, version, err := latestStableEntry(entries)
@@ -73,6 +73,16 @@ func TestCheckSelectsLinuxUpdate(t *testing.T) {
 	}
 	if status.AssetName != "entcoin_"+testReleaseVersion+"_amd64.deb" {
 		t.Fatalf("asset = %q", status.AssetName)
+	}
+}
+
+func TestWindowsUpdateSelectsPortableExecutable(t *testing.T) {
+	artifact, checksum, err := assetNames("windows", "amd64", testReleaseVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if artifact != "Entcoin.exe" || checksum != "SHA256SUMS.txt" {
+		t.Fatalf("Windows update assets = %q, %q", artifact, checksum)
 	}
 }
 

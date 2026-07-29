@@ -1,6 +1,6 @@
 # Entcoin mainnet protocol
 
-This document describes the v1.2.1 implementation. The consensus/network
+This document describes the v1.2.2 implementation. The consensus/network
 identity is `entropy-mainnet-v1`. The HTTP path prefix remains `/v2` because it
 denotes the second transport design; endpoint numbering and network identity
 are not the same version counter.
@@ -33,7 +33,7 @@ Blocks below height `125555` retain version 1, MTP11 plus 120-second future
 timestamp validation, and the legacy 60-block epoch DAA. Blocks at height
 `125555` and later require version 2, additionally require a timestamp greater
 than the immediately preceding block, and use the integer ASERT rule specified
-in [the v1.2.1 consensus audit](consensus-upgrade-audit-v1.2.md). Unknown or
+in [the v1.2.2 consensus audit](consensus-upgrade-audit-v1.2.md). Unknown or
 wrong-side block versions are rejected.
 
 The v2 rule uses anchor height `123265`, anchor timestamp `1785201853`, anchor

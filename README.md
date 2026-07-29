@@ -17,7 +17,7 @@
 
 ---
 
-Entcoin v1.2.1 is a compact proof-of-work mainnet packaged as a Windows and
+Entcoin v1.2.2 is a compact proof-of-work mainnet packaged as a Windows and
 Ubuntu desktop full node. Starting one application starts the wallet, SQLite
 ledger, full block and transaction validation, peer synchronization, relay
 server, and optional miner in the same process. It does not require a separate
@@ -30,10 +30,10 @@ The source repository is public and MIT-licensed:
 <https://github.com/HONG-LOU/entcoin>.
 
 > **Mandatory update:** v1.2.0 is superseded. It still expects consensus v2 at
-> block 160000 and will reject the v1.2.1 main chain when the same audited rules
-> activate at block 125555. Every v1.2.0 node and miner must install v1.2.1.
+> block 160000 and will reject the v1.2.2 main chain when the same audited rules
+> activate at block 125555. Every v1.2.0 node and miner must install v1.2.2.
 
-## What v1.2.1 includes
+## What v1.2.2 includes
 
 - A Wails desktop node with send, receive, automatic minimum fees, mining,
   network health, history, wallet recovery, database, and pruning controls.
@@ -68,10 +68,11 @@ The source repository is public and MIT-licensed:
   and disables sending, mining, recovery, backup, and restore operations.
 - Windows portable/NSIS artifacts, an Ubuntu 24.04+ `.deb`, native headless
   CLIs, and an optional Windows archive-seed deployment package.
-- A desktop updater that checks `entcoin.xyz` with a GitHub metadata fallback,
-  downloads the matching installer from the Alibaba Cloud Asia mirror, US
-  website mirror, or GitHub, verifies it against the checksum obtained only
-  from the official GitHub Release, installs it, and relaunches Entcoin.
+- A desktop updater that checks `entcoin.xyz` with a GitHub metadata fallback.
+  Windows downloads the portable executable, verifies it against the checksum
+  obtained only from the official GitHub Release, replaces the exact running
+  EXE after shutdown, and relaunches that same path. Linux installs the verified
+  package through the operating-system package manager.
 
 ## How many nodes are required?
 
@@ -101,7 +102,7 @@ The NSIS build is the `*installer*.exe` artifact in the same directory. The
 installer is the simplest distribution for other Windows users; the portable
 EXE can be launched directly. Windows 10/11 x64 and Microsoft WebView2 Runtime
 are required. The installer build downloads the WebView2 bootstrapper when
-needed. The current v1.2.1 release may be unsigned, so Windows SmartScreen may show
+needed. The current v1.2.2 release may be unsigned, so Windows SmartScreen may show
 an unknown-publisher warning. The build signs and timestamps the portable
 application, installer, and CLI before checksums are generated when a trusted
 Authenticode certificate is configured.
@@ -156,7 +157,7 @@ setup, backups, migration, pruning, and troubleshooting.
 Ubuntu 24.04+ amd64 users install the `.deb` from the current release:
 
 ```bash
-sudo apt install ./entcoin_1.2.1_amd64.deb
+sudo apt install ./entcoin_1.2.2_amd64.deb
 entcoin
 ```
 
@@ -172,15 +173,16 @@ portable. Move the same address between systems by restoring its 24-word
 Entcoin phrase or verified `.entwallet` backup. Consensus, addresses, balances,
 mining, and peer synchronization are identical on both platforms.
 
-The **Diagnostics** view can check for a newer stable release and install the
-correct package for the current platform. Entcoin fetches the versioned
+The **Diagnostics** view can check for a newer stable release and apply the
+correct artifact for the current platform. Entcoin fetches the versioned
 checksum manifest only from the official GitHub Release, then tries the bounded
 artifact mirrors and GitHub until bytes match that SHA-256. An interrupted
-partial file resumes on the next attempt. After verification, Entcoin installs
-it, closes the old process, and relaunches the new version.
-Ubuntu shows the normal Polkit authorization prompt. Unsigned Windows
-installers may still show the normal SmartScreen warning; the updater does not
-bypass either trust boundary.
+partial file resumes on the next attempt. After verification, Ubuntu installs
+the `.deb` through the package manager and shows the normal Polkit prompt.
+Windows v1.2.2 and later wait for the old process, back up and replace the exact
+running EXE, verify the replacement, and relaunch the same path; a failure
+restores the old EXE and records an adjacent update error log. Unsigned Windows
+artifacts may still show SmartScreen; the updater does not bypass OS trust.
 
 ## Transfer and confirmation speed
 
@@ -329,7 +331,7 @@ outside `%LOCALAPPDATA%\Entropy\mainnet-v1`.
 
 Wallet keys are separate from chain history. Before leaving the testnet app,
 record its 24-word recovery phrase or export and verify an encrypted
-`.entwallet` backup. Start v1.2.1 to create the mainnet directory, then use the
+`.entwallet` backup. Start v1.2.2 to create the mainnet directory, then use the
 desktop Wallet view to restore that phrase or backup. The address is recovered,
 while balances and history are rebuilt only from the mainnet chain.
 
@@ -371,7 +373,7 @@ reproducible.
 On Ubuntu 24.04:
 
 ```bash
-./scripts/build-linux.sh 1.2.1
+./scripts/build-linux.sh 1.2.2
 ```
 
 ## Documentation

@@ -10,7 +10,7 @@ import (
 	"syscall"
 )
 
-func LaunchInstaller(path string) error {
+func LaunchInstaller(path, _ string) error {
 	if err := exec.Command("pkexec", "/usr/bin/apt-get", "install", "-y", path).Run(); err != nil {
 		return fmt.Errorf("install Entcoin update: %w", err)
 	}

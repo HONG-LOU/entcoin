@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	CurrentVersion          = "1.2.1"
+	CurrentVersion          = "1.2.2"
 	ReleasesURL             = "https://github.com/HONG-LOU/entcoin/releases/latest"
 	releaseFeedURL          = "https://github.com/HONG-LOU/entcoin/releases.atom"
 	updateManifestURL       = "https://entcoin.xyz/update.json"
@@ -676,7 +676,7 @@ func assetNames(platform, architecture, version string) (string, string, error) 
 	case "linux":
 		return "entcoin_" + version + "_amd64.deb", "SHA256SUMS-linux.txt", nil
 	case "windows":
-		return "entcoin-amd64-installer.exe", "SHA256SUMS.txt", nil
+		return "Entcoin.exe", "SHA256SUMS.txt", nil
 	default:
 		return "", "", fmt.Errorf("automatic updates do not support %s/%s", platform, architecture)
 	}

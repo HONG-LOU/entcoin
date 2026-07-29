@@ -3,7 +3,9 @@ package main
 import (
 	"embed"
 	"log"
+	"os"
 
+	"github.com/HONG-LOU/entcoin/internal/updater"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -13,6 +15,12 @@ import (
 var assets embed.FS
 
 func main() {
+	if handled, err := updater.HandleUpdateHelper(os.Args[1:]); handled {
+		if err != nil {
+			log.Printf("apply Entcoin update: %v", err)
+		}
+		return
+	}
 	app := NewApp()
 	err := wails.Run(&options.App{
 		Title:             "Entcoin",

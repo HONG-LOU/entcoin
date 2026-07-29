@@ -5,6 +5,28 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-07-29
+
+### Fixed
+
+- Replaced the Windows updater's hard-coded `%LOCALAPPDATA%\Programs\Entcoin`
+  relaunch target with an exact in-place update of the executable that initiated
+  the update, covering installed, portable, renamed, and custom-path copies.
+- Added a pre-Wails update helper that waits for the old PID, stages and hashes
+  the verified executable on the target volume, preserves a rollback copy,
+  atomically replaces the target, and relaunches the same path.
+- Restored the previous executable when replacement verification or relaunch
+  fails, and recorded a local `.update-error.log` instead of silently opening a
+  different or stale Entcoin copy.
+
+### Verification
+
+- Added Windows regressions for exact-target replacement, successful cleanup,
+  rollback after relaunch failure, helper-version validation, and Windows asset
+  selection.
+- Preserved `entropy-mainnet-v1`, consensus rules, wallet formats, chain data,
+  SQLite schema, addresses, balances, and peer compatibility.
+
 ## [1.2.1] - 2026-07-28
 
 ### Consensus
