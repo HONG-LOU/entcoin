@@ -1,7 +1,7 @@
 package entpay
 
 const indexHTML = `<!doctype html>
-<html lang="en">
+<html lang="zh-CN" data-language="zh">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -13,188 +13,86 @@ const indexHTML = `<!doctype html>
 <body>
   <div class="shell">
     <header class="topbar">
-      <a class="brand" href="./" aria-label="EntPay home"><span class="brand-mark">E</span><span>EntPay</span></a>
-      <div class="network"><span class="pulse"></span><span id="network">CONNECTING</span></div>
-      <div class="merchant"><span>MERCHANT</span><strong id="merchant">--</strong></div>
+      <a class="brand" href="./"><span class="brand-mark">E</span><span><strong>EntPay</strong><small>MERCHANT SERVICE</small></span></a>
+      <div class="network"><i></i><span id="network">CONNECTING</span></div>
+      <div class="top-actions"><span id="merchant">--</span><button id="language" type="button" aria-label="Switch language">EN</button></div>
     </header>
 
     <main class="workspace">
       <aside class="catalog">
-        <div class="catalog-head"><p>MARKETPLACE</p><strong id="product-count">0 services</strong></div>
+        <div class="catalog-head"><span data-t="services">可购买服务</span><strong id="capabilities">0</strong></div>
         <nav id="products" aria-label="Available services"></nav>
-        <div class="trust-note"><span>VERIFIED FLOW</span><p>Signed invoice · Confirmed payment · Signed receipt</p></div>
+        <div class="trust-note"><b data-t="local.title">钱包只在本机</b><p data-t="local.body">商家只能创建签名账单，不能访问钱包或代替你确认付款。</p></div>
       </aside>
 
       <section class="composer">
-        <div class="composer-head">
-          <div><p id="product-id">SELECT A SERVICE</p><h1 id="product-name">Agent commerce, settled in ENT.</h1></div>
-          <span id="price" class="price">-- ENT</span>
-        </div>
-        <p id="description" class="description">Choose a merchant service to prepare a cryptographically bound invoice.</p>
+        <div class="eyebrow"><span id="product-id">SERVICE</span><span id="price">-- ENT</span></div>
+        <h1 id="product-name" data-t="select">选择一项服务</h1>
+        <p id="description" class="description" data-t="select.body">填写商家要求的内容，先生成可验证账单，再去本机确认。</p>
         <form id="invoice-form">
           <div id="fields" class="fields"></div>
           <div class="terms">
-            <div><span>PRICE</span><strong id="term-price">--</strong></div>
-            <div><span>FINALITY</span><strong id="term-confirmations">--</strong></div>
-            <div><span>PROTOCOL</span><strong id="protocol">--</strong></div>
+            <div><span data-t="price">价格</span><strong id="term-price">--</strong></div>
+            <div><span data-t="finality">链上确认</span><strong id="term-confirmations">--</strong></div>
+            <div><span data-t="protocol">协议</span><strong id="protocol">--</strong></div>
           </div>
-          <button id="create" class="primary" type="submit" disabled><span>Create signed invoice</span><span aria-hidden="true">-&gt;</span></button>
+          <button id="create" class="primary" type="submit" disabled><span data-t="create">创建签名账单</span><span aria-hidden="true">→</span></button>
         </form>
       </section>
 
-      <aside class="proof">
-        <div class="proof-head"><span>PAYMENT OBJECT</span><span id="stage" class="stage">READY</span></div>
-        <div id="empty" class="empty-state"><span class="seal">E</span><h2>No invoice yet</h2><p>Terms and input will be hashed, signed and returned here.</p></div>
-        <div id="invoice" class="invoice" hidden>
-          <div class="invoice-total"><span>AMOUNT DUE</span><strong id="invoice-amount">--</strong></div>
-          <dl>
-            <div><dt>Invoice</dt><dd id="invoice-id">--</dd></div>
-            <div><dt>Resource</dt><dd id="invoice-resource">--</dd></div>
-            <div><dt>Expires</dt><dd id="invoice-expires">--</dd></div>
-            <div><dt>Input hash</dt><dd id="invoice-hash">--</dd></div>
-            <div><dt>Signature</dt><dd id="invoice-signature">--</dd></div>
-          </dl>
-          <button id="copy" class="secondary" type="button">Copy Agent payload</button>
-          <p class="handoff">Hand this payload to an EntPay Agent. Wallet keys never enter the merchant service.</p>
+      <aside class="checkout">
+        <div class="checkout-head"><span data-t="checkout">结算</span><span id="stage" data-stage="ready" data-t="stage.ready">等待输入</span></div>
+        <div class="track" aria-label="Payment stages">
+          <span class="active" data-flow="discover"><i></i><b data-t="flow.discover">填写</b></span>
+          <span data-flow="invoice"><i></i><b data-t="flow.invoice">账单</b></span>
+          <span data-flow="approve"><i></i><b data-t="flow.approve">确认</b></span>
+          <span data-flow="deliver"><i></i><b data-t="flow.deliver">交付</b></span>
         </div>
-        <div id="notice" class="notice" role="status" aria-live="polite"></div>
+        <div id="empty" class="empty-state"><span class="orbit"><i></i></span><h2 data-t="empty">还没有账单</h2><p data-t="empty.body">左侧填写请求。创建后，你会先核对金额与商家签名，不会立即付款。</p></div>
+        <div id="invoice" class="invoice" hidden>
+          <div class="amount"><span data-t="due">本次应付</span><strong id="invoice-amount">--</strong><small data-t="notpaid">尚未付款</small></div>
+          <dl>
+            <div><dt data-t="invoice">账单编号</dt><dd id="invoice-id">--</dd></div>
+            <div><dt data-t="resource">购买服务</dt><dd id="invoice-resource">--</dd></div>
+            <div><dt data-t="expires">有效期至</dt><dd id="invoice-expires">--</dd></div>
+            <div><dt data-t="hash">请求指纹</dt><dd id="invoice-hash">--</dd></div>
+            <div><dt data-t="signature">商家签名</dt><dd id="invoice-signature">--</dd></div>
+          </dl>
+          <button id="handoff" class="handoff-button" type="button"><span data-t="confirm">在本地 Agent 中确认</span><span aria-hidden="true">↗</span></button>
+          <p class="handoff-copy" data-t="handoff">下一页会再次显示商家、金额和请求。只有你点击确认，本机钱包才会签名付款。</p>
+          <details><summary data-t="setup">本地 Agent 没有启动？</summary><code>entpay agent-ui --data /path/to/Entropy/mainnet-v1 --max-amount 0.01000000</code></details>
+        </div>
+        <p id="notice" class="notice" role="status" aria-live="polite"></p>
       </aside>
     </main>
-
-    <footer><span>ENTROPY MAINNET</span><span>Invoice - confirmation - fulfillment - receipt</span><span id="capabilities">0 capabilities</span></footer>
+    <footer><span>ENTROPY MAINNET</span><span data-t="footer">SIGNED INVOICE · LOCAL APPROVAL · VERIFIED DELIVERY</span></footer>
   </div>
   <script src="app.js"></script>
 </body>
 </html>`
 
-const appJavaScript = `const $ = (id) => document.getElementById(id);
-const state = {info: null, product: null, payload: null};
-const colors = {green: "#16865f", coral: "#e0644b", blue: "#3179ba", gold: "#b98219"};
-const amount = (atoms) => (Number(atoms) / 100000000).toFixed(8) + " ENT";
-const compact = (value, size = 15) => value && value.length > size * 2 ? value.slice(0, size) + "..." + value.slice(-size) : value;
+const appJavaScript = `const $=id=>document.getElementById(id);
+const saved=localStorage.getItem("entpay-language");
+const state={info:null,product:null,payload:null,input:null,language:saved||((navigator.language||"").toLowerCase().startsWith("zh")?"zh":"en")};
+const copy={
+zh:{services:"可购买服务","local.title":"钱包只在本机","local.body":"商家只能创建签名账单，不能访问钱包或代替你确认付款。",select:"选择一项服务","select.body":"填写商家要求的内容，先生成可验证账单，再去本机确认。",price:"价格",finality:"链上确认",protocol:"协议",create:"创建签名账单",checkout:"结算","stage.ready":"等待输入","flow.discover":"填写","flow.invoice":"账单","flow.approve":"确认","flow.deliver":"交付",empty:"还没有账单","empty.body":"左侧填写请求。创建后，你会先核对金额与商家签名，不会立即付款。",due:"本次应付",notpaid:"尚未付款",invoice:"账单编号",resource:"购买服务",expires:"有效期至",hash:"请求指纹",signature:"商家签名",confirm:"在本地 Agent 中确认",handoff:"下一页会再次显示商家、金额和请求。只有你点击确认，本机钱包才会签名付款。",setup:"本地 Agent 没有启动？",footer:"签名账单 · 本机确认 · 验证交付",blocks:n=>n+" 个区块",creating:"正在请求商家签名…",ready:"账单已验证，下一步去本机确认。",opening:"正在打开本地 Agent…",offline:"商家服务暂时不可用"},
+en:{services:"SERVICES","local.title":"Wallet stays local","local.body":"The merchant can issue an invoice, but cannot access your wallet or approve payment.",select:"Choose a service","select.body":"Describe what you need, create a verifiable invoice, then approve it locally.",price:"PRICE",finality:"FINALITY",protocol:"PROTOCOL",create:"Create signed invoice",checkout:"CHECKOUT","stage.ready":"WAITING","flow.discover":"Request","flow.invoice":"Invoice","flow.approve":"Approve","flow.deliver":"Deliver",empty:"No invoice yet","empty.body":"Complete the request. You will review the amount and signature before any payment.",due:"AMOUNT DUE",notpaid:"NOT PAID",invoice:"Invoice",resource:"Service",expires:"Expires",hash:"Request hash",signature:"Merchant signature",confirm:"Confirm in local Agent",handoff:"The next page shows the merchant, amount and request again. Your local wallet signs only after approval.",setup:"Local Agent is not running?",footer:"SIGNED INVOICE · LOCAL APPROVAL · VERIFIED DELIVERY",blocks:n=>n+(n===1?" block":" blocks"),creating:"Requesting merchant signature…",ready:"Invoice verified. Continue in your local Agent.",opening:"Opening local Agent…",offline:"Merchant service unavailable"}};
+const localized={"generated-photo":{zh:{name:"生成照片",description:"根据你的画面描述生成并交付一张原创 JPEG 图片。",fields:{prompt:{label:"画面描述",placeholder:"例如：清晨的上海街道，电影摄影，雨后倒影，35mm…"}}}},"network-report":{zh:{name:"网络状态报告",description:"读取并比较 Entcoin 公共节点，交付可验证的网络报告。",fields:{query:{label:"报告要求",placeholder:"例如：比较节点高度、链尖和同步状态…"}}}}};
+const t=k=>copy[state.language][k];
+const amount=v=>(Number(v)/100000000).toFixed(8)+" ENT";
+const compact=(v,n=11)=>v&&v.length>n*2?v.slice(0,n)+"…"+v.slice(-n):v;
+const productCopy=p=>localized[p.id]?.[state.language]||p;
+function notice(message,error=false){$("notice").textContent=message;$("notice").classList.toggle("error",error)}
+function setFlow(stage){const order=["discover","invoice","approve","deliver"],active=Math.max(0,order.indexOf(stage));document.querySelectorAll("[data-flow]").forEach((el,i)=>{el.classList.toggle("active",i<=active);el.classList.toggle("current",i===active)})}
+function translate(){document.documentElement.lang=state.language==="zh"?"zh-CN":"en";document.documentElement.dataset.language=state.language;document.querySelectorAll("[data-t]").forEach(el=>{const value=t(el.dataset.t);if(typeof value==="string")el.textContent=value});$("language").textContent=state.language==="zh"?"EN":"中文";localStorage.setItem("entpay-language",state.language);if(state.info){$("capabilities").textContent=String(state.info.products.length);$("products").replaceChildren(...state.info.products.map(productButton));selectProduct(state.info.products.find(p=>p.id===state.product?.id)||state.info.products[0],true)}}
+function fieldControl(field){const translated=productCopy(state.product).fields?.[field.id]||{},label=document.createElement("label"),title=document.createElement("span"),control=document.createElement(field.type==="textarea"?"textarea":"input");label.className="field";title.textContent=translated.label||field.label;control.name=field.id;control.placeholder=translated.placeholder||field.placeholder||"";control.value=field.default||"";control.required=Boolean(field.required);if(field.min_length)control.minLength=field.min_length;if(field.max_length)control.maxLength=field.max_length;label.append(title,control);return label}
+function productButton(product,index){const translated=productCopy(product),button=document.createElement("button");button.type="button";button.className="product";button.dataset.id=product.id;button.innerHTML="<span class='product-number'></span><span class='product-copy'><strong></strong><small></small></span><span class='product-arrow'>→</span>";button.querySelector(".product-number").textContent=String(index+1).padStart(2,"0");button.querySelector("strong").textContent=translated.name||product.name;button.querySelector("small").textContent=amount(product.price);button.onclick=()=>selectProduct(product);return button}
+function selectProduct(product,preserve=false){if(!product)return;const values=preserve&&state.product?.id===product.id?Object.fromEntries(new FormData($("invoice-form")).entries()):null;state.product=product;const translated=productCopy(product),accents={green:"#087f5b",coral:"#df624c",blue:"#315cf6",gold:"#a8791c"};document.documentElement.style.setProperty("--green",accents[product.accent]||accents.green);document.querySelectorAll(".product").forEach(el=>{const active=el.dataset.id===product.id;el.classList.toggle("active",active);el.setAttribute("aria-current",active?"true":"false")});$("product-id").textContent=product.id.toUpperCase();$("product-name").textContent=translated.name||product.name;$("description").textContent=translated.description||product.description;$("price").textContent=amount(product.price);$("term-price").textContent=amount(product.price);$("term-confirmations").textContent=t("blocks")(product.confirmations);$("fields").replaceChildren(...product.fields.map(fieldControl));if(values)Object.entries(values).forEach(([name,value])=>{const control=$("invoice-form").elements.namedItem(name);if(control)control.value=value});$("create").disabled=false;if(!preserve){state.payload=null;state.input=null;$("empty").hidden=false;$("invoice").hidden=true;setFlow("discover");notice("")}}
+async function loadInfo(){const response=await fetch("v1/info",{headers:{Accept:"application/json"}});if(!response.ok)throw new Error(t("offline"));state.info=await response.json();$("network").textContent=state.info.network.toUpperCase();$("merchant").textContent=compact(state.info.merchant,8);$("merchant").title=state.info.merchant;$("protocol").textContent=state.info.protocol;translate()}
+function encodeHandoff(value){const bytes=new TextEncoder().encode(JSON.stringify(value));let binary="";bytes.forEach(byte=>binary+=String.fromCharCode(byte));return btoa(binary).replaceAll("+","-").replaceAll("/","_").replace(/=+$/g,"")}
+$("language").onclick=()=>{state.language=state.language==="zh"?"en":"zh";translate()};
+$("invoice-form").onsubmit=async event=>{event.preventDefault();if(!state.product)return;const button=$("create");state.input=Object.fromEntries(new FormData(event.currentTarget).entries());button.disabled=true;$("stage").textContent=state.language==="zh"?"签名中":"SIGNING";setFlow("invoice");notice(t("creating"));try{const response=await fetch("v1/invoices",{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({resource:state.product.id,input:state.input})}),result=await response.json();if(!response.ok)throw new Error(result.error||t("offline"));state.payload=result;$("empty").hidden=true;$("invoice").hidden=false;$("invoice-amount").textContent=amount(result.invoice.amount);[["invoice-id",result.invoice.id],["invoice-resource",result.invoice.resource],["invoice-hash",result.invoice.input_sha256],["invoice-signature",result.invoice.signature]].forEach(([id,value])=>{$(id).textContent=id==="invoice-resource"?value:compact(value);$(id).title=value});$("invoice-expires").textContent=new Date(result.invoice.expires_at).toLocaleString(state.language==="zh"?"zh-CN":"en-US");$("stage").textContent=state.language==="zh"?"待确认":"REVIEW";setFlow("approve");notice(t("ready"))}catch(error){$("stage").textContent="ERROR";notice(error.message,true)}finally{button.disabled=false}};
+$("handoff").onclick=()=>{if(!state.payload||!state.input)return;notice(t("opening"));const envelope={endpoint:new URL(".",location.href).href,input:state.input,created:state.payload};window.open("http://127.0.0.1:47831/#handoff="+encodeHandoff(envelope),"_blank","noopener")};
+translate();loadInfo().catch(error=>{$("network").textContent="OFFLINE";notice(error.message,true)});`
 
-function notice(message, error = false) {
-  $("notice").textContent = message;
-  $("notice").classList.toggle("error", error);
-}
-
-function selectProduct(product) {
-  state.product = product;
-  document.documentElement.style.setProperty("--accent", colors[product.accent] || colors.green);
-  document.querySelectorAll(".product").forEach((item) => item.classList.toggle("active", item.dataset.id === product.id));
-  $("product-id").textContent = product.id.toUpperCase();
-  $("product-name").textContent = product.name;
-  $("description").textContent = product.description;
-  $("price").textContent = amount(product.price);
-  $("term-price").textContent = amount(product.price);
-  $("term-confirmations").textContent = product.confirmations + (product.confirmations === 1 ? " block" : " blocks");
-  $("fields").replaceChildren(...product.fields.map(fieldControl));
-  $("create").disabled = false;
-  notice("");
-}
-
-function fieldControl(field) {
-  const wrapper = document.createElement("label");
-  wrapper.className = "field";
-  const title = document.createElement("span");
-  title.textContent = field.label;
-  const control = document.createElement(field.type === "textarea" ? "textarea" : "input");
-  control.name = field.id;
-  control.placeholder = field.placeholder || "";
-  control.value = field.default || "";
-  control.required = Boolean(field.required);
-  if (field.min_length) control.minLength = field.min_length;
-  if (field.max_length) control.maxLength = field.max_length;
-  if (control.tagName === "INPUT") control.type = "text";
-  wrapper.append(title, control);
-  return wrapper;
-}
-
-function productButton(product, index) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "product";
-  button.dataset.id = product.id;
-  const number = document.createElement("span");
-  number.className = "product-number";
-  number.textContent = String(index + 1).padStart(2, "0");
-  const copy = document.createElement("span");
-  copy.className = "product-copy";
-  const name = document.createElement("strong");
-  name.textContent = product.name;
-  const price = document.createElement("small");
-  price.textContent = amount(product.price);
-  copy.append(name, price);
-  const arrow = document.createElement("span");
-  arrow.className = "product-arrow";
-  arrow.textContent = ">";
-  button.append(number, copy, arrow);
-  button.addEventListener("click", () => selectProduct(product));
-  return button;
-}
-
-async function loadInfo() {
-  const response = await fetch("v1/info", {headers: {Accept: "application/json"}});
-  if (!response.ok) throw new Error("Merchant service unavailable");
-  state.info = await response.json();
-  $("network").textContent = state.info.network.toUpperCase();
-  $("merchant").textContent = compact(state.info.merchant, 10);
-  $("merchant").title = state.info.merchant;
-  $("protocol").textContent = state.info.protocol;
-  $("product-count").textContent = state.info.products.length + (state.info.products.length === 1 ? " service" : " services");
-  $("capabilities").textContent = state.info.capabilities.length + " capabilities";
-  $("products").replaceChildren(...state.info.products.map(productButton));
-  if (state.info.products.length) selectProduct(state.info.products[0]);
-}
-
-$("invoice-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!state.product) return;
-  const button = $("create");
-  const input = Object.fromEntries(new FormData(event.currentTarget).entries());
-  button.disabled = true;
-  $("stage").textContent = "SIGNING";
-  notice("Creating a signed, input-bound invoice...");
-  try {
-    const response = await fetch("v1/invoices", {method: "POST", headers: {"Content-Type": "application/json", Accept: "application/json"}, body: JSON.stringify({resource: state.product.id, input})});
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "Invoice could not be created");
-    state.payload = result;
-    $("empty").hidden = true;
-    $("invoice").hidden = false;
-    $("invoice-amount").textContent = amount(result.invoice.amount);
-    $("invoice-id").textContent = compact(result.invoice.id);
-    $("invoice-id").title = result.invoice.id;
-    $("invoice-resource").textContent = result.invoice.resource;
-    $("invoice-expires").textContent = new Date(result.invoice.expires_at).toLocaleString();
-    $("invoice-hash").textContent = compact(result.invoice.input_sha256);
-    $("invoice-hash").title = result.invoice.input_sha256;
-    $("invoice-signature").textContent = compact(result.invoice.signature);
-    $("invoice-signature").title = result.invoice.signature;
-    $("stage").textContent = "OPEN";
-    notice("Invoice ready for a local EntPay Agent.");
-  } catch (error) {
-    $("stage").textContent = "ERROR";
-    notice(error.message, true);
-  } finally {
-    button.disabled = false;
-  }
-});
-
-$("copy").addEventListener("click", async () => {
-  if (!state.payload) return;
-  try {
-    await navigator.clipboard.writeText(JSON.stringify(state.payload, null, 2));
-    notice("Agent payload copied.");
-  } catch (_) {
-    notice("Clipboard permission was denied.", true);
-  }
-});
-
-loadInfo().catch((error) => { $("network").textContent = "OFFLINE"; notice(error.message, true); });`
-
-const styleCSS = `:root{color-scheme:light;--paper:#f4f3ee;--ink:#18201d;--muted:#66706a;--line:#d8d9d2;--panel:#fbfbf8;--accent:#16865f;--green:#16865f;--coral:#e0644b;--blue:#3179ba;--gold:#b98219;letter-spacing:0}*{box-sizing:border-box}html,body{margin:0;min-width:320px;min-height:100%;background:var(--paper);color:var(--ink);font:14px/1.5 Arial,"Noto Sans SC",sans-serif;letter-spacing:0}button,input,textarea{font:inherit;letter-spacing:0}[hidden]{display:none!important}.shell{min-height:100dvh;display:grid;grid-template-rows:72px minmax(0,1fr) 40px}.topbar{display:grid;grid-template-columns:260px 1fr minmax(240px,360px);align-items:center;border-bottom:1px solid var(--line);background:var(--panel)}.brand{height:100%;display:flex;align-items:center;gap:12px;padding:0 24px;color:var(--ink);text-decoration:none;font-size:18px;font-weight:800;border-right:1px solid var(--line)}.brand-mark,.seal{display:grid;place-items:center;background:var(--ink);color:#fff;font:800 16px/1 Georgia,serif;width:30px;height:30px}.network{justify-self:center;display:flex;align-items:center;gap:9px;color:var(--muted);font-size:11px;font-weight:800}.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px #dcece5}.merchant{height:100%;padding:0 24px;border-left:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:18px;min-width:0}.merchant span,.catalog-head p,.composer-head p,.proof-head,.terms span,.invoice-total span,footer{font-size:10px;font-weight:800;color:var(--muted)}.merchant strong{font:600 12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;overflow:hidden;text-overflow:ellipsis}.workspace{display:grid;grid-template-columns:260px minmax(420px,1fr) minmax(320px,400px);min-height:0}.catalog{display:flex;flex-direction:column;border-right:1px solid var(--line);background:#eceee8}.catalog-head{padding:27px 24px 22px}.catalog-head p{margin:0 0 4px}.catalog-head strong{font-size:19px}#products{border-top:1px solid var(--line)}.product{width:100%;min-height:92px;padding:16px 20px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);display:grid;grid-template-columns:26px 1fr 20px;gap:10px;align-items:center;text-align:left;cursor:pointer}.product:hover{background:#f5f6f1}.product.active{background:var(--panel);box-shadow:inset 4px 0 var(--accent)}.product-number,.product-arrow{color:var(--muted);font-size:11px}.product-arrow{font-size:16px}.product-copy{min-width:0}.product-copy strong,.product-copy small{display:block}.product-copy strong{font-size:14px;white-space:normal}.product-copy small{margin-top:5px;color:var(--muted);font-size:11px}.trust-note{margin:auto 20px 20px;padding:17px;border-top:2px solid var(--ink);background:#dfe4dc}.trust-note span{font-size:10px;font-weight:800}.trust-note p{margin:7px 0 0;color:var(--muted);font-size:11px}.composer{padding:clamp(28px,5vw,72px);overflow:auto;background:var(--panel)}.composer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:32px}.composer-head p{margin:0 0 12px;color:var(--accent)}.composer-head h1{margin:0;max-width:650px;font:500 48px/1.05 Georgia,"Noto Serif SC",serif;letter-spacing:0}.price{flex:none;border:1px solid var(--line);padding:8px 11px;color:var(--accent);font:700 12px ui-monospace,monospace}.description{max-width:690px;margin:24px 0 42px;color:var(--muted);font-size:15px}.fields{display:grid;gap:22px}.field>span{display:block;margin-bottom:8px;font-size:12px;font-weight:700}.field input,.field textarea{display:block;width:100%;border:1px solid var(--line);border-radius:2px;outline:0;background:#fff;color:var(--ink);padding:14px 15px}.field textarea{min-height:150px;resize:vertical}.field input:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}.terms{display:grid;grid-template-columns:repeat(3,1fr);margin-top:32px;border:1px solid var(--line)}.terms div{padding:14px 16px;border-right:1px solid var(--line);min-width:0}.terms div:last-child{border:0}.terms span,.terms strong{display:block}.terms strong{margin-top:5px;font:700 12px ui-monospace,monospace;overflow-wrap:anywhere}.primary,.secondary{border:0;border-radius:2px;cursor:pointer;font-weight:800}.primary{width:100%;height:52px;margin-top:16px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:var(--accent);color:#fff}.primary:disabled{opacity:.45;cursor:wait}.proof{position:relative;border-left:1px solid var(--line);background:#e9ebe5;padding:24px;overflow:auto}.proof-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line)}.stage{color:var(--accent)}.empty-state{min-height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.empty-state .seal{width:48px;height:48px;background:transparent;color:var(--muted);border:1px solid #aeb4ac;font-size:22px}.empty-state h2{margin:20px 0 5px;font:500 23px Georgia,serif}.empty-state p{max-width:240px;margin:0;color:var(--muted);font-size:12px}.invoice-total{margin:24px 0 14px;padding:22px;background:var(--ink);color:#fff}.invoice-total span,.invoice-total strong{display:block}.invoice-total span{color:#aeb8b2}.invoice-total strong{margin-top:7px;font:500 25px Georgia,serif}.invoice dl{margin:0}.invoice dl div{display:grid;grid-template-columns:84px minmax(0,1fr);gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}.invoice dt{color:var(--muted);font-size:11px}.invoice dd{margin:0;font:600 11px/1.5 ui-monospace,monospace;overflow-wrap:anywhere}.secondary{width:100%;height:42px;margin-top:18px;border:1px solid var(--ink);background:transparent;color:var(--ink)}.secondary:hover{background:var(--ink);color:#fff}.handoff{color:var(--muted);font-size:11px}.notice{min-height:20px;margin-top:15px;color:var(--green);font-size:11px}.notice.error{color:#b13c35}footer{display:grid;grid-template-columns:260px 1fr 400px;align-items:center;border-top:1px solid var(--line);background:var(--panel)}footer span{padding:0 24px}footer span:nth-child(2){text-align:center}footer span:last-child{text-align:right}
-:root{--paper:#eef3f6;--ink:#121b22;--muted:#60717b;--line:#ccd5da;--panel:#f8fafb;--coral:#f06449;--yellow:#f2cb45}.topbar{background:var(--ink);color:#fff;border-color:#354650}.brand{color:#fff;border-color:#354650}.brand-mark{background:var(--coral)}.network{color:#c6d2d8}.pulse{background:#31d096;box-shadow:0 0 0 4px #243e37}.merchant{border-color:#354650}.merchant span{color:#9fb0b9}.catalog{background:#17242c;color:#fff;border-color:#354650}.catalog-head p{color:#8fa2ac}.catalog-head strong{color:#fff}#products{border-color:#354650}.product{color:#fff;border-color:#354650}.product:hover{background:#22333d}.product.active{background:var(--accent);box-shadow:inset 5px 0 var(--yellow);color:#fff}.product-number,.product-arrow,.product-copy small{color:#9fb0b9}.product.active .product-number,.product.active .product-arrow,.product.active .product-copy small{color:#e7f1f7}.trust-note{background:var(--yellow);color:var(--ink);border-color:var(--coral)}.trust-note p{color:#5d522c}.composer{background:var(--panel)}.composer-head h1{font-family:Arial,"Noto Sans SC",sans-serif;font-weight:800;line-height:1.08}.price{background:var(--accent);border-color:var(--accent);color:#fff}.proof{background:var(--yellow);border-color:#bca239}.proof-head{border-color:#bca239;color:#66581f}.stage{color:#145dab}.empty-state .seal{border-color:#7d6b24;color:#6b5b21}.empty-state h2{font-family:Arial,"Noto Sans SC",sans-serif;font-weight:800}.invoice-total{background:var(--ink)}.invoice dl div{border-color:#bca239}.secondary{border-color:var(--ink)}.notice{color:#145dab}footer{background:var(--ink);color:#aebcc3;border-color:#354650}
-@media(max-width:1000px){.topbar{grid-template-columns:220px 1fr 260px}.workspace{grid-template-columns:220px minmax(380px,1fr) 330px}.composer{padding:38px 30px}.composer-head{display:block}.price{display:inline-block;margin-top:18px}footer{grid-template-columns:220px 1fr 330px}}
-@media(max-width:780px){.shell{display:block;min-height:100dvh}.topbar{height:62px;grid-template-columns:1fr auto}.brand{border-right:0;padding:0 17px}.network{padding-right:17px}.merchant{display:none}.workspace{display:block}.catalog{border-right:0}.catalog-head{padding:22px 18px 14px}#products{display:flex;overflow-x:auto}.product{flex:0 0 210px;min-height:78px;border-right:1px solid var(--line)}.trust-note{display:none}.composer{padding:34px 18px}.composer-head h1{font-size:34px}.description{margin:18px 0 30px}.terms{grid-template-columns:1fr}.terms div{border-right:0;border-bottom:1px solid var(--line)}.terms div:last-child{border-bottom:0}.proof{border-left:0;border-top:1px solid var(--line);padding:24px 18px;min-height:460px}.empty-state{min-height:330px}footer{min-height:78px;display:flex;flex-wrap:wrap;gap:6px;padding:15px 17px}footer span{padding:0}footer span:nth-child(2){text-align:left}footer span:last-child{margin-left:auto}}
-@media(max-width:390px){.composer-head h1{font-size:30px}.product{flex-basis:190px}.invoice dl div{grid-template-columns:72px minmax(0,1fr)}}`
+const styleCSS = `:root{color-scheme:light;--paper:#f4f6f3;--ink:#131917;--muted:#66716d;--line:#d7ddd8;--panel:#fbfcfa;--green:#087f5b;--lime:#c9ff5f;--blue:#315cf6;--coral:#ef6b52;letter-spacing:0}*{box-sizing:border-box}html,body{margin:0;min-width:320px;min-height:100%;background:var(--paper);color:var(--ink);font:14px/1.5 Inter,"Segoe UI","Noto Sans SC",Arial,sans-serif;letter-spacing:0}button,input,textarea{font:inherit;letter-spacing:0}[hidden]{display:none!important}.shell{min-height:100dvh;display:grid;grid-template-rows:68px minmax(0,1fr) 36px}.topbar{display:grid;grid-template-columns:250px 1fr 330px;align-items:center;border-bottom:1px solid var(--line);background:var(--panel)}.brand{height:100%;display:flex;align-items:center;gap:12px;padding:0 22px;color:inherit;text-decoration:none;border-right:1px solid var(--line)}.brand-mark{width:32px;height:32px;display:grid;place-items:center;background:var(--ink);color:var(--lime);font:800 17px Georgia,serif}.brand strong,.brand small{display:block}.brand strong{font-size:16px}.brand small{margin-top:1px;color:var(--muted);font:600 8px ui-monospace,monospace}.network{justify-self:center;display:flex;align-items:center;gap:9px;color:var(--muted);font:700 10px ui-monospace,monospace}.network i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px #d9eee6}.top-actions{height:100%;display:grid;grid-template-columns:1fr 62px;align-items:center;border-left:1px solid var(--line)}.top-actions>span{padding:0 20px;overflow:hidden;text-overflow:ellipsis;font:600 10px ui-monospace,monospace}.top-actions button{height:100%;border:0;border-left:1px solid var(--line);background:transparent;cursor:pointer;font-weight:800}.workspace{display:grid;grid-template-columns:250px minmax(430px,1fr) minmax(330px,410px);min-height:0}.catalog{display:flex;flex-direction:column;border-right:1px solid var(--line);background:#e9eee9}.catalog-head{height:78px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.catalog-head span{font-size:11px;font-weight:800}.catalog-head strong{font:500 28px Georgia,serif}#products{border-top:0}.product{width:100%;min-height:90px;padding:15px 18px;border:0;border-bottom:1px solid var(--line);background:transparent;display:grid;grid-template-columns:26px 1fr 20px;gap:9px;align-items:center;text-align:left;cursor:pointer;color:var(--ink)}.product:hover{background:#f2f5f1}.product.active{background:var(--panel);box-shadow:inset 4px 0 var(--green)}.product-number,.product-arrow{color:var(--muted);font:600 10px ui-monospace,monospace}.product-arrow{font-size:16px}.product-copy strong,.product-copy small{display:block}.product-copy strong{font-size:14px}.product-copy small{margin-top:5px;color:var(--muted);font:600 10px ui-monospace,monospace}.trust-note{margin:auto 18px 18px;padding:17px;background:#dce8df;border-top:2px solid var(--green)}.trust-note b{font-size:11px}.trust-note p{margin:6px 0 0;color:var(--muted);font-size:11px}.composer{padding:clamp(34px,5vw,72px);overflow:auto;background:var(--panel)}.eyebrow{display:flex;justify-content:space-between;gap:20px;color:var(--green);font:700 10px ui-monospace,monospace}.composer h1{max-width:680px;margin:18px 0 0;font:500 clamp(38px,4vw,58px)/1.05 Georgia,"Noto Serif SC",serif}.description{max-width:650px;margin:20px 0 36px;color:var(--muted);font-size:15px}.fields{display:grid;gap:20px}.field>span{display:block;margin-bottom:8px;font-size:12px;font-weight:800}.field input,.field textarea{width:100%;padding:15px;border:1px solid var(--line);border-radius:2px;background:white;outline:0}.field textarea{min-height:150px;resize:vertical}.field input:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(49,92,246,.12)}.terms{margin-top:27px;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line)}.terms div{padding:13px 15px;border-right:1px solid var(--line)}.terms div:last-child{border:0}.terms span,.terms strong{display:block}.terms span{color:var(--muted);font-size:9px;font-weight:800}.terms strong{margin-top:5px;font:700 11px ui-monospace,monospace;overflow-wrap:anywhere}.primary,.handoff-button{width:100%;height:52px;margin-top:14px;padding:0 18px;border:0;display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:white;cursor:pointer;font-weight:800}.primary:hover,.handoff-button:hover{background:var(--blue)}.primary:disabled{opacity:.4;cursor:wait}.checkout{padding:24px;background:#eef1ed;border-left:1px solid var(--line);overflow:auto}.checkout-head{display:flex;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--ink);font-size:10px;font-weight:800}.checkout-head span:last-child{color:var(--green)}.track{position:relative;margin:25px 0 38px;display:grid;grid-template-columns:repeat(4,1fr)}.track:before{content:"";position:absolute;left:5px;right:5px;top:5px;height:1px;background:var(--line)}.track span{position:relative;padding-top:17px;color:#929b97;font-size:9px}.track i{position:absolute;top:0;left:0;width:11px;height:11px;border:1px solid #9da6a2;border-radius:50%;background:#eef1ed}.track .active{color:var(--ink)}.track .active i{border-color:var(--green);background:var(--green)}.track .current i{box-shadow:0 0 0 6px rgba(8,127,91,.14)}.empty-state{min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.orbit{position:relative;width:62px;height:62px;border:1px solid #aeb6b2;border-radius:50%;animation:turn 9s linear infinite}.orbit i{position:absolute;width:12px;height:12px;top:-6px;left:25px;background:var(--blue);border-radius:50%}.empty-state h2{margin:24px 0 7px;font:500 24px Georgia,serif}.empty-state p{max-width:260px;margin:0;color:var(--muted);font-size:12px}.amount{padding:20px;background:var(--ink);color:white}.amount span,.amount strong,.amount small{display:block}.amount span,.amount small{color:#b6c0bb;font-size:9px;font-weight:800}.amount strong{margin:6px 0;font:600 25px ui-monospace,monospace}.invoice dl{margin:10px 0 0}.invoice dl div{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:10px 2px;border-bottom:1px solid var(--line)}.invoice dt{color:var(--muted);font-size:10px}.invoice dd{margin:0;font:600 10px/1.5 ui-monospace,monospace;overflow-wrap:anywhere}.handoff-button{background:var(--blue)}.handoff-button:hover{background:var(--green)}.handoff-copy,.notice{color:var(--muted);font-size:10px}.invoice details{margin-top:15px;padding-top:13px;border-top:1px solid var(--line);font-size:10px}.invoice summary{cursor:pointer;font-weight:800}.invoice details code{display:block;margin-top:9px;padding:10px;background:#dde2dd;white-space:normal;overflow-wrap:anywhere}.notice{min-height:18px}.notice.error{color:#b13b31}footer{padding:0 18px;display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:#aeb8b3;font:600 8px ui-monospace,monospace}@keyframes turn{to{transform:rotate(360deg)}}@media(max-width:980px){.workspace{grid-template-columns:210px minmax(390px,1fr) 330px}.topbar{grid-template-columns:210px 1fr 280px}.composer{padding:36px 30px}}@media(max-width:780px){.shell{display:block}.topbar{height:62px;grid-template-columns:1fr auto}.network,.top-actions>span{display:none}.top-actions{border-left:0;display:block}.top-actions button{width:58px;border-left:1px solid var(--line)}.workspace{display:block}.catalog{border-right:0}.catalog-head{height:62px}.catalog nav{display:flex;overflow-x:auto}.product{flex:0 0 230px;min-height:76px;border-right:1px solid var(--line)}.trust-note{display:none}.composer{padding:34px 18px 46px}.composer h1{font-size:40px}.description{margin-bottom:28px}.terms{grid-template-columns:1fr}.terms div{border-right:0;border-bottom:1px solid var(--line)}.checkout{min-height:650px;padding:26px 18px 55px;border-left:0;border-top:1px solid var(--ink)}footer{min-height:54px;padding:10px 16px;gap:20px;flex-wrap:wrap}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}`

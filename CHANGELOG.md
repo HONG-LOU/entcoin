@@ -5,6 +5,37 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-08-06
+
+### Added
+
+- Added `entpay agent-ui`, a loopback-only confirmation application that
+  verifies a merchant's signed Invoice and exact request before the user
+  approves local-wallet payment.
+- Added visible payment, confirmation, delivery-verification, Receipt, and
+  artifact states with Chinese and English interfaces.
+- Added prepared-Invoice execution so browser handoff does not create a second
+  Invoice, plus startup wallet-directory validation and bounded local storage.
+
+### Changed
+
+- Rebuilt the merchant workspace around the actual service, request, terms,
+  signed Invoice, and local-Agent handoff instead of exposing raw JSON.
+- Reworked the public website into a continuous responsive network narrative
+  with live node state and clearer desktop/download choices.
+- Kept merchant products and provider credentials in independently deployed
+  merchant services; Entcoin publishes only the protocol, SDK, and local Agent.
+
+### Security
+
+- The merchant page no longer displays or copies claim capabilities. Handoff
+  uses a URL fragment that the loopback page clears before processing.
+- The local Agent re-fetches merchant metadata and validates protocol, network,
+  product, price, input hash, Ed25519 signature, expiry, and hard limit both at
+  inspection and immediately before payment.
+- Rejecting creates no transaction, and concurrent approval requests are
+  idempotent.
+
 ## [1.4.0] - 2026-08-05
 
 ### Added

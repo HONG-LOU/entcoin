@@ -24,8 +24,37 @@ let latestStatus = null;
 setLanguage(language, { updateUrl: false });
 bindNavigation();
 bindDownloadMenu();
+bindPageMotion();
 void loadNodeStatus();
 startNetworkCanvas();
+
+function bindPageMotion() {
+  const progress = document.querySelector("[data-page-progress]");
+  const header = document.querySelector("[data-header]");
+  if (!progress && !header) return;
+
+  let scheduled = false;
+  const render = () => {
+    const distance = Math.max(
+      1,
+      document.documentElement.scrollHeight - window.innerHeight,
+    );
+    const ratio = Math.min(1, Math.max(0, window.scrollY / distance));
+    if (progress) progress.style.transform = `scaleX(${ratio})`;
+    header?.classList.toggle("scrolled", window.scrollY > 24);
+    scheduled = false;
+  };
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(render);
+    },
+    { passive: true },
+  );
+  render();
+}
 
 function initialLanguage() {
   const requested = new URL(window.location.href).searchParams.get("lang");

@@ -1,117 +1,79 @@
-# Entcoin v1.4.0
+# Entcoin v1.5.0
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.4.0 turns EntPay into a reusable Agent payment protocol and merchant
-SDK without changing
-`entropy-mainnet-v1`, consensus, genesis, transaction encoding, wallets,
-addresses, balances, chain data, or peer compatibility.
+Entcoin v1.5.0 completes the interactive EntPay Agent payment flow without
+changing `entropy-mainnet-v1`, consensus, genesis, transaction encoding,
+wallets, addresses, balances, chain data, or peer compatibility.
 
-## EntPay Agent payments
+## Local Agent confirmation
 
-EntPay lets a local AI agent buy a bounded resource with a normal ENT
-transaction:
+The new `entpay agent-ui` command runs a confirmation application only on
+`127.0.0.1`. A merchant page creates a signed, input-bound Invoice and opens it
+in the local Agent. Before showing approval, deterministic code independently
+checks the merchant key, signature, protocol, network, product, exact price,
+request hash, expiry, confirmation policy, and the user's hard spending limit.
 
-1. the merchant issues an Ed25519-signed invoice;
-2. the client verifies the endpoint, network, merchant, resource, amount,
-   expiry, confirmation requirement, and signature;
-3. the locally configured Codex model approves or rejects the request while a
-   deterministic maximum amount remains authoritative;
-4. the selected local Entcoin wallet signs and broadcasts the transaction;
-5. the merchant's validating node checks one exact invoice output and waits for
-   one confirmation; and
-6. the merchant returns a persisted, Ed25519-signed Receipt with a JSON result
-   and, when applicable, an authorized artifact.
+The user sees the merchant, request, amount, expiry, and confirmation count in
+Chinese or English. Rejecting creates no transaction. Approving signs with the
+selected local wallet, broadcasts the ordinary ENT transaction, waits for the
+merchant's required confirmation, verifies the signed Receipt and delivery
+hashes, and saves any artifact locally. Concurrent approval clicks still create
+only one payment.
 
-Private keys and Codex credentials never leave the local machine. The public
-merchant receives only the signed transaction intended for broadcast. Claim
-tokens are random bearer capabilities stored only as SHA-256 digests.
+The merchant origin never receives wallet access. Claim capabilities are no
+longer displayed or copied by the merchant page. Browser handoff uses a URL
+fragment, which is not sent in HTTP requests and is immediately removed by the
+loopback page.
 
-Entcoin publishes only the protocol types, local Agent, and generic Gateway
-SDK. Merchants implement and deploy their own products in independent projects;
-their model credentials, data, infrastructure, and generated artifacts are not
-part of Entcoin and do not need to be stored on GitHub.
+## Interface and deployment boundary
 
-## Reliability and security
+The EntPay merchant interface is now an operational workspace: service catalog,
+request form, declared terms, signed Invoice, payment rail, and one clear local
+confirmation action. It defaults to Chinese for Chinese browser locales and
+retains the current request and Invoice when switching languages.
 
-- SQLite atomically prevents one transaction from paying two invoices.
-- Payment submission, fulfillment, and delivery are idempotent; retrying after
-  a lost HTTP response returns the same signed delivery without repeating a
-  paid provider call.
-- Unknown or duplicate JSON fields, trailing data, oversized bodies, deep
-  nesting, invalid signatures, wrong outputs, expired invoices, and reused
-  transactions are rejected.
-- Remote Agent endpoints require HTTPS. The Agent can use a dedicated wallet
-  profile and restores the prior active profile before closing the ledger.
-- Claim-token authorization protects Invoice, Receipt, and artifact access.
-  Artifact hashes are verified before download and atomic local storage.
-- No wallet-control method was added to the public Entcoin P2P listener.
+The public Entcoin website also receives the continuous responsive redesign.
+Concrete merchant products, image-provider credentials, signing credentials,
+databases, logs, and generated artifacts remain outside this public repository
+and are deployed independently by each merchant.
 
-## Artifacts
+## Artifacts and verification
 
-Windows releases include the generic Agent as `entpay.exe`; Linux releases
-include `entpay-linux-amd64`. Both are covered by the release checksum files and
-GitHub build-provenance attestations. Merchants import the public Go SDK in
-their own service. See `docs/entpay.md` for protocol, integration, deployment
-ownership, secret boundaries, and limitations.
-
-EntPay v1 requires one confirmation and is intended for low-value community and
-demonstration services. A one-block reorganization can reverse payment after
-delivery. ENT is not a stable unit of account, and EntPay is not escrow,
-custody, a bridge, a stablecoin, or a high-frequency payment channel.
-
-## Verification
-
-Release gates cover the complete Go suite and race detector, `go vet`, Windows
-and Linux builds, EntPay protocol and replay regressions, frontend and website
-tests, npm audit, reachable vulnerability scanning, Ubuntu package installation,
-Secret Service wallet smoke tests, artifact SHA-256 checks, and build provenance.
+Windows releases include `entpay.exe`; Linux releases include
+`entpay-linux-amd64`. Release checks cover the Go suite and race detector,
+`go vet`, strict JSON and Invoice tampering regressions, rejection and
+concurrent approval, verified artifact delivery, frontend and website tests,
+desktop/mobile browser handoff, checksums, and build provenance.
 
 ## 简体中文
 
-Entcoin v1.4.0 将 EntPay 整理为可复用的 Agent 支付协议和商家 SDK，但不改变
+Entcoin v1.5.0 补齐 EntPay 的可交互 Agent 支付流程，但不改变
 `entropy-mainnet-v1`、共识、创世块、交易编码、钱包、地址、余额、链数据或节点兼容性。
 
-## EntPay Agent 支付
+## 本机 Agent 确认
 
-EntPay 允许本地 AI Agent 使用普通 ENT 交易购买一个边界明确的资源：
+新增的 `entpay agent-ui` 只监听 `127.0.0.1`。商家页面创建与原始请求绑定的签名
+Invoice，再把它交给本机 Agent。显示确认按钮前，确定性代码会重新核对商家公钥与签名、
+协议、网络、商品、准确价格、请求哈希、有效期、确认策略和用户设置的硬支付上限。
 
-1. 商户签发 Ed25519 签名的 Invoice；
-2. 客户端独立核对端点、网络、商户、资源、金额、有效期、确认数和签名；
-3. 本机配置的 Codex 模型决定批准或拒绝，但确定性的最大额度始终具有最终约束力；
-4. 指定的本地 Entcoin 钱包完成签名和广播；
-5. 商户自己的验证节点核对唯一且精确的 Invoice 输出，并等待一次确认；
-6. 商户返回持久化保存、可重复领取且带 Ed25519 签名的 Receipt，以及 JSON 结果和可选的
-   授权下载产物。
+用户可以用中文或英文核对收款商家、请求内容、金额、有效期和确认数。拒绝不会创建交易；
+确认后由选定的本机钱包签名和广播普通 ENT 交易，等待商家要求的链上确认，验证签名
+Receipt 与交付哈希，并把图片等产物保存到本机。并发重复点击确认也只会付款一次。
 
-私钥和 Codex 凭据不会离开本机。公网商户只接收本来就要广播的签名交易。Claim token
-是随机 bearer capability，服务端只保存其 SHA-256 摘要。
+商家网页永远拿不到钱包控制权。页面不再显示或复制 claim capability。浏览器通过不会
+进入 HTTP 请求的 URL fragment 交接，本机页面读取后立即从地址栏清除。
 
-Entcoin 只发布协议类型、本地 Agent 和通用 Gateway SDK。商家在独立项目中实现并部署自己的
-商品；模型凭据、业务数据、基础设施和生成产物都不属于 Entcoin，也不要求存放在 GitHub。
+## 界面与部署边界
 
-## 可靠性与安全
+EntPay 商家页现在直接呈现服务目录、请求表单、声明条款、签名 Invoice、付款轨迹和唯一的
+本机确认入口。中文浏览器默认显示中文，切换语言不会丢失当前请求或已经创建的账单。
 
-- SQLite 原子阻止一笔交易支付两张 Invoice。
-- 提交、履约与交付都支持幂等重试；HTTP 响应丢失后会返回同一份签名交付结果，不会重复
-  调用付费供应商。
-- 未知/重复 JSON 字段、尾随数据、超限请求、深层嵌套、错误签名、错误输出、过期
-  Invoice 和交易重放都会被拒绝。
-- 远程 Agent 端点强制 HTTPS；Agent 可使用独立钱包 profile，并在关闭账本前恢复原钱包。
-- Claim token 保护 Invoice、Receipt 和产物访问；Agent 在下载和原子落盘前再次校验产物哈希。
-- 公网 Entcoin P2P 监听器没有新增钱包控制接口。
+公开官网同步上线连续场景响应式设计。具体商品、图片模型凭据、商家签名密钥、数据库、
+日志与生成文件仍由各商家独立部署，不进入 Entcoin 公共仓库。
 
-## 产物与边界
+## 产物与验证
 
-Windows Release 提供通用 Agent `entpay.exe`，Linux 提供 `entpay-linux-amd64`；两者均进入
-checksum 和 GitHub 构建来源证明。商家在自己的服务中引用公共 Go SDK。协议、接入方式、
-部署归属、密钥边界和限制详见 `docs/entpay.md`。
-
-EntPay v1 等待一次确认，只面向低价值社区服务和演示。一块深度的重组仍可能在交付后
-逆转付款。ENT 不是稳定计价单位；EntPay 也不是托管、桥、稳定币、托管交易或高频支付通道。
-
-## 验证
-
-发布门禁覆盖完整 Go 测试与竞态检测、`go vet`、Windows/Linux 构建、EntPay 协议和
-防重放回归、前端与官网测试、npm audit、可达漏洞扫描、Ubuntu 安装、Secret Service
-钱包冒烟、附件 SHA-256 校验与构建来源证明。
+Windows Release 提供 `entpay.exe`，Linux 提供 `entpay-linux-amd64`。发布门禁覆盖完整 Go
+测试与竞态检测、`go vet`、严格 JSON 与 Invoice 篡改回归、拒绝和并发确认、产物验收、
+前端/官网测试、桌面与手机浏览器交接、checksum 和构建来源证明。

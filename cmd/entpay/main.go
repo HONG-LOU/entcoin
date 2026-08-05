@@ -9,6 +9,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"net/netip"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -29,6 +32,8 @@ func main() {
 	switch os.Args[1] {
 	case "agent":
 		err = runAgent(os.Args[2:])
+	case "agent-ui":
+		err = runAgentUI(os.Args[2:])
 	case "generate-key":
 		err = generateKey(os.Args[2:])
 	default:
@@ -42,6 +47,73 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
+}
+
+func runAgentUI(arguments []string) error {
+	flags := flag.NewFlagSet("agent-ui", flag.ContinueOnError)
+	data := flags.String("data", "", "Entcoin wallet data directory")
+	wallet := flags.String("wallet", "", "dedicated Agent wallet address")
+	maximum := flags.String("max-amount", "", "hard payment limit in ENT")
+	artifacts := flags.String("artifacts", defaultArtifactDirectory(), "verified artifact directory")
+	listen := flags.String("listen", "127.0.0.1:47831", "loopback listen address")
+	timeout := flags.Duration("timeout", 5*time.Minute, "confirmation and fulfillment deadline")
+	if err := flags.Parse(arguments); err != nil {
+		return err
+	}
+	if strings.TrimSpace(*data) == "" || strings.TrimSpace(*maximum) == "" {
+		return fmt.Errorf("--data and --max-amount are required")
+	}
+	address, err := netip.ParseAddrPort(*listen)
+	if err != nil || !address.Addr().IsLoopback() {
+		return fmt.Errorf("--listen must be a numeric loopback address such as 127.0.0.1:47831")
+	}
+	maximumAtoms, err := core.ParseAmount(*maximum)
+	if err != nil {
+		return fmt.Errorf("maximum amount: %w", err)
+	}
+	if strings.TrimSpace(*artifacts) != "" {
+		if err := os.MkdirAll(*artifacts, 0o700); err != nil {
+			return fmt.Errorf("create artifact directory: %w", err)
+		}
+	}
+	agent, err := entpay.NewLocalAgent(entpay.LocalAgentConfig{
+		DataDirectory: *data, WalletAddress: *wallet, MaximumAmount: maximumAtoms,
+		PaymentTimeout: *timeout, ArtifactDirectory: *artifacts,
+	})
+	if err != nil {
+		return err
+	}
+	listener, err := net.Listen("tcp", address.String())
+	if err != nil {
+		return fmt.Errorf("listen for local Agent: %w", err)
+	}
+	server := &http.Server{
+		Handler: agent.Handler(), ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout: 15 * time.Second, WriteTimeout: 30 * time.Second, IdleTimeout: 60 * time.Second,
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go func() {
+		<-ctx.Done()
+		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = server.Shutdown(shutdown)
+	}()
+	fmt.Printf("EntPay 本地 Agent 已启动： http://%s/\n", listener.Addr())
+	fmt.Printf("单笔最高支付： %s ENT；交付目录： %s\n", core.FormatAmount(maximumAtoms), *artifacts)
+	err = server.Serve(listener)
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
+}
+
+func defaultArtifactDirectory() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, "Downloads", "EntPay")
 }
 
 func runAgent(arguments []string) error {
@@ -147,5 +219,5 @@ func generateKey(arguments []string) error {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: entpay <agent|generate-key> [options]")
+	fmt.Fprintln(os.Stderr, "usage: entpay <agent|agent-ui|generate-key> [options]")
 }

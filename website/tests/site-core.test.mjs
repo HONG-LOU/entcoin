@@ -76,14 +76,14 @@ test("formatted status groups height and shortens the hash", () => {
 
 test("release selection accepts only known stable release assets", () => {
   const selected = selectReleaseAssets({
-    tag_name: "v1.4.0",
-    html_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.4.0",
+    tag_name: "v1.5.0",
+    html_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.0",
     draft: false,
     prerelease: false,
     assets: [
       asset("Entcoin.exe"),
       asset("entcoin-amd64-installer.exe"),
-      asset("entcoin_1.4.0_amd64.deb"),
+      asset("entcoin_1.5.0_amd64.deb"),
       asset("entcoin-cli-linux-amd64"),
       asset("entcoin-cli.exe"),
       asset("SHA256SUMS-linux.txt"),
@@ -95,10 +95,10 @@ test("release selection accepts only known stable release assets", () => {
     ],
   });
 
-  assert.equal(selected.version, "v1.4.0");
+  assert.equal(selected.version, "v1.5.0");
   assert.match(selected.windowsPortable, /Entcoin\.exe$/);
   assert.match(selected.windowsInstaller, /entcoin-amd64-installer\.exe$/);
-  assert.match(selected.ubuntu, /entcoin_1\.4\.0_amd64\.deb$/);
+  assert.match(selected.ubuntu, /entcoin_1\.5\.0_amd64\.deb$/);
   assert.match(selected.linuxCli, /entcoin-cli-linux-amd64$/);
   assert.match(selected.windowsCli, /entcoin-cli\.exe$/);
   for (const address of [
@@ -110,26 +110,26 @@ test("release selection accepts only known stable release assets", () => {
   ]) {
     assert.match(
       address,
-      /^https:\/\/template-chat\.xyz\/downloads\/v1\.4\.0\//,
+      /^https:\/\/template-chat\.xyz\/downloads\/v1\.5\.0\//,
     );
   }
   assert.equal(
     selected.windowsChecksums,
-    "https://github.com/HONG-LOU/entcoin/releases/download/v1.4.0/SHA256SUMS.txt",
+    "https://github.com/HONG-LOU/entcoin/releases/download/v1.5.0/SHA256SUMS.txt",
   );
   assert.equal(
     selected.linuxChecksums,
-    "https://github.com/HONG-LOU/entcoin/releases/download/v1.4.0/SHA256SUMS-linux.txt",
+    "https://github.com/HONG-LOU/entcoin/releases/download/v1.5.0/SHA256SUMS-linux.txt",
   );
   assert.equal(
     selected.release,
-    "https://github.com/HONG-LOU/entcoin/releases/tag/v1.4.0",
+    "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.0",
   );
 });
 
 test("release selection falls back for drafts, prereleases, and foreign URLs", () => {
   const draft = selectReleaseAssets({
-    tag_name: "v1.4.0",
+    tag_name: "v1.5.0",
     draft: true,
     prerelease: false,
     assets: [],
@@ -141,7 +141,7 @@ test("release selection falls back for drafts, prereleases, and foreign URLs", (
     assets: [],
   });
   const foreign = selectReleaseAssets({
-    tag_name: "v1.4.0",
+    tag_name: "v1.5.0",
     html_url: "https://evil.example/release",
     draft: false,
     prerelease: false,
@@ -192,20 +192,20 @@ test("homepage translation keys are all defined", async () => {
         /href="https:\/\/community\.entcoin\.xyz" data-i18n="nav\.community"/g,
       ) ?? []
     ).length,
-    2,
+    3,
   );
   for (const assetName of [
     "entcoin-amd64-installer.exe",
     "Entcoin.exe",
-    "entcoin_1.4.0_amd64.deb",
+    "entcoin_1.5.0_amd64.deb",
     "entcoin-cli-linux-amd64",
     "entcoin-cli.exe",
   ]) {
-    assert.ok(html.includes(`/downloads/v1.4.0/${assetName}`), assetName);
+    assert.ok(html.includes(`/downloads/v1.5.0/${assetName}`), assetName);
   }
   assert.ok(
     html.includes(
-      "https://github.com/HONG-LOU/entcoin/releases/download/v1.4.0/SHA256SUMS.txt",
+      "https://github.com/HONG-LOU/entcoin/releases/download/v1.5.0/SHA256SUMS.txt",
     ),
     "GitHub checksum source",
   );
@@ -226,9 +226,9 @@ test("desktop update fallback names the current official release", async () => {
     await readFile(new URL("../update.json", import.meta.url), "utf8"),
   );
   assert.deepEqual(manifest, {
-    version: "1.4.0",
-    published_at: "2026-08-05T00:00:00Z",
-    release_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.4.0",
+    version: "1.5.0",
+    published_at: "2026-08-06T00:00:00Z",
+    release_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.0",
   });
 });
 
@@ -258,23 +258,23 @@ test("visual system includes responsive and accessibility contracts", async () =
   for (const contract of [
     ":focus-visible",
     "prefers-reduced-motion: reduce",
-    "@media (max-width: 1080px)",
-    "@media (max-width: 820px)",
-    "@media (max-width: 560px)",
-    ".metrics-grid",
+    "@media (max-width: 1050px)",
+    "@media (max-width: 700px)",
+    ".live-strip",
     ".download-menu",
-    ".network-visual",
-    ".product-band",
-    ".architecture-band",
-    ".security-band",
+    ".node-scene",
+    ".protocol-scene",
+    ".supply-scene",
+    ".join-scene",
+    ".chain-rail",
   ]) {
     assert.ok(css.includes(contract), `missing CSS contract: ${contract}`);
   }
 
   assert.doesNotMatch(css, /font-size\s*:[^;]*vw/i);
   assert.doesNotMatch(css, /border-radius\s*:\s*(?:[1-9]\d|\d{3,})px/i);
-  assert.match(css, /\.hero\s*{[^}]*position:\s*relative/s);
-  assert.match(css, /\.security-band\s*{[^}]*background:\s*var\(--mint\)/s);
+  assert.match(css, /\.scene\s*{[^}]*position:\s*relative/s);
+  assert.match(css, /\.protocol-scene\s*{[^}]*background:\s*#111517/s);
 });
 
 test("browser module wires language, live data, menus, and motion preferences", async () => {
@@ -332,6 +332,6 @@ test("production nginx host isolates the website and read-only status proxy", as
 function asset(name) {
   return {
     name,
-    browser_download_url: `https://github.com/HONG-LOU/entcoin/releases/download/v1.4.0/${name}`,
+    browser_download_url: `https://github.com/HONG-LOU/entcoin/releases/download/v1.5.0/${name}`,
   };
 }

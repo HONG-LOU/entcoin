@@ -47,7 +47,36 @@ verifies every binding before analysis or file storage.
 
 The merchant's web workspace lists products dynamically from `GET /v1/info`.
 It can create and display an Invoice, but it never asks for a seed phrase or
-private key. Actual payment is performed by the local Agent:
+private key. For an interactive purchase, start the local confirmation UI once:
+
+```bash
+entpay agent-ui \
+  --data /path/to/Entropy/mainnet-v1 \
+  --wallet ent1... \
+  --max-amount 0.01000000 \
+  --artifacts ~/Downloads/EntPay
+```
+
+It listens only on `127.0.0.1:47831`. On a merchant page, create the signed
+invoice and choose **Confirm in local Agent**. The browser passes the merchant
+endpoint, original input, signed invoice, and short-lived claim capability in a
+URL fragment. Fragments are not sent in HTTP requests; the local page consumes
+and immediately removes it from the address bar. The local Agent then fetches
+the merchant metadata again and independently verifies the protocol, network,
+product, price, input hash, signature, expiry, and local spending limit.
+
+The confirmation page shows the exact merchant, request, amount, expiry, and
+required confirmations. Rejecting creates no transaction. Approving signs with
+the local wallet, broadcasts the ordinary ENT transaction, waits for the
+merchant's confirmation requirement, verifies the signed Receipt and content
+hashes, and stores any artifact in the configured directory.
+
+The browser merchant origin never receives wallet access. It also does not
+display or copy the claim capability. Keep the local Agent bound to loopback;
+the CLI rejects non-loopback listen addresses.
+
+For automation and unattended semantic approval, the one-shot CLI remains
+available:
 
 ```bash
 entpay agent \

@@ -1,5 +1,5 @@
 export const FALLBACK_RELEASE_URL =
-  "https://github.com/HONG-LOU/entcoin/releases/tag/v1.4.0";
+  "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.0";
 
 const en = {
   "meta.title": "Entcoin — Your wallet, your node.",
@@ -132,7 +132,7 @@ const en = {
   "download.checksums": "Checksums",
   "download.release": "View release notes",
   "download.boundary":
-    "v1.2.0 is superseded. Upgrade to v1.4.0 before block 125555 and verify the published checksums.",
+    "v1.2.0 is superseded. Upgrade to v1.5.0 before block 125555 and verify the published checksums.",
   "infrastructure.eyebrow": "06 / Live infrastructure",
   "infrastructure.title": "Inspect the public node.",
   "infrastructure.body":
@@ -299,7 +299,7 @@ const zh = {
   "download.checksums": "核对文件完整性",
   "download.release": "查看版本说明",
   "download.boundary":
-    "v1.2.0 已被替代。请在高度 125555 前升级到 v1.4.0，并核对官方 SHA-256。",
+    "v1.2.0 已被替代。请在高度 125555 前升级到 v1.5.0，并核对官方 SHA-256。",
   "infrastructure.eyebrow": "06 / 网络现状",
   "infrastructure.title": "公共节点现在是否在线？",
   "infrastructure.body":
@@ -482,7 +482,7 @@ function findGitHubAsset(assets, pattern) {
 
 function fallbackRelease() {
   return {
-    version: "v1.4.0",
+    version: "v1.5.0",
     release: FALLBACK_RELEASE_URL,
     windowsPortable: FALLBACK_RELEASE_URL,
     windowsInstaller: FALLBACK_RELEASE_URL,

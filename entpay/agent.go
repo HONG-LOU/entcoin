@@ -55,6 +55,26 @@ type AgentConfig struct {
 	ArtifactOutput string
 	Reasoner       Reasoner
 	Pay            func(context.Context, string, uint64) (Payment, error)
+	Progress       func(AgentProgress)
+}
+
+type PreparedAgentConfig struct {
+	Endpoint       string
+	DataDirectory  string
+	WalletAddress  string
+	Input          json.RawMessage
+	MaximumAmount  uint64
+	PaymentTimeout time.Duration
+	ArtifactOutput string
+	Created        CreateInvoiceResponse
+	Reasoner       Reasoner
+	Pay            func(context.Context, string, uint64) (Payment, error)
+	Progress       func(AgentProgress)
+}
+
+type AgentProgress struct {
+	Stage   string `json:"stage"`
+	Message string `json:"message"`
 }
 
 type AgentResult struct {
@@ -99,23 +119,96 @@ func RunAgent(ctx context.Context, config AgentConfig) (AgentResult, error) {
 	if err := agentJSON(ctx, client, http.MethodPost, endpoint+"v1/invoices", "", request, &created); err != nil {
 		return AgentResult{}, err
 	}
-	publicKey, err := validateRemoteInvoice(info, product, created.Invoice, canonicalInput, config.MaximumAmount)
+	return completeAgentPayment(ctx, PreparedAgentConfig{
+		Endpoint: endpoint, DataDirectory: config.DataDirectory, WalletAddress: config.WalletAddress,
+		Input: canonicalInput, MaximumAmount: config.MaximumAmount, PaymentTimeout: config.PaymentTimeout,
+		ArtifactOutput: config.ArtifactOutput, Created: created, Reasoner: config.Reasoner,
+		Pay: config.Pay, Progress: config.Progress,
+	}, info, product)
+}
+
+func InspectPreparedPayment(ctx context.Context, endpoint string, input json.RawMessage, maximum uint64, created CreateInvoiceResponse) (ApprovalRequest, error) {
+	normalizedEndpoint, err := normalizeEntPayURL(endpoint)
+	if err != nil {
+		return ApprovalRequest{}, err
+	}
+	canonicalInput, err := canonicalObject(input)
+	if err != nil {
+		return ApprovalRequest{}, err
+	}
+	if maximum == 0 || strings.TrimSpace(created.ClaimToken) == "" {
+		return ApprovalRequest{}, fmt.Errorf("prepared payment is incomplete")
+	}
+	client := &http.Client{Timeout: 20 * time.Second}
+	var info ServiceInfo
+	if err := agentJSON(ctx, client, http.MethodGet, normalizedEndpoint+"v1/info", "", nil, &info); err != nil {
+		return ApprovalRequest{}, err
+	}
+	product, err := advertisedProduct(info, created.Invoice.Resource)
+	if err != nil {
+		return ApprovalRequest{}, err
+	}
+	if _, err := validateRemoteInvoice(info, product, created.Invoice, canonicalInput, maximum); err != nil {
+		return ApprovalRequest{}, err
+	}
+	return ApprovalRequest{Invoice: created.Invoice, Product: product, Input: canonicalInput, MaximumAtoms: maximum}, nil
+}
+
+func RunPreparedAgent(ctx context.Context, config PreparedAgentConfig) (AgentResult, error) {
+	endpoint, err := normalizeEntPayURL(config.Endpoint)
 	if err != nil {
 		return AgentResult{}, err
 	}
-	decision, err := config.Reasoner.Approve(ctx, ApprovalRequest{Invoice: created.Invoice, Product: product, Input: canonicalInput, MaximumAtoms: config.MaximumAmount})
+	canonicalInput, err := canonicalObject(config.Input)
 	if err != nil {
-		return AgentResult{}, fmt.Errorf("AI payment decision: %w", err)
+		return AgentResult{}, err
+	}
+	if (config.Pay == nil && strings.TrimSpace(config.DataDirectory) == "") || config.MaximumAmount == 0 || config.PaymentTimeout < time.Second || config.Reasoner == nil || strings.TrimSpace(config.Created.ClaimToken) == "" {
+		return AgentResult{}, fmt.Errorf("prepared agent configuration is incomplete")
+	}
+	if config.ArtifactOutput != "" {
+		if err := validateOutputPath(config.ArtifactOutput); err != nil {
+			return AgentResult{}, err
+		}
+	}
+	client := &http.Client{Timeout: 20 * time.Second}
+	var info ServiceInfo
+	if err := agentJSON(ctx, client, http.MethodGet, endpoint+"v1/info", "", nil, &info); err != nil {
+		return AgentResult{}, err
+	}
+	product, err := advertisedProduct(info, config.Created.Invoice.Resource)
+	if err != nil {
+		return AgentResult{}, err
+	}
+	config.Endpoint = endpoint
+	config.Input = canonicalInput
+	return completeAgentPayment(ctx, config, info, product)
+}
+
+func completeAgentPayment(ctx context.Context, config PreparedAgentConfig, info ServiceInfo, product ProductDescriptor) (AgentResult, error) {
+	canonicalInput, err := canonicalObject(config.Input)
+	if err != nil {
+		return AgentResult{}, err
+	}
+	publicKey, err := validateRemoteInvoice(info, product, config.Created.Invoice, canonicalInput, config.MaximumAmount)
+	if err != nil {
+		return AgentResult{}, err
+	}
+	reportProgress(config.Progress, "verified", "Invoice signature, terms, input and spending limit verified")
+	decision, err := config.Reasoner.Approve(ctx, ApprovalRequest{Invoice: config.Created.Invoice, Product: product, Input: canonicalInput, MaximumAtoms: config.MaximumAmount})
+	if err != nil {
+		return AgentResult{}, fmt.Errorf("payment approval: %w", err)
 	}
 	if !decision.Approved {
-		return AgentResult{}, fmt.Errorf("AI rejected payment: %s", decision.Reason)
+		return AgentResult{}, fmt.Errorf("payment rejected: %s", decision.Reason)
 	}
 
+	reportProgress(config.Progress, "paying", "Signing payment with the local wallet")
 	pay := config.Pay
 	if pay == nil {
 		pay = localWalletPayment(config.DataDirectory, config.WalletAddress)
 	}
-	payment, err := pay(ctx, created.Invoice.Merchant, created.Invoice.Amount)
+	payment, err := pay(ctx, config.Created.Invoice.Merchant, config.Created.Invoice.Amount)
 	if err != nil {
 		return AgentResult{}, fmt.Errorf("pay invoice: %w", err)
 	}
@@ -123,29 +216,39 @@ func RunAgent(ctx context.Context, config AgentConfig) (AgentResult, error) {
 		return AgentResult{}, err
 	}
 	var submitted PaymentStatus
-	if err := agentJSON(ctx, client, http.MethodPost, endpoint+"v1/invoices/"+created.Invoice.ID+"/submit", created.ClaimToken, SubmitPaymentRequest{Transaction: payment.Transaction}, &submitted); err != nil {
+	client := &http.Client{Timeout: 20 * time.Second}
+	if err := agentJSON(ctx, client, http.MethodPost, config.Endpoint+"v1/invoices/"+config.Created.Invoice.ID+"/submit", config.Created.ClaimToken, SubmitPaymentRequest{Transaction: payment.Transaction}, &submitted); err != nil {
 		return AgentResult{}, err
 	}
 
-	delivery, err := waitForDelivery(ctx, client, endpoint, created, config.PaymentTimeout)
+	reportProgress(config.Progress, "confirming", "Payment broadcast; waiting for chain confirmation")
+	delivery, err := waitForDelivery(ctx, client, config.Endpoint, config.Created, config.PaymentTimeout)
 	if err != nil {
 		return AgentResult{}, err
 	}
-	if err := validateDelivery(publicKey, created.Invoice, payment.TransactionID, delivery); err != nil {
+	reportProgress(config.Progress, "verifying", "Verifying the signed receipt and delivery hashes")
+	if err := validateDelivery(publicKey, config.Created.Invoice, payment.TransactionID, delivery); err != nil {
 		return AgentResult{}, err
 	}
 	artifactOutput := ""
 	if delivery.Artifact != nil && config.ArtifactOutput != "" {
-		if err := downloadArtifact(ctx, client, endpoint, created, delivery.Artifact, config.ArtifactOutput); err != nil {
+		if err := downloadArtifact(ctx, client, config.Endpoint, config.Created, delivery.Artifact, config.ArtifactOutput); err != nil {
 			return AgentResult{}, err
 		}
 		artifactOutput, _ = filepath.Abs(config.ArtifactOutput)
 	}
 	analysis, err := config.Reasoner.Analyze(ctx, delivery)
 	if err != nil {
-		return AgentResult{}, fmt.Errorf("AI delivery analysis: %w", err)
+		return AgentResult{}, fmt.Errorf("delivery analysis: %w", err)
 	}
-	return AgentResult{Decision: decision, Invoice: created.Invoice, TransactionID: payment.TransactionID, Delivery: delivery, ArtifactOutput: artifactOutput, Analysis: strings.TrimSpace(analysis)}, nil
+	reportProgress(config.Progress, "complete", "Receipt and delivery verified")
+	return AgentResult{Decision: decision, Invoice: config.Created.Invoice, TransactionID: payment.TransactionID, Delivery: delivery, ArtifactOutput: artifactOutput, Analysis: strings.TrimSpace(analysis)}, nil
+}
+
+func reportProgress(progress func(AgentProgress), stage, message string) {
+	if progress != nil {
+		progress(AgentProgress{Stage: stage, Message: message})
+	}
 }
 
 func localWalletPayment(dataDirectory, walletAddress string) func(context.Context, string, uint64) (Payment, error) {
