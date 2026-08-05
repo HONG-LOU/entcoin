@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type CodexReasoner struct {
@@ -18,16 +19,18 @@ type CodexReasoner struct {
 
 func (r CodexReasoner) Approve(ctx context.Context, invoice Invoice, info Info, query string, maximum uint64) (Decision, error) {
 	payload, err := json.Marshal(struct {
-		Invoice Invoice `json:"invoice"`
-		Info    Info    `json:"service"`
-		Query   string  `json:"query"`
-		Maximum uint64  `json:"maximum_amount"`
-	}{invoice, info, query, maximum})
+		Invoice       Invoice   `json:"invoice"`
+		Info          Info      `json:"service"`
+		Query         string    `json:"query"`
+		Maximum       uint64    `json:"maximum_amount"`
+		EvaluatedAt   time.Time `json:"evaluated_at"`
+		PolicyChecked bool      `json:"deterministic_policy_checked"`
+	}{invoice, info, query, maximum, time.Now().UTC(), true})
 	if err != nil {
 		return Decision{}, err
 	}
 	schema := `{"type":"object","additionalProperties":false,"required":["approved","reason"],"properties":{"approved":{"type":"boolean"},"reason":{"type":"string"}}}`
-	output, err := r.run(ctx, "你是一个受严格额度约束的支付 Agent。检查下面的 EntPay invoice 是否与服务、用户查询和最大额度一致。仅在协议、网络、资源、金额、收款地址和有效期合理时批准；不要尝试运行命令。\n\n"+string(payload), schema)
+	output, err := r.run(ctx, "你是一个受严格额度约束的支付 Agent。客户端已经用确定性代码验证了 HTTPS 端点、Ed25519 签名、协议、网络、收款地址、金额硬上限和发票有效期；这些已验证事实不需要也不允许你重复猜测。你只判断用户查询是否适合购买该资源，以及已展示的金额是否值得批准。若用户意图、资源和金额一致则批准；不要运行命令。\n\n"+string(payload), schema)
 	if err != nil {
 		return Decision{}, err
 	}
