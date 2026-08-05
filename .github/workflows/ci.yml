@@ -40,7 +40,7 @@ jobs:
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.6.0 ./...
 
       - name: Build headless node
-        run: go build -trimpath ./cmd/entcoin
+        run: go build -trimpath ./cmd/entcoin ./cmd/entpay
 
       - name: Install frontend dependencies
         working-directory: frontend

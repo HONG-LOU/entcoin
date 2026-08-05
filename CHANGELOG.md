@@ -5,6 +5,38 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-05
+
+### Added
+
+- Added EntPay `entpay-v1`, an application-layer Agent payment service with
+  Ed25519-signed invoices and receipts, random bearer claim capabilities,
+  SQLite-backed idempotency, exact-output validation, transaction replay
+  prevention, and one-confirmation resource delivery.
+- Added the `entpay` server and local Agent client. The client verifies the
+  invoice independently, enforces a hard spending limit, signs with a selected
+  local wallet profile, restores the previous profile, and uses the locally
+  configured Codex model for approval and paid report analysis.
+- Added a responsive EntPay operations surface and production deployment units
+  for the two existing public archive-node hosts.
+- Added `entpay.exe` and `entpay-linux-amd64` to release builds, checksums, and
+  build provenance.
+
+### Security
+
+- Kept wallet-control methods outside the public P2P listener. EntPay receives
+  only a signed transaction intended for broadcast and never receives wallet
+  keys, recovery words, Codex credentials, or a local wallet-control token.
+- Added strict JSON boundaries, request size/depth limits, per-IP rate limits,
+  HTTPS-only remote Agent endpoints, signed delivery verification, atomic
+  transaction reuse rejection, and persisted retry-safe delivery responses.
+
+### Compatibility
+
+- Preserved `entropy-mainnet-v1`, genesis, consensus rules, transaction
+  encoding, wallets, addresses, balances, SQLite ledger schema, and P2P peer
+  compatibility. EntPay uses a separate database and HTTP process.
+
 ## [1.2.2] - 2026-07-29
 
 ### Fixed

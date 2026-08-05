@@ -1,96 +1,111 @@
-# Entcoin v1.2.2
+# Entcoin v1.3.0
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.2.2 is a Windows updater reliability release for
-`entropy-mainnet-v1`. It does not change consensus, genesis, the activation at
-block `125555`, wallets, keys, addresses, balances, transaction encoding,
-SQLite schema, chain data, peer compatibility, or the existing data directory.
+Entcoin v1.3.0 adds EntPay Agent payments without changing
+`entropy-mainnet-v1`, consensus, genesis, transaction encoding, wallets,
+addresses, balances, chain data, or peer compatibility.
 
-## Windows update fix
+## EntPay Agent payments
 
-The previous Windows updater always restarted
-`%LOCALAPPDATA%\Programs\Entcoin\Entcoin.exe` after running the installer. That
-path could differ from the EXE that initiated the update, especially for a
-portable copy, a renamed executable, a custom location, or a machine containing
-multiple Entcoin copies. The update could therefore appear to finish and then
-open an older binary.
+EntPay lets a local AI agent buy a bounded resource with a normal ENT
+transaction:
 
-Starting with v1.2.2, Windows updates download the signed-or-checksummed portable
-`Entcoin.exe` artifact and launch that new binary in a restricted helper mode.
-The helper:
+1. the merchant issues an Ed25519-signed invoice;
+2. the client verifies the endpoint, network, merchant, resource, amount,
+   expiry, confirmation requirement, and signature;
+3. the locally configured Codex model approves or rejects the request while a
+   deterministic maximum amount remains authoritative;
+4. the selected local Entcoin wallet signs and broadcasts the transaction;
+5. the merchant's validating node checks one exact invoice output and waits for
+   one confirmation; and
+6. the merchant returns a persisted, Ed25519-signed receipt and paid report.
 
-- waits for the exact old process ID to exit;
-- stages the verified bytes beside the currently running EXE;
-- hashes the staged copy and keeps a rollback copy of the old executable;
-- replaces the exact path that initiated the update;
-- verifies the installed bytes and relaunches that same path; and
-- restores the old executable and writes `.update-error.log` if verification or
-  relaunch fails.
+Private keys and Codex credentials never leave the local machine. The public
+merchant receives only the signed transaction intended for broadcast. Claim
+tokens are random bearer capabilities stored only as SHA-256 digests.
 
-This supports both the per-user installer layout and portable copies without
-guessing an installation directory. Linux retains its existing verified `.deb`
-installation and relaunch path.
+The first paid resource is a live `network-report` comparing the two public
+archive nodes. Production endpoints are:
 
-## Upgrade notes
+- `https://entcoin.xyz/entpay/`
+- `https://template-chat.xyz/entpay/`
 
-Users on v1.2.1 can choose **Update and restart** to install v1.2.2. Because the
-update mechanism itself belongs to the old running version, that first upgrade
-still begins through the v1.2.1 NSIS flow. Once v1.2.2 is running, later Windows
-updates use the exact-path replacement and rollback mechanism described above.
-If a machine has multiple old portable copies, remove or archive the obsolete
-copies after confirming v1.2.2 is running.
+## Reliability and security
 
-All desktop, CLI, validating, relay, and mining nodes must remain on v1.2.1 or
-newer to follow the rule-version-2 main chain activated at block `125555`.
-Retain a verified 24-word recovery phrase or `.entwallet` backup before every
-upgrade.
+- SQLite atomically prevents one transaction from paying two invoices.
+- Payment submission and delivery are idempotent; retrying after a lost HTTP
+  response returns the same signed delivery.
+- Unknown or duplicate JSON fields, trailing data, oversized bodies, deep
+  nesting, invalid signatures, wrong outputs, expired invoices, and reused
+  transactions are rejected.
+- Remote Agent endpoints require HTTPS. The Agent can use a dedicated wallet
+  profile and restores the prior active profile before closing the ledger.
+- EntPay remains a separate loopback service and database. No wallet-control
+  method was added to the public Entcoin P2P listener.
+
+## Artifacts
+
+Windows releases now include `entpay.exe`; Linux releases include
+`entpay-linux-amd64`. Both are covered by the release checksum files and GitHub
+build-provenance attestations. See `docs/entpay.md` for protocol, client,
+deployment, and limitation details.
+
+EntPay v1 requires one confirmation and is intended for low-value community and
+demonstration services. A one-block reorganization can reverse payment after
+delivery. ENT is not a stable unit of account, and EntPay is not escrow,
+custody, a bridge, a stablecoin, or a high-frequency payment channel.
 
 ## Verification
 
 Release gates cover the complete Go suite and race detector, `go vet`, Windows
-and Linux builds, Windows exact-target and rollback regressions, frontend and
-website tests, npm audit, reachable vulnerability scanning, Ubuntu package
-installation, Secret Service wallet smoke tests, artifact SHA-256 checks, and
-GitHub build-provenance attestations.
+and Linux builds, EntPay protocol and replay regressions, frontend and website
+tests, npm audit, reachable vulnerability scanning, Ubuntu package installation,
+Secret Service wallet smoke tests, artifact SHA-256 checks, and build provenance.
 
 ## 简体中文
 
-Entcoin v1.2.2 是 `entropy-mainnet-v1` 的 Windows 更新可靠性版本。本次不改变
-共识、创世块、高度 `125555` 的激活规则、钱包、私钥、地址、余额、交易编码、SQLite
-结构、链数据、节点兼容性或现有数据目录。
+Entcoin v1.3.0 新增 EntPay Agent 支付，但不改变
+`entropy-mainnet-v1`、共识、创世块、交易编码、钱包、地址、余额、链数据或节点兼容性。
 
-## Windows 更新修复
+## EntPay Agent 支付
 
-旧版 Windows 更新器在安装完成后，总是启动
-`%LOCALAPPDATA%\Programs\Entcoin\Entcoin.exe`。如果用户运行的是便携版、改名后的
-EXE、自定义路径，或者电脑里同时存在多份 Entcoin，更新完成后就可能打开旧副本。
+EntPay 允许本地 AI Agent 使用普通 ENT 交易购买一个边界明确的资源：
 
-从 v1.2.2 开始，Windows 更新器下载并校验正式发布的 `Entcoin.exe`，然后由新版程序以
-受限 helper 模式完成更新：
+1. 商户签发 Ed25519 签名的 Invoice；
+2. 客户端独立核对端点、网络、商户、资源、金额、有效期、确认数和签名；
+3. 本机配置的 Codex 模型决定批准或拒绝，但确定性的最大额度始终具有最终约束力；
+4. 指定的本地 Entcoin 钱包完成签名和广播；
+5. 商户自己的验证节点核对唯一且精确的 Invoice 输出，并等待一次确认；
+6. 商户返回持久化保存、可重复领取且带 Ed25519 签名的 Receipt 和付费报告。
 
-- 等待发起更新的旧进程退出；
-- 在当前 EXE 所在目录暂存并核对新版文件；
-- 备份旧 EXE，再替换发起更新的准确路径；
-- 校验替换后的文件，并从同一路径重启；
-- 如果替换、校验或重启失败，恢复旧 EXE，并写入 `.update-error.log`。
+私钥和 Codex 凭据不会离开本机。公网商户只接收本来就要广播的签名交易。Claim token
+是随机 bearer capability，服务端只保存其 SHA-256 摘要。
 
-因此安装版、便携版、改名文件和自定义目录不再依赖写死的默认路径。Linux 继续使用原有的
-已校验 `.deb` 安装和重启流程。
+第一项付费资源是比较两个公网归档节点的实时 `network-report`。生产端点为：
 
-## 升级说明
+- `https://entcoin.xyz/entpay/`
+- `https://template-chat.xyz/entpay/`
 
-v1.2.1 用户可以点击“更新并重启”安装 v1.2.2。由于第一次升级仍由正在运行的 v1.2.1
-旧更新器发起，这一步依然先走旧版 NSIS 流程；成功运行 v1.2.2 后，后续 Windows 升级才会
-使用新的原路径替换与失败回滚机制。如果电脑里留有多份旧便携版，请在确认 v1.2.2 正常运行
-后删除或归档旧副本。
+## 可靠性与安全
 
-所有桌面、CLI、验证、转发和挖矿节点都必须保持在 v1.2.1 或更高版本，才能继续跟随已在
-高度 `125555` 激活的规则版本 2 主链。每次升级前仍应保留已核验的 24 词恢复短语或
-`.entwallet` 备份。
+- SQLite 原子阻止一笔交易支付两张 Invoice。
+- 提交与交付都支持幂等重试；HTTP 响应丢失后会返回同一份签名交付结果。
+- 未知/重复 JSON 字段、尾随数据、超限请求、深层嵌套、错误签名、错误输出、过期
+  Invoice 和交易重放都会被拒绝。
+- 远程 Agent 端点强制 HTTPS；Agent 可使用独立钱包 profile，并在关闭账本前恢复原钱包。
+- EntPay 使用独立 loopback 进程和数据库；公网 Entcoin P2P 监听器没有新增钱包控制接口。
+
+## 产物与边界
+
+Windows Release 新增 `entpay.exe`，Linux 新增 `entpay-linux-amd64`；两者均进入 checksum
+和 GitHub 构建来源证明。协议、客户端、部署和限制详见 `docs/entpay.md`。
+
+EntPay v1 等待一次确认，只面向低价值社区服务和演示。一块深度的重组仍可能在交付后
+逆转付款。ENT 不是稳定计价单位；EntPay 也不是托管、桥、稳定币、托管交易或高频支付通道。
 
 ## 验证
 
-发布门禁包括完整 Go 测试与竞态检测、`go vet`、Windows/Linux 构建、Windows 精确路径
-替换与失败回滚测试、前端和官网测试、npm audit、可达漏洞扫描、Ubuntu 包安装、Secret
-Service 钱包冒烟测试、产物 SHA-256 校验及 GitHub 构建来源证明。
+发布门禁覆盖完整 Go 测试与竞态检测、`go vet`、Windows/Linux 构建、EntPay 协议和
+防重放回归、前端与官网测试、npm audit、可达漏洞扫描、Ubuntu 安装、Secret Service
+钱包冒烟、附件 SHA-256 校验与构建来源证明。

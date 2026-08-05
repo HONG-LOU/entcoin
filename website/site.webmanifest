@@ -8,7 +8,7 @@
   "theme_color": "#54e6b0",
   "icons": [
     {
-      "src": "/assets/appicon.png?v=1.2.2",
+      "src": "/assets/appicon.png?v=1.3.0",
       "sizes": "512x512",
       "type": "image/png"
     }

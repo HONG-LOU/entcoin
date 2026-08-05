@@ -12,12 +12,13 @@ implementation disagree.
 | [Protocol](protocol.md) | Consensus objects, deterministic encoding, HTTP/WebSocket protocol, and limits |
 | [Operations](operations.md) | Installation, node operation, backup, recovery, pruning, and troubleshooting |
 | [Public seed](public-seed.md) | Hardened archive seed deployment and proxy boundary |
+| [EntPay Agent payments](entpay.md) | Signed invoices, local Codex policy, payment verification, receipts, deployment, and limits |
 | [v1.1.0 security audit](security-audit-v1.1.0.md) | Audit scope, findings, mathematical checks, evidence, and residual risk |
 | [v1.2 consensus upgrade audit](consensus-upgrade-audit-v1.2.md) | Difficulty incident, hard-fork classification, consensus-path review, and activation requirements |
 | [Security policy](../SECURITY.md) | Supported versions, reporting, disclosure, and user guidance |
 | [Roadmap](next-step.md) | Explicitly unfinished production-readiness work |
 | [移动 PWA 钱包](mobile-pwa.zh-CN.md) | 中文实现说明、安全边界、构建、安装与发布顺序 |
-| [Release notes](../RELEASE_NOTES.md) | Complete bilingual v1.2.2 release log and mandatory upgrade notes |
+| [Release notes](../RELEASE_NOTES.md) | Complete bilingual v1.3.0 release log and upgrade notes |
 
 ## 文档导航
 

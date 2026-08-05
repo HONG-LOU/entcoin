@@ -1,6 +1,6 @@
 # Entcoin mainnet protocol
 
-This document describes the v1.2.2 implementation. The consensus/network
+This document describes the v1.3.0 implementation. The consensus/network
 identity is `entropy-mainnet-v1`. The HTTP path prefix remains `/v2` because it
 denotes the second transport design; endpoint numbering and network identity
 are not the same version counter.

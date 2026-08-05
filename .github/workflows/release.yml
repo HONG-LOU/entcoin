@@ -51,6 +51,7 @@ jobs:
             build/bin/Entcoin.exe
             build/bin/entcoin-amd64-installer.exe
             build/bin/entcoin-cli.exe
+            build/bin/entpay.exe
             build/bin/entcoin-windows-seed-deploy.zip
             build/bin/SHA256SUMS.txt
 
@@ -100,6 +101,7 @@ jobs:
           path: |
             build/bin/entcoin-linux-amd64
             build/bin/entcoin-cli-linux-amd64
+            build/bin/entpay-linux-amd64
             build/bin/entcoin_*_amd64.deb
             build/bin/SHA256SUMS-linux.txt
 

@@ -17,7 +17,7 @@
 
 ---
 
-Entcoin v1.2.2 is a compact proof-of-work mainnet packaged as a Windows and
+Entcoin v1.3.0 is a compact proof-of-work mainnet packaged as a Windows and
 Ubuntu desktop full node. Starting one application starts the wallet, SQLite
 ledger, full block and transaction validation, peer synchronization, relay
 server, and optional miner in the same process. It does not require a separate
@@ -30,10 +30,10 @@ The source repository is public and MIT-licensed:
 <https://github.com/HONG-LOU/entcoin>.
 
 > **Mandatory update:** v1.2.0 is superseded. It still expects consensus v2 at
-> block 160000 and will reject the v1.2.2 main chain when the same audited rules
-> activate at block 125555. Every v1.2.0 node and miner must install v1.2.2.
+> block 160000 and will reject the current main chain where the same audited rules
+> activated at block 125555. Every v1.2.0 node and miner must install v1.3.0.
 
-## What v1.2.2 includes
+## What v1.3.0 includes
 
 - A Wails desktop node with send, receive, automatic minimum fees, mining,
   network health, history, wallet recovery, database, and pruning controls.
@@ -66,6 +66,8 @@ The source repository is public and MIT-licensed:
 - An explicit archive-only `--seed-mode` for Linux or Windows public relays. It
   creates no wallet file, uses a new ephemeral identity after each restart,
   and disables sending, mining, recovery, backup, and restore operations.
+- EntPay application-layer Agent payments with Ed25519-signed invoices and
+  receipts, local-wallet signing, enforced limits, and a Codex-driven client.
 - Windows portable/NSIS artifacts, an Ubuntu 24.04+ `.deb`, native headless
   CLIs, and an optional Windows archive-seed deployment package.
 - A desktop updater that checks `entcoin.xyz` with a GitHub metadata fallback.
@@ -102,7 +104,7 @@ The NSIS build is the `*installer*.exe` artifact in the same directory. The
 installer is the simplest distribution for other Windows users; the portable
 EXE can be launched directly. Windows 10/11 x64 and Microsoft WebView2 Runtime
 are required. The installer build downloads the WebView2 bootstrapper when
-needed. The current v1.2.2 release may be unsigned, so Windows SmartScreen may show
+needed. The current v1.3.0 release may be unsigned, so Windows SmartScreen may show
 an unknown-publisher warning. The build signs and timestamps the portable
 application, installer, and CLI before checksums are generated when a trusted
 Authenticode certificate is configured.
@@ -157,7 +159,7 @@ setup, backups, migration, pruning, and troubleshooting.
 Ubuntu 24.04+ amd64 users install the `.deb` from the current release:
 
 ```bash
-sudo apt install ./entcoin_1.2.2_amd64.deb
+sudo apt install ./entcoin_1.3.0_amd64.deb
 entcoin
 ```
 
@@ -331,7 +333,7 @@ outside `%LOCALAPPDATA%\Entropy\mainnet-v1`.
 
 Wallet keys are separate from chain history. Before leaving the testnet app,
 record its 24-word recovery phrase or export and verify an encrypted
-`.entwallet` backup. Start v1.2.2 to create the mainnet directory, then use the
+`.entwallet` backup. Start v1.3.0 to create the mainnet directory, then use the
 desktop Wallet view to restore that phrase or backup. The address is recovered,
 while balances and history are rebuilt only from the mainnet chain.
 
@@ -373,7 +375,7 @@ reproducible.
 On Ubuntu 24.04:
 
 ```bash
-./scripts/build-linux.sh 1.2.2
+./scripts/build-linux.sh 1.3.0
 ```
 
 ## Documentation
@@ -383,6 +385,7 @@ On Ubuntu 24.04:
 - [Next steps](docs/next-step.md)
 - [Mainnet protocol](docs/protocol.md)
 - [Public seed deployment](docs/public-seed.md)
+- [EntPay Agent payments](docs/entpay.md)
 - [Security policy and boundaries](SECURITY.md)
 - [Changelog](CHANGELOG.md)
 

@@ -28,6 +28,7 @@ command -v dpkg-deb >/dev/null || { echo "dpkg-deb is required" >&2; exit 1; }
 cd "$project"
 wails build -clean -trimpath -platform linux/amd64 -tags webkit2_41 -o entcoin-linux-amd64
 go build -trimpath -ldflags="-s -w" -o "$bin/entcoin-cli-linux-amd64" ./cmd/entcoin
+go build -trimpath -ldflags="-s -w" -o "$bin/entpay-linux-amd64" ./cmd/entpay
 
 install -d -m 0755 \
     "$stage/DEBIAN" \
@@ -64,9 +65,11 @@ dpkg-deb --build --root-owner-group "$stage" "$package"
     sha256sum \
         entcoin-linux-amd64 \
         entcoin-cli-linux-amd64 \
+        entpay-linux-amd64 \
         "$(basename "$package")" > SHA256SUMS-linux.txt
 )
 
 echo "Built: $bin/entcoin-linux-amd64"
 echo "Built: $bin/entcoin-cli-linux-amd64"
+echo "Built: $bin/entpay-linux-amd64"
 echo "Built: $package"

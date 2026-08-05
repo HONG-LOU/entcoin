@@ -32,8 +32,11 @@ try {
     $portable = Join-Path $bin "Entcoin.exe"
     $installer = Join-Path $bin "entcoin-amd64-installer.exe"
     $cli = Join-Path $bin "entcoin-cli.exe"
+    $entpay = Join-Path $bin "entpay.exe"
     go build -trimpath -ldflags "-s -w" -o $cli .\cmd\entcoin
     if ($LASTEXITCODE -ne 0) { throw "CLI build failed with exit code $LASTEXITCODE" }
+    go build -trimpath -ldflags "-s -w" -o $entpay .\cmd\entpay
+    if ($LASTEXITCODE -ne 0) { throw "EntPay build failed with exit code $LASTEXITCODE" }
 
     $signingCertificate = $env:ENTCOIN_WINDOWS_CERTIFICATE_BASE64
     $signingPassword = $env:ENTCOIN_WINDOWS_CERTIFICATE_PASSWORD
@@ -54,7 +57,7 @@ try {
         try {
             [System.IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($signingCertificate))
             $timestampURL = if ($env:ENTCOIN_WINDOWS_TIMESTAMP_URL) { $env:ENTCOIN_WINDOWS_TIMESTAMP_URL } else { "http://timestamp.digicert.com" }
-            foreach ($artifact in @($portable, $installer, $cli)) {
+            foreach ($artifact in @($portable, $installer, $cli, $entpay)) {
                 & $signTool sign /fd SHA256 /td SHA256 /tr $timestampURL /f $certificatePath /p $signingPassword $artifact
                 if ($LASTEXITCODE -ne 0) { throw "Authenticode signing failed for $artifact" }
                 & $signTool verify /pa /all $artifact
@@ -85,12 +88,12 @@ try {
         Remove-Item -LiteralPath $seedStage -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    foreach ($expected in @($portable, $installer, $cli, $seedPackage)) {
+    foreach ($expected in @($portable, $installer, $cli, $entpay, $seedPackage)) {
         if (-not (Test-Path -LiteralPath $expected -PathType Leaf)) {
             throw "Expected release artifact was not produced: $expected"
         }
     }
-    $artifacts = Get-Item -LiteralPath $portable, $installer, $cli, $seedPackage | Sort-Object Name
+    $artifacts = Get-Item -LiteralPath $portable, $installer, $cli, $entpay, $seedPackage | Sort-Object Name
     $checksums = foreach ($artifact in $artifacts) {
         $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifact.FullName).Hash.ToLowerInvariant()
         "$hash  $($artifact.Name)"
