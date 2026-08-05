@@ -314,6 +314,18 @@ func TestHomeIsResponsiveAndHardened(t *testing.T) {
 	}
 }
 
+func TestFaviconDoesNotProduceBrowserError(t *testing.T) {
+	fixture := newServiceFixture(t)
+	response, err := http.Get(fixture.service.URL + "/favicon.ico")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusNoContent {
+		t.Fatalf("favicon returned %d", response.StatusCode)
+	}
+}
+
 func TestCreateInvoiceRejectsAmbiguousAndOversizedJSON(t *testing.T) {
 	fixture := newServiceFixture(t)
 	for name, body := range map[string]string{

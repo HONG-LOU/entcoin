@@ -73,6 +73,7 @@ func NewService(config Config) (*Service, error) {
 func (s *Service) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /", s.handleHome)
+	mux.HandleFunc("GET /favicon.ico", s.handleFavicon)
 	mux.HandleFunc("GET /app.js", s.handleJavaScript)
 	mux.HandleFunc("GET /style.css", s.handleStyle)
 	mux.HandleFunc("GET /healthz", s.handleHealth)
@@ -87,6 +88,11 @@ func (s *Service) Handler() http.Handler {
 func (s *Service) handleHome(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = io.WriteString(writer, indexHTML)
+}
+
+func (s *Service) handleFavicon(writer http.ResponseWriter, _ *http.Request) {
+	writer.Header().Set("Cache-Control", "public, max-age=86400")
+	writer.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Service) handleJavaScript(writer http.ResponseWriter, _ *http.Request) {
