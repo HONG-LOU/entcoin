@@ -5,6 +5,37 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-05
+
+### Added
+
+- Published EntPay as a reusable Go package with dynamic merchant products,
+  signed input-bound Invoices and Receipts, confirmation-gated fulfillment,
+  claim-token authorization, optional artifact delivery, and Range downloads.
+- Added a generic local Agent that applies deterministic policy before Codex
+  semantic approval, restores the active wallet, verifies every Receipt and
+  artifact binding, and refuses to overwrite an existing output file.
+- Added crash-safe fulfillment staging, bounded retry and permanent-failure
+  handling, SQLite transaction replay prevention, and concurrent claim
+  idempotency.
+
+### Changed
+
+- Moved concrete merchant products, model-provider integrations, deployment
+  inventory, and production credentials out of the public Entcoin repository.
+  Merchants now own and deploy their services independently.
+- Replaced the single-product EntPay page with a dynamic merchant workspace and
+  redesigned the public website around a full-width live network topology.
+- Reduced the public `entpay` CLI to the generic `agent` and `generate-key`
+  commands.
+
+### Security
+
+- Added canonical strict JSON boundaries, signed payload and artifact hashes,
+  bearer capability hashing, authorized downloads, and exact ENT output checks.
+- Kept wallet seeds, private keys, claim tokens, merchant signing credentials,
+  and model credentials outside Codex prompts and merchant source repositories.
+
 ## [1.3.0] - 2026-08-05
 
 ### Added

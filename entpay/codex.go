@@ -17,26 +17,27 @@ type CodexReasoner struct {
 	Model      string
 }
 
-func (r CodexReasoner) Approve(ctx context.Context, invoice Invoice, info Info, query string, maximum uint64) (Decision, error) {
+func (r CodexReasoner) Approve(ctx context.Context, request ApprovalRequest) (Decision, error) {
 	payload, err := json.Marshal(struct {
-		Invoice       Invoice   `json:"invoice"`
-		Info          Info      `json:"service"`
-		Query         string    `json:"query"`
-		Maximum       uint64    `json:"maximum_amount"`
+		ApprovalRequest
 		EvaluatedAt   time.Time `json:"evaluated_at"`
 		PolicyChecked bool      `json:"deterministic_policy_checked"`
-	}{invoice, info, query, maximum, time.Now().UTC(), true})
+	}{ApprovalRequest: request, EvaluatedAt: time.Now().UTC(), PolicyChecked: true})
 	if err != nil {
 		return Decision{}, err
 	}
 	schema := `{"type":"object","additionalProperties":false,"required":["approved","reason"],"properties":{"approved":{"type":"boolean"},"reason":{"type":"string"}}}`
-	output, err := r.run(ctx, "你是一个受严格额度约束的支付 Agent。客户端已经用确定性代码验证了 HTTPS 端点、Ed25519 签名、协议、网络、收款地址、金额硬上限和发票有效期；这些已验证事实不需要也不允许你重复猜测。你只判断用户查询是否适合购买该资源，以及已展示的金额是否值得批准。若用户意图、资源和金额一致则批准；不要运行命令。\n\n"+string(payload), schema)
+	prompt := "You are a payment approval agent operating under a strict spending limit. Deterministic code has already verified HTTPS, protocol, network, merchant address, Ed25519 signature, input hash, advertised price, capabilities, expiry, and the hard amount limit. Do not second-guess those verified facts. Decide only whether the supplied user input reasonably matches the advertised product and whether buying it at the displayed price is sensible. Reject ambiguous, abusive, or unrelated requests. Return a concise reason in the user's language. Do not run commands.\n\n" + string(payload)
+	output, err := r.run(ctx, prompt, schema)
 	if err != nil {
 		return Decision{}, err
 	}
 	var decision Decision
 	if err := json.Unmarshal([]byte(output), &decision); err != nil {
 		return Decision{}, fmt.Errorf("decode Codex decision: %w", err)
+	}
+	if strings.TrimSpace(decision.Reason) == "" {
+		return Decision{}, fmt.Errorf("Codex decision omitted its reason")
 	}
 	return decision, nil
 }
@@ -46,7 +47,8 @@ func (r CodexReasoner) Analyze(ctx context.Context, delivery Delivery) (string, 
 	if err != nil {
 		return "", err
 	}
-	return r.run(ctx, "你是 Entcoin 网络分析 Agent。以下是已通过链上支付解锁并附带 receipt 的实时节点报告。用简洁中文回答报告中的 query，明确两个节点是否一致，列出高度、tip 缩写和任何异常。不得声称报告之外的事实，也不要运行命令。\n\n"+string(payload), "")
+	prompt := "You are analyzing a paid merchant delivery that deterministic code has already verified against its signed receipt, payload hash, and optional artifact hash. Summarize what was delivered, the practical result, and any caveat visible in the payload. Use the user's language when it is apparent from the content. Do not claim facts outside the delivery and do not run commands.\n\n" + string(payload)
+	return r.run(ctx, prompt, "")
 }
 
 func (r CodexReasoner) run(ctx context.Context, prompt, schema string) (string, error) {

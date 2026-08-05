@@ -20,10 +20,22 @@ const updateDocument = await json("website/update.json");
 const version = packageDocument.version;
 const expectedTag = `v${version}`;
 
-assert.match(version, /^\d+\.\d+\.\d+$/, "frontend version must be canonical semver");
+assert.match(
+  version,
+  /^\d+\.\d+\.\d+$/,
+  "frontend version must be canonical semver",
+);
 assert.equal(lockDocument.version, version, "package-lock top-level version");
-assert.equal(lockDocument.packages[""].version, version, "package-lock package version");
-assert.equal(wailsDocument.info.productVersion, version, "Wails product version");
+assert.equal(
+  lockDocument.packages[""].version,
+  version,
+  "package-lock package version",
+);
+assert.equal(
+  wailsDocument.info.productVersion,
+  version,
+  "Wails product version",
+);
 assert.equal(updateDocument.version, version, "website update version");
 assert.equal(
   updateDocument.release_url,
@@ -35,8 +47,11 @@ const sourceChecks = [
   ["internal/updater/client.go", `CurrentVersion          = "${version}"`],
   ["frontend/src/main.js", `status.current_version || "${version}"`],
   ["frontend/index.html", `id="current-version">${expectedTag}<`],
-  ["website/site-core.mjs", `FALLBACK_RELEASE_URL = "https://github.com/HONG-LOU/entcoin/releases/tag/${expectedTag}"`],
-  ["website/index.html", `"softwareVersion":"${version}"`],
+  [
+    "website/site-core.mjs",
+    `https://github.com/HONG-LOU/entcoin/releases/tag/${expectedTag}`,
+  ],
+  ["website/index.html", `"softwareVersion": "${version}"`],
   ["README.md", `Entcoin ${expectedTag}`],
   ["README.zh-CN.md", `Entcoin ${expectedTag}`],
   ["CHANGELOG.md", `## [${version}]`],
@@ -44,12 +59,19 @@ const sourceChecks = [
 ];
 
 for (const [relativePath, expected] of sourceChecks) {
-  assert.ok((await text(relativePath)).includes(expected), `${relativePath} is missing ${expected}`);
+  assert.ok(
+    (await text(relativePath)).includes(expected),
+    `${relativePath} is missing ${expected}`,
+  );
 }
 
 const requestedVersion = process.argv[2];
 if (requestedVersion) {
-  assert.equal(requestedVersion.replace(/^v/, ""), version, "release tag version");
+  assert.equal(
+    requestedVersion.replace(/^v/, ""),
+    version,
+    "release tag version",
+  );
 }
 
 console.log(`Release metadata is consistent for ${expectedTag}.`);

@@ -11,7 +11,11 @@ const mobileNav = document.querySelector("#mobile-nav");
 const downloadMenu = document.querySelector("#download-menu");
 const headerDownload = document.querySelector("#header-download");
 const heroDownload = document.querySelector("#hero-download");
-const downloadTriggers = [headerDownload, heroDownload, ...document.querySelectorAll("[data-menu-trigger]")].filter(Boolean);
+const downloadTriggers = [
+  headerDownload,
+  heroDownload,
+  ...document.querySelectorAll("[data-menu-trigger]"),
+].filter(Boolean);
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 let language = initialLanguage();
@@ -67,7 +71,11 @@ function setLanguage(nextLanguage, { updateUrl = true } = {}) {
     const url = new URL(window.location.href);
     if (language === "zh") url.searchParams.set("lang", "zh");
     else url.searchParams.delete("lang");
-    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    window.history.replaceState(
+      null,
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
   }
 
   if (latestStatus) renderNodeStatus(latestStatus);
@@ -79,7 +87,9 @@ function updateMeta(selector, value) {
 }
 
 function bindNavigation() {
-  languageToggle?.addEventListener("click", () => setLanguage(language === "en" ? "zh" : "en"));
+  languageToggle?.addEventListener("click", () =>
+    setLanguage(language === "en" ? "zh" : "en"),
+  );
 
   menuToggle?.addEventListener("click", () => {
     const open = menuToggle.getAttribute("aria-expanded") !== "true";
@@ -101,7 +111,10 @@ function bindNavigation() {
 function setMobileNavigation(open) {
   if (!menuToggle || !mobileNav) return;
   menuToggle.setAttribute("aria-expanded", String(open));
-  menuToggle.setAttribute("aria-label", translations[language][open ? "nav.close" : "nav.open"]);
+  menuToggle.setAttribute(
+    "aria-label",
+    translations[language][open ? "nav.close" : "nav.open"],
+  );
   mobileNav.hidden = !open;
   document.body.classList.toggle("menu-open", open && window.innerWidth <= 820);
 }
@@ -110,7 +123,9 @@ function bindDownloadMenu() {
   for (const trigger of downloadTriggers) {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
-      const alreadyOpen = !downloadMenu.hidden && trigger.getAttribute("aria-expanded") === "true";
+      const alreadyOpen =
+        !downloadMenu.hidden &&
+        trigger.getAttribute("aria-expanded") === "true";
       if (alreadyOpen) closeDownloadMenu();
       else openDownloadMenu(trigger);
     });
@@ -118,7 +133,11 @@ function bindDownloadMenu() {
 
   document.addEventListener("click", (event) => {
     if (downloadMenu.hidden) return;
-    if (downloadMenu.contains(event.target) || downloadTriggers.some((trigger) => trigger.contains(event.target))) return;
+    if (
+      downloadMenu.contains(event.target) ||
+      downloadTriggers.some((trigger) => trigger.contains(event.target))
+    )
+      return;
     closeDownloadMenu();
   });
 
@@ -136,12 +155,15 @@ function openDownloadMenu(trigger) {
   trigger.setAttribute("aria-expanded", "true");
 
   const requestedGroup = trigger.dataset.menuTrigger;
-  const selector = requestedGroup === "cli"
-    ? "[data-download='linuxCli']"
-    : requestedGroup === "windows"
-      ? "[data-download='windowsInstaller']"
-      : "[role='menuitem']";
-  window.requestAnimationFrame(() => downloadMenu.querySelector(selector)?.focus());
+  const selector =
+    requestedGroup === "cli"
+      ? "[data-download='linuxCli']"
+      : requestedGroup === "windows"
+        ? "[data-download='windowsInstaller']"
+        : "[role='menuitem']";
+  window.requestAnimationFrame(() =>
+    downloadMenu.querySelector(selector)?.focus(),
+  );
 }
 
 function closeDownloadMenu() {
@@ -149,14 +171,18 @@ function closeDownloadMenu() {
   downloadMenu.hidden = true;
   downloadMenu.classList.remove("download-menu-modal");
   downloadMenu.removeAttribute("data-context");
-  for (const trigger of downloadTriggers) trigger.setAttribute("aria-expanded", "false");
+  for (const trigger of downloadTriggers)
+    trigger.setAttribute("aria-expanded", "false");
 }
 
 async function loadNodeStatus() {
   setLiveState("loading");
   try {
-    const response = await fetchWithTimeout("/api/network-status", { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`Node status returned ${response.status}`);
+    const response = await fetchWithTimeout("/api/network-status", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok)
+      throw new Error(`Node status returned ${response.status}`);
     latestStatus = validateNodeStatus(await response.json());
     renderNodeStatus(latestStatus);
     setLiveState("connected");
@@ -174,7 +200,12 @@ function renderNodeStatus(status) {
 }
 
 function setLiveState(state) {
-  const key = state === "connected" ? "status.connected" : state === "loading" ? "status.loading" : "status.unavailable";
+  const key =
+    state === "connected"
+      ? "status.connected"
+      : state === "loading"
+        ? "status.loading"
+        : "status.unavailable";
   for (const element of document.querySelectorAll("[data-live-state]")) {
     element.dataset.i18n = key;
     element.textContent = translations[language][key];
@@ -196,7 +227,8 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 6_000) {
 }
 
 function setText(selector, value) {
-  for (const element of document.querySelectorAll(selector)) element.textContent = value;
+  for (const element of document.querySelectorAll(selector))
+    element.textContent = value;
 }
 
 function startNetworkCanvas() {
@@ -230,8 +262,14 @@ function startNetworkCanvas() {
     const elapsed = reducedMotion.matches ? 0 : (now - startTime) / 1_000;
     const positions = nodes.map((node) => ({
       ...node,
-      px: node.x * width + Math.sin(elapsed * node.speed + node.phase) * node.drift + pointer.x * node.depth,
-      py: node.y * height + Math.cos(elapsed * node.speed + node.phase) * node.drift + pointer.y * node.depth,
+      px:
+        node.x * width +
+        Math.sin(elapsed * node.speed + node.phase) * node.drift +
+        pointer.x * node.depth,
+      py:
+        node.y * height +
+        Math.cos(elapsed * node.speed + node.phase) * node.drift +
+        pointer.y * node.depth,
     }));
     drawLinks(context, positions);
     drawNodes(context, positions);
@@ -317,7 +355,7 @@ function drawLinks(context, nodes) {
       const dy = nodes[left].py - nodes[right].py;
       const distance = Math.hypot(dx, dy);
       if (distance > 128) continue;
-      context.strokeStyle = `rgba(84, 230, 176, ${0.18 * (1 - distance / 128)})`;
+      context.strokeStyle = `rgba(36, 107, 206, ${0.24 * (1 - distance / 128)})`;
       context.beginPath();
       context.moveTo(nodes[left].px, nodes[left].py);
       context.lineTo(nodes[right].px, nodes[right].py);
@@ -327,16 +365,20 @@ function drawLinks(context, nodes) {
 }
 
 function drawNodes(context, nodes) {
-  for (const node of nodes) {
+  nodes.forEach((node, index) => {
     context.beginPath();
     context.arc(node.px, node.py, node.radius, 0, Math.PI * 2);
-    context.fillStyle = node.primary ? "#f1c75b" : "#54e6b0";
+    context.fillStyle = node.primary
+      ? "#f06449"
+      : index % 3 === 0
+        ? "#19a974"
+        : "#246bce";
     context.fill();
     if (node.primary) {
       context.beginPath();
       context.arc(node.px, node.py, 18, 0, Math.PI * 2);
-      context.strokeStyle = "rgba(241, 199, 91, 0.28)";
+      context.strokeStyle = "rgba(240, 100, 73, 0.32)";
       context.stroke();
     }
-  }
+  });
 }

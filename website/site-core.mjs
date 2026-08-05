@@ -1,8 +1,10 @@
-export const FALLBACK_RELEASE_URL = "https://github.com/HONG-LOU/entcoin/releases/tag/v1.3.0";
+export const FALLBACK_RELEASE_URL =
+  "https://github.com/HONG-LOU/entcoin/releases/tag/v1.4.0";
 
 const en = {
   "meta.title": "Entcoin — Your wallet, your node.",
-  "meta.description": "Entcoin is an independent proof-of-work network with a local wallet, fully validating node, transaction history, peer connectivity, and optional mining in one desktop application.",
+  "meta.description":
+    "Entcoin is an independent proof-of-work network with a local wallet, fully validating node, transaction history, peer connectivity, and optional mining in one desktop application.",
   "skip.content": "Skip to content",
   "brand.tagline": "Proof-of-work, held locally",
   "nav.about": "About",
@@ -17,8 +19,9 @@ const en = {
   "nav.open": "Open navigation",
   "nav.close": "Close navigation",
   "hero.eyebrow": "Entcoin mainnet / protocol v1",
-  "hero.title": "Entcoin. Your wallet, your node.",
-  "hero.body": "Entcoin is an independent proof-of-work network. Its desktop app gives you a local wallet, a fully validating node, transaction history, peer connectivity, and optional mining without an online account.",
+  "hero.title": "Entcoin",
+  "hero.body":
+    "Entcoin is an independent proof-of-work network. Its desktop app gives you a local wallet, a fully validating node, transaction history, peer connectivity, and optional mining without an online account.",
   "hero.download": "Run a node",
   "hero.protocol": "Read the protocol",
   "hero.signal": "Public archive seed",
@@ -32,23 +35,29 @@ const en = {
   "metric.release": "Current release",
   "about.eyebrow": "01 / Start here",
   "about.title": "What is Entcoin?",
-  "about.body": "Entcoin is an open-source cryptocurrency network and ENT is its native unit. People running Entcoin form the network together: they keep their own keys, check the same rules, relay transfers, and may choose to mine new blocks.",
+  "about.body":
+    "Entcoin is an open-source cryptocurrency network and ENT is its native unit. People running Entcoin form the network together: they keep their own keys, check the same rules, relay transfers, and may choose to mine new blocks.",
   "about.wallet.title": "A wallet you control",
-  "about.wallet.body": "No registration or hosted account. Your wallet is created on this computer. Back up the 24-word recovery phrase before receiving or mining ENT.",
+  "about.wallet.body":
+    "No registration or hosted account. Your wallet is created on this computer. Back up the 24-word recovery phrase before receiving or mining ENT.",
   "about.node.title": "A real node, not just a wallet screen",
-  "about.node.body": "The app downloads and verifies the chain itself. Two public seed nodes help new installations find the network; they do not decide your balance or approve transactions.",
+  "about.node.body":
+    "The app downloads and verifies the chain itself. Two public seed nodes help new installations find the network; they do not decide your balance or approve transactions.",
   "about.use.title": "Transfers and mining in one app",
-  "about.use.body": "Receive and send ENT, inspect confirmations, manage peers, and review diagnostics. Mining is available but remains off until you start it.",
+  "about.use.body":
+    "Receive and send ENT, inspect confirmations, manage peers, and review diagnostics. Mining is available but remains off until you start it.",
   "about.step.download.label": "Download",
   "about.step.download.body": "Install the desktop app for your system",
   "about.step.backup.label": "Protect",
   "about.step.backup.body": "Create a wallet and record its 24 words",
   "about.step.sync.label": "Connect",
-  "about.step.sync.body": "Let the node synchronize, then receive, send, or mine",
+  "about.step.sync.body":
+    "Let the node synchronize, then receive, send, or mine",
   "about.steps.label": "Getting started",
   "product.eyebrow": "02 / The desktop app",
   "product.title": "Everything local. Nothing hidden behind an account.",
-  "product.body": "Opening Entcoin starts a real validating node. Private keys stay in the local node process, the ledger is stored in SQLite, and every accepted block is checked before state changes.",
+  "product.body":
+    "Opening Entcoin starts a real validating node. Private keys stay in the local node process, the ledger is stored in SQLite, and every accepted block is checked before state changes.",
   "product.window.status": "Node active",
   "product.window.overview": "Overview",
   "product.window.transactions": "Transactions",
@@ -62,26 +71,35 @@ const en = {
   "product.window.storage": "Storage",
   "product.window.archive": "Archive",
   "product.point.wallet.title": "Self-custodied wallet",
-  "product.point.wallet.body": "24-word recovery and an encrypted portable backup, protected locally.",
+  "product.point.wallet.body":
+    "24-word recovery and an encrypted portable backup, protected locally.",
   "product.point.validation.title": "Full validation",
-  "product.point.validation.body": "UTXOs, signatures, proof of work, issuance, maturity, and reorg rules.",
+  "product.point.validation.body":
+    "UTXOs, signatures, proof of work, issuance, maturity, and reorg rules.",
   "product.point.process.title": "One process",
-  "product.point.process.body": "No hosted login, browser wallet, external database, or coordinator.",
+  "product.point.process.body":
+    "No hosted login, browser wallet, external database, or coordinator.",
   "technology.eyebrow": "03 / Verification path",
   "technology.title": "From peer message to committed ledger.",
-  "technology.body": "Headers arrive first. Candidate work is compared locally. Bodies are fetched only for a viable chain, fully validated, and committed atomically with undo data.",
+  "technology.body":
+    "Headers arrive first. Candidate work is compared locally. Bodies are fetched only for a viable chain, fully validated, and committed atomically with undo data.",
   "technology.discover.title": "Discover",
-  "technology.discover.body": "Built-in HTTPS bootstrap seeds and local network discovery connect the node automatically.",
+  "technology.discover.body":
+    "Built-in HTTPS bootstrap seeds and local network discovery connect the node automatically.",
   "technology.validate.title": "Validate",
-  "technology.validate.body": "Headers, timestamps, difficulty, work, ownership, and signatures.",
+  "technology.validate.body":
+    "Headers, timestamps, difficulty, work, ownership, and signatures.",
   "technology.commit.title": "Commit",
-  "technology.commit.body": "One SQLite transaction with WAL, full synchronization, and undo records.",
+  "technology.commit.body":
+    "One SQLite transaction with WAL, full synchronization, and undo records.",
   "technology.relay.title": "Relay",
-  "technology.relay.body": "Accepted blocks and transactions move over bounded HTTP and WebSocket paths.",
+  "technology.relay.body":
+    "Accepted blocks and transactions move over bounded HTTP and WebSocket paths.",
   "technology.architecture": "Explore the architecture",
   "economics.eyebrow": "04 / Monetary rules",
   "economics.title": "A small, explicit issuance schedule.",
-  "economics.body": "No premine, no account balances, and no floating-point supply math. Rewards are determined by block height and sum to an exact terminal amount.",
+  "economics.body":
+    "No premine, no account balances, and no floating-point supply math. Rewards are determined by block height and sum to an exact terminal amount.",
   "economics.max": "Maximum supply",
   "economics.units": "Atomic units / ENT",
   "economics.spacing": "Target spacing",
@@ -90,28 +108,35 @@ const en = {
   "economics.choice.value": "Cumulative work",
   "economics.blocks": "reward-bearing blocks",
   "economics.schedule": "across an approximately ten-year target schedule",
-  "economics.progress": "Issuance progress is derived from the validated chain, never a hosted counter.",
+  "economics.progress":
+    "Issuance progress is derived from the validated chain, never a hosted counter.",
   "download.eyebrow": "05 / Join",
   "download.title": "Choose your node.",
-  "download.body": "Desktop builds include the wallet and operational interface. The headless CLI runs the same validation, ledger, and peer-to-peer implementation.",
+  "download.body":
+    "Desktop builds include the wallet and operational interface. The headless CLI runs the same validation, ledger, and peer-to-peer implementation.",
   "download.windows.platform": "Windows 10/11 · x64",
   "download.windows.title": "Desktop node",
-  "download.windows.body": "Installer or portable build with wallet, mining, peers, history, and diagnostics.",
+  "download.windows.body":
+    "Installer or portable build with wallet, mining, peers, history, and diagnostics.",
   "download.windows.action": "Windows downloads",
   "download.ubuntu.platform": "Ubuntu 24.04+ · amd64",
   "download.ubuntu.title": "Desktop node",
-  "download.ubuntu.body": "Native .deb with a Secret Service protected local wallet.",
+  "download.ubuntu.body":
+    "Native .deb with a Secret Service protected local wallet.",
   "download.ubuntu.action": "Download .deb",
   "download.cli.platform": "Linux / Windows",
   "download.cli.title": "Headless CLI",
-  "download.cli.body": "Archive, pruned, wallet, or public seed deployments from one binary.",
+  "download.cli.body":
+    "Archive, pruned, wallet, or public seed deployments from one binary.",
   "download.cli.action": "CLI downloads",
   "download.checksums": "Checksums",
   "download.release": "View release notes",
-  "download.boundary": "v1.2.0 is superseded. Upgrade to v1.3.0 before block 125555 and verify the published checksums.",
+  "download.boundary":
+    "v1.2.0 is superseded. Upgrade to v1.4.0 before block 125555 and verify the published checksums.",
   "infrastructure.eyebrow": "06 / Live infrastructure",
   "infrastructure.title": "Inspect the public node.",
-  "infrastructure.body": "This page reads the same bounded status endpoint other nodes use. No market ticker and no fabricated activity.",
+  "infrastructure.body":
+    "This page reads the same bounded status endpoint other nodes use. No market ticker and no fabricated activity.",
   "infrastructure.endpoint": "Open status endpoint",
   "infrastructure.protocol": "protocol",
   "infrastructure.height": "height",
@@ -121,13 +146,15 @@ const en = {
   "infrastructure.storage.value": "archive seed",
   "source.eyebrow": "07 / Open source",
   "source.title": "The implementation is the claim.",
-  "source.body": "Entcoin is MIT-licensed. Consensus, wallet, ledger, networking, tests, operations, and known limitations are public in the repository.",
+  "source.body":
+    "Entcoin is MIT-licensed. Consensus, wallet, ledger, networking, tests, operations, and known limitations are public in the repository.",
   "source.repository": "Browse source",
   "source.operations": "Node operations",
   "source.roadmap": "Maturity roadmap",
   "source.security": "Security policy",
   "security.label": "Open network",
-  "security.body": "Two public archive seeds in separate regions keep Entcoin reachable across the internet. Every desktop node independently validates the chain and can also discover peers on its local network.",
+  "security.body":
+    "Two public archive seeds in separate regions keep Entcoin reachable across the internet. Every desktop node independently validates the chain and can also discover peers on its local network.",
   "footer.description": "A compact, independent proof-of-work network.",
   "footer.github": "GitHub",
   "footer.releases": "Releases",
@@ -147,7 +174,8 @@ const en = {
 
 const zh = {
   "meta.title": "Entcoin — 钱包和节点，都在自己手里",
-  "meta.description": "Entcoin 是一条独立、开源的工作量证明网络。桌面端集成钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
+  "meta.description":
+    "Entcoin 是一条独立、开源的工作量证明网络。桌面端集成钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
   "skip.content": "跳到正文",
   "brand.tagline": "钱包与节点，本地掌控",
   "nav.about": "了解 Entcoin",
@@ -162,8 +190,9 @@ const zh = {
   "nav.open": "打开导航",
   "nav.close": "关闭导航",
   "hero.eyebrow": "Entcoin 主网 / 协议 v1",
-  "hero.title": "Entcoin：钱包和节点，都在自己手里。",
-  "hero.body": "Entcoin 是一条独立的工作量证明网络。安装一个桌面应用，就能拥有本地钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
+  "hero.title": "Entcoin",
+  "hero.body":
+    "Entcoin 是一条独立的工作量证明网络。安装一个桌面应用，就能拥有本地钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
   "hero.download": "下载桌面端",
   "hero.protocol": "查看技术协议",
   "hero.signal": "公共节点",
@@ -177,13 +206,17 @@ const zh = {
   "metric.release": "当前版本",
   "about.eyebrow": "01 / 先从这里了解",
   "about.title": "Entcoin 到底是什么？",
-  "about.body": "Entcoin 是一条开源的数字货币网络，ENT 是网络里的原生单位。运行 Entcoin 的用户共同组成这张网络：各自保管钱包、按照同一套规则核对数据、转发交易，也可以选择参与挖矿。",
+  "about.body":
+    "Entcoin 是一条开源的数字货币网络，ENT 是网络里的原生单位。运行 Entcoin 的用户共同组成这张网络：各自保管钱包、按照同一套规则核对数据、转发交易，也可以选择参与挖矿。",
   "about.wallet.title": "钱包由你自己保管",
-  "about.wallet.body": "不用注册，也没有托管账户。钱包直接创建在这台电脑上。接收或挖到 ENT 之前，请先抄好 24 个恢复词；电脑损坏时，它们是找回钱包的关键。",
+  "about.wallet.body":
+    "不用注册，也没有托管账户。钱包直接创建在这台电脑上。接收或挖到 ENT 之前，请先抄好 24 个恢复词；电脑损坏时，它们是找回钱包的关键。",
   "about.node.title": "不只是一个钱包界面",
-  "about.node.body": "桌面端会自己下载并核对区块链。国内外两个公共节点帮助新安装找到网络，但它们不能修改你的余额，也不能替你批准交易。",
+  "about.node.body":
+    "桌面端会自己下载并核对区块链。国内外两个公共节点帮助新安装找到网络，但它们不能修改你的余额，也不能替你批准交易。",
   "about.use.title": "转账、挖矿和节点管理都在一起",
-  "about.use.body": "你可以收发 ENT、查看确认进度、管理连接和检查运行状态。挖矿默认关闭，只有你主动开启后才会使用计算资源。",
+  "about.use.body":
+    "你可以收发 ENT、查看确认进度、管理连接和检查运行状态。挖矿默认关闭，只有你主动开启后才会使用计算资源。",
   "about.step.download.label": "第一步：下载",
   "about.step.download.body": "选择 Windows 或 Ubuntu 桌面端",
   "about.step.backup.label": "第二步：备份",
@@ -193,7 +226,8 @@ const zh = {
   "about.steps.label": "开始使用 Entcoin",
   "product.eyebrow": "02 / 桌面端",
   "product.title": "打开应用，你就在运行自己的节点。",
-  "product.body": "Entcoin 不是连接远程账户的钱包外壳。它会在本机保存钱包和账本，并逐个核对收到的区块与交易；只有符合网络规则的数据，才会写入你的账本。",
+  "product.body":
+    "Entcoin 不是连接远程账户的钱包外壳。它会在本机保存钱包和账本，并逐个核对收到的区块与交易；只有符合网络规则的数据，才会写入你的账本。",
   "product.window.status": "节点运行中",
   "product.window.overview": "概览",
   "product.window.transactions": "交易",
@@ -207,26 +241,33 @@ const zh = {
   "product.window.storage": "存储",
   "product.window.archive": "归档",
   "product.point.wallet.title": "钱包在本机",
-  "product.point.wallet.body": "支持 24 个恢复词和密码加密备份，不依赖网站账户。",
+  "product.point.wallet.body":
+    "支持 24 个恢复词和密码加密备份，不依赖网站账户。",
   "product.point.validation.title": "数据自己核对",
-  "product.point.validation.body": "节点会检查余额来源、交易签名、挖矿工作量和 ENT 发行规则。",
+  "product.point.validation.body":
+    "节点会检查余额来源、交易签名、挖矿工作量和 ENT 发行规则。",
   "product.point.process.title": "一个应用即可运行",
-  "product.point.process.body": "钱包、账本、节点连接和挖矿都在桌面端里，不需要另装数据库。",
+  "product.point.process.body":
+    "钱包、账本、节点连接和挖矿都在桌面端里，不需要另装数据库。",
   "technology.eyebrow": "03 / 运行原理",
   "technology.title": "网络发来的数据，要先核对再入账。",
-  "technology.body": "节点先了解其他节点有哪些新区块，比较哪条链投入的总工作量更多，再下载需要的完整数据。所有规则检查通过后，区块和回退记录才会一起写入本地账本。",
+  "technology.body":
+    "节点先了解其他节点有哪些新区块，比较哪条链投入的总工作量更多，再下载需要的完整数据。所有规则检查通过后，区块和回退记录才会一起写入本地账本。",
   "technology.discover.title": "找到网络",
-  "technology.discover.body": "通过内置公共节点和局域网发现自动建立连接，也支持手动添加节点。",
+  "technology.discover.body":
+    "通过内置公共节点和局域网发现自动建立连接，也支持手动添加节点。",
   "technology.validate.title": "核对数据",
   "technology.validate.body": "检查时间、难度、工作量、资金来源和交易签名。",
   "technology.commit.title": "写入账本",
-  "technology.commit.body": "验证完整批次后再写入 SQLite，失败时不会留下半套数据。",
+  "technology.commit.body":
+    "验证完整批次后再写入 SQLite，失败时不会留下半套数据。",
   "technology.relay.title": "继续转发",
   "technology.relay.body": "把已经通过验证的区块和交易转发给其他节点。",
   "technology.architecture": "查看完整技术架构",
   "economics.eyebrow": "04 / 发行规则",
   "economics.title": "ENT 怎么产生，总量是多少？",
-  "economics.body": "ENT 没有预挖，创世区块也没有奖励。新 ENT 按区块高度通过挖矿产生，发行上限固定为 2,000,000 ENT；转账手续费只是在用户之间流转，不会增加总量。",
+  "economics.body":
+    "ENT 没有预挖，创世区块也没有奖励。新 ENT 按区块高度通过挖矿产生，发行上限固定为 2,000,000 ENT；转账手续费只是在用户之间流转，不会增加总量。",
   "economics.max": "最大供应量",
   "economics.units": "每个 ENT 的最小单位数",
   "economics.spacing": "目标出块时间",
@@ -238,25 +279,31 @@ const zh = {
   "economics.progress": "实际进度以各节点验证过的区块链为准，不依赖官网统计。",
   "download.eyebrow": "05 / 下载使用",
   "download.title": "选择适合你的版本。",
-  "download.body": "普通用户选择桌面端即可，里面已经包含钱包和完整节点。CLI 适合需要长期运行服务器、公共节点或自定义存储方式的用户。",
+  "download.body":
+    "普通用户选择桌面端即可，里面已经包含钱包和完整节点。CLI 适合需要长期运行服务器、公共节点或自定义存储方式的用户。",
   "download.windows.platform": "Windows 10/11 · x64",
   "download.windows.title": "Windows 桌面端",
-  "download.windows.body": "建议普通用户下载安装版；便携版可直接运行。两者都包含钱包、转账、挖矿、节点连接和诊断。",
+  "download.windows.body":
+    "建议普通用户下载安装版；便携版可直接运行。两者都包含钱包、转账、挖矿、节点连接和诊断。",
   "download.windows.action": "选择 Windows 版本",
   "download.ubuntu.platform": "Ubuntu 24.04+ · amd64",
   "download.ubuntu.title": "Ubuntu 桌面端",
-  "download.ubuntu.body": "安装 .deb 后可从应用菜单打开，钱包密钥由系统钥匙串保护。",
+  "download.ubuntu.body":
+    "安装 .deb 后可从应用菜单打开，钱包密钥由系统钥匙串保护。",
   "download.ubuntu.action": "下载 Ubuntu 安装包",
   "download.cli.platform": "Linux / Windows",
   "download.cli.title": "命令行节点",
-  "download.cli.body": "没有桌面界面，适合服务器和高级用户，可运行归档节点、精简存储节点或公共接入节点。",
+  "download.cli.body":
+    "没有桌面界面，适合服务器和高级用户，可运行归档节点、精简存储节点或公共接入节点。",
   "download.cli.action": "选择命令行版本",
   "download.checksums": "核对文件完整性",
   "download.release": "查看版本说明",
-  "download.boundary": "v1.2.0 已被替代。请在高度 125555 前升级到 v1.3.0，并核对官方 SHA-256。",
+  "download.boundary":
+    "v1.2.0 已被替代。请在高度 125555 前升级到 v1.4.0，并核对官方 SHA-256。",
   "infrastructure.eyebrow": "06 / 网络现状",
   "infrastructure.title": "公共节点现在是否在线？",
-  "infrastructure.body": "这里直接读取公共节点的实时状态，显示它当前同步到的区块高度和最新区块摘要。公共节点用于帮助其他节点联网和同步，不托管用户钱包。",
+  "infrastructure.body":
+    "这里直接读取公共节点的实时状态，显示它当前同步到的区块高度和最新区块摘要。公共节点用于帮助其他节点联网和同步，不托管用户钱包。",
   "infrastructure.endpoint": "查看节点原始状态",
   "infrastructure.protocol": "协议",
   "infrastructure.height": "高度",
@@ -266,13 +313,15 @@ const zh = {
   "infrastructure.storage.value": "保留完整历史的公共节点",
   "source.eyebrow": "07 / 开源透明",
   "source.title": "规则和代码都可以公开检查。",
-  "source.body": "Entcoin 采用 MIT 开源许可证。共识规则、钱包、账本、网络通信、自动化测试、节点运维方式和已知限制都在 GitHub 仓库中公开。",
+  "source.body":
+    "Entcoin 采用 MIT 开源许可证。共识规则、钱包、账本、网络通信、自动化测试、节点运维方式和已知限制都在 GitHub 仓库中公开。",
   "source.repository": "查看 GitHub 源码",
   "source.operations": "运行和维护节点",
   "source.roadmap": "查看后续计划",
   "source.security": "报告安全问题",
   "security.label": "当前网络",
-  "security.body": "Entcoin 主网已经有两个位于不同地区的公共节点，帮助桌面端跨互联网发现网络和同步数据。每台电脑仍会独立验证收到的区块和交易；同一局域网内的节点也能自动发现彼此。",
+  "security.body":
+    "Entcoin 主网已经有两个位于不同地区的公共节点，帮助桌面端跨互联网发现网络和同步数据。每台电脑仍会独立验证收到的区块和交易；同一局域网内的节点也能自动发现彼此。",
   "footer.description": "一条由用户共同运行、各自验证的工作量证明网络。",
   "footer.github": "GitHub",
   "footer.releases": "发布版本",
@@ -296,13 +345,22 @@ export const translations = Object.freeze({
 });
 
 export function validateNodeStatus(value) {
-  if (!value || typeof value !== "object") throw new TypeError("Invalid node status");
-  if (value.protocol !== "entropy-mainnet-v1") throw new TypeError("Unexpected node protocol");
-  if (!Number.isSafeInteger(value.height) || value.height < 0) throw new TypeError("Invalid node height");
-  if (typeof value.tip_hash !== "string" || !/^[0-9a-f]{64}$/i.test(value.tip_hash)) {
+  if (!value || typeof value !== "object")
+    throw new TypeError("Invalid node status");
+  if (value.protocol !== "entropy-mainnet-v1")
+    throw new TypeError("Unexpected node protocol");
+  if (!Number.isSafeInteger(value.height) || value.height < 0)
+    throw new TypeError("Invalid node height");
+  if (
+    typeof value.tip_hash !== "string" ||
+    !/^[0-9a-f]{64}$/i.test(value.tip_hash)
+  ) {
     throw new TypeError("Invalid tip hash");
   }
-  if (typeof value.chain_work !== "string" || !/^[0-9]{1,128}$/.test(value.chain_work)) {
+  if (
+    typeof value.chain_work !== "string" ||
+    !/^[0-9]{1,128}$/.test(value.chain_work)
+  ) {
     throw new TypeError("Invalid chain work");
   }
 
@@ -334,38 +392,74 @@ export function selectReleaseAssets(value) {
   const prefix = `/HONG-LOU/entcoin/releases/download/${value.tag_name}/`;
   const known = new Map();
   for (const asset of Array.isArray(value.assets) ? value.assets : []) {
-    if (!asset || typeof asset.name !== "string" || typeof asset.browser_download_url !== "string") continue;
+    if (
+      !asset ||
+      typeof asset.name !== "string" ||
+      typeof asset.browser_download_url !== "string"
+    )
+      continue;
     let url;
     try {
       url = new URL(asset.browser_download_url);
     } catch {
       continue;
     }
-    if (url.protocol !== "https:" || url.hostname !== "github.com" || !url.pathname.startsWith(prefix)) continue;
+    if (
+      url.protocol !== "https:" ||
+      url.hostname !== "github.com" ||
+      !url.pathname.startsWith(prefix)
+    )
+      continue;
     known.set(asset.name, asset.browser_download_url);
   }
 
   return {
     version: value.tag_name,
     release: value.html_url,
-    windowsPortable: findMirrorAsset(known, /^Entcoin\.exe$/i, value.tag_name) ?? fallback.release,
-    windowsInstaller: findMirrorAsset(known, /^entcoin-amd64-installer\.exe$/i, value.tag_name) ?? fallback.release,
-    ubuntu: findMirrorAsset(known, /^entcoin_\d+\.\d+\.\d+_amd64\.deb$/i, value.tag_name) ?? fallback.release,
-    linuxCli: findMirrorAsset(known, /^entcoin-cli-linux-amd64$/i, value.tag_name) ?? fallback.release,
-    windowsCli: findMirrorAsset(known, /^entcoin-cli\.exe$/i, value.tag_name) ?? fallback.release,
-    linuxChecksums: findGitHubAsset(known, /^SHA256SUMS-linux\.txt$/i) ?? fallback.release,
-    windowsChecksums: findGitHubAsset(known, /^SHA256SUMS\.txt$/i) ?? fallback.release,
+    windowsPortable:
+      findMirrorAsset(known, /^Entcoin\.exe$/i, value.tag_name) ??
+      fallback.release,
+    windowsInstaller:
+      findMirrorAsset(
+        known,
+        /^entcoin-amd64-installer\.exe$/i,
+        value.tag_name,
+      ) ?? fallback.release,
+    ubuntu:
+      findMirrorAsset(
+        known,
+        /^entcoin_\d+\.\d+\.\d+_amd64\.deb$/i,
+        value.tag_name,
+      ) ?? fallback.release,
+    linuxCli:
+      findMirrorAsset(known, /^entcoin-cli-linux-amd64$/i, value.tag_name) ??
+      fallback.release,
+    windowsCli:
+      findMirrorAsset(known, /^entcoin-cli\.exe$/i, value.tag_name) ??
+      fallback.release,
+    linuxChecksums:
+      findGitHubAsset(known, /^SHA256SUMS-linux\.txt$/i) ?? fallback.release,
+    windowsChecksums:
+      findGitHubAsset(known, /^SHA256SUMS\.txt$/i) ?? fallback.release,
   };
 }
 
 function isStableRelease(value) {
-  if (!value || typeof value !== "object" || value.draft || value.prerelease) return false;
-  if (typeof value.tag_name !== "string" || !/^v\d+\.\d+\.\d+$/.test(value.tag_name)) return false;
+  if (!value || typeof value !== "object" || value.draft || value.prerelease)
+    return false;
+  if (
+    typeof value.tag_name !== "string" ||
+    !/^v\d+\.\d+\.\d+$/.test(value.tag_name)
+  )
+    return false;
   if (typeof value.html_url !== "string") return false;
   try {
     const url = new URL(value.html_url);
-    return url.protocol === "https:" && url.hostname === "github.com" &&
-      url.pathname === `/HONG-LOU/entcoin/releases/tag/${value.tag_name}`;
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "github.com" &&
+      url.pathname === `/HONG-LOU/entcoin/releases/tag/${value.tag_name}`
+    );
   } catch {
     return false;
   }
@@ -373,7 +467,8 @@ function isStableRelease(value) {
 
 function findMirrorAsset(assets, pattern, version) {
   for (const name of assets.keys()) {
-    if (pattern.test(name)) return `https://template-chat.xyz/downloads/${version}/${encodeURIComponent(name)}`;
+    if (pattern.test(name))
+      return `https://template-chat.xyz/downloads/${version}/${encodeURIComponent(name)}`;
   }
   return undefined;
 }
@@ -387,7 +482,7 @@ function findGitHubAsset(assets, pattern) {
 
 function fallbackRelease() {
   return {
-    version: "v1.3.0",
+    version: "v1.4.0",
     release: FALLBACK_RELEASE_URL,
     windowsPortable: FALLBACK_RELEASE_URL,
     windowsInstaller: FALLBACK_RELEASE_URL,

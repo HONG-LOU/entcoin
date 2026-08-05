@@ -1,6 +1,6 @@
 # Entcoin node operations
 
-This guide covers the v1.3.0 Windows/Ubuntu desktop node, headless CLI, and
+This guide covers the v1.4.0 Windows/Ubuntu desktop node, headless CLI, and
 optional public-seed deployment. The network identity is
 `entropy-mainnet-v1`; this compatibility label keeps existing Entcoin nodes,
 wallets, and chain data on the same network.
@@ -16,14 +16,14 @@ Release builds provide these Windows artifacts:
 
 Ubuntu 24.04+ amd64 releases additionally provide:
 
-- `entcoin_1.3.0_amd64.deb`: desktop application and CLI installer;
+- `entcoin_1.4.0_amd64.deb`: desktop application and CLI installer;
 - `entcoin-linux-amd64`: unpackaged desktop binary;
 - `entcoin-cli-linux-amd64`: unpackaged headless node;
 - `SHA256SUMS-linux.txt`: Linux artifact checksums.
 
 Verify Windows artifacts against `SHA256SUMS.txt` and Linux artifacts against
 `SHA256SUMS-linux.txt` from the same release before running them. Current
-v1.3.0 binaries may be unsigned, so a checksum proves only that the file matches
+v1.4.0 binaries may be unsigned, so a checksum proves only that the file matches
 the published release artifact, not that a trusted certificate authority
 verified its publisher.
 
@@ -48,7 +48,7 @@ strict `--listen` behavior so operator mistakes fail visibly.
 Microsoft WebView2 Runtime is required. It is normally present on current
 Windows 10/11 systems; the NSIS build can install the bootstrapper when needed.
 
-Install Ubuntu packages with `sudo apt install ./entcoin_1.3.0_amd64.deb`, then
+Install Ubuntu packages with `sudo apt install ./entcoin_1.4.0_amd64.deb`, then
 launch **Entcoin** from the desktop menu or run `entcoin`. Ubuntu stores mainnet
 state under `~/.config/Entcoin/mainnet-v1`. The logged-in desktop session must
 provide an unlocked Secret Service keyring; the standard Ubuntu Desktop session

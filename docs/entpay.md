@@ -1,148 +1,165 @@
-# EntPay Agent payment protocol
+# EntPay Agent payment protocol and merchant SDK
 
-EntPay is an application-layer payment protocol for Entcoin. It lets an AI
-agent purchase a bounded resource with a normal signed ENT transaction while
-the private key remains inside the local Entcoin wallet. EntPay does not change
-consensus, transaction encoding, addresses, the P2P protocol, or the public
-wallet read API.
+EntPay is an application-layer commerce protocol for Entcoin. An Agent can
+discover a merchant service, request a signed quote, approve a bounded purchase,
+pay with an ordinary ENT transaction, wait for confirmations, and verify the
+merchant's signed delivery. Wallet keys remain in the user's local Entcoin data
+directory. EntPay does not change consensus, transaction encoding, addresses,
+or the P2P protocol.
 
-The first production resource is `network-report`: after one confirmation it
-returns a signed receipt and a live comparison of the two public Entcoin archive
-nodes. The local Codex agent evaluates the invoice before payment and summarizes
-the paid report after delivery.
+Entcoin publishes the protocol, generic Agent, and Go merchant SDK. A merchant
+owns and deploys its products independently on a laptop, private server, cloud
+service, or container platform. Product source code, model credentials, data,
+and infrastructure do not belong in the Entcoin repository and do not need to
+be public on GitHub.
 
-## Trust boundary
+## Who does what
+
+| Party | Responsibility |
+| --- | --- |
+| Entcoin | Protocol types, deterministic checks, local Agent wallet payment, Gateway, confirmation tracking, idempotency, Receipt signing, artifact authorization |
+| Merchant | Product description, price, input validation, business fulfillment, HTTPS deployment, receiving address, signing credential, operational data |
+| User or Agent | Select a merchant and resource, supply input, set a hard maximum, approve intent, sign locally, verify delivery |
+
+Common uses include an Agent purchasing an image generation, data lookup,
+document conversion, compute job, API result, report, file, or one-time access
+token. Those are examples, not built-in Entcoin products.
+
+## End-to-end result
 
 ```text
-local Codex agent                  public EntPay merchant
-  policy decision                   issue signed invoice
-        |                                  |
-  enforced max amount                       |
-        |                                  |
-  local wallet signs ---- Entcoin tx ----> local validating node
-        |                                  |
-  no seed leaves host              wait for confirmation
-                                           |
-                               signed receipt + report
+merchant /v1/info
+        ↓ discover products and terms
+signed input-bound Invoice
+        ↓ deterministic checks + semantic approval
+local wallet signs a normal ENT transaction
+        ↓ merchant verifies one exact output and confirmations
+idempotent Product.Fulfill
+        ↓
+signed Receipt + JSON payload + optional authorized artifact
 ```
 
-- Codex may approve or reject an invoice, but hard checks independently enforce
-  the HTTPS endpoint, network, merchant, resource, expiry, signature, and maximum
-  amount.
-- The merchant never receives a seed phrase or private key. It receives only the
-  signed transaction already intended for public broadcast.
-- Invoice and receipt signatures use a per-deployment Ed25519 key. The public key
-  is advertised by `GET /v1/info`; HTTPS remains the discovery trust root.
-- The claim token is a random bearer capability. Only its SHA-256 digest is
-  stored. It must not be logged, placed in a URL, or shared with another agent.
-- A transaction ID is unique across invoices. SQLite atomically rejects replay.
-  Submission and delivery are idempotent, so a lost HTTP response can be retried.
+The final `Receipt` binds the invoice, transaction, resource, original input
+hash, JSON payload hash, optional artifact hash, and delivery time. The Agent
+verifies every binding before analysis or file storage.
 
-## Flow
+## User and Agent usage
 
-1. `POST /v1/invoices` creates a 15-minute invoice.
-2. The agent validates the service metadata and Ed25519 invoice signature.
-3. Codex evaluates the invoice; the deterministic policy still enforces the
-   configured maximum amount.
-4. The local wallet selects UTXOs, signs, stores, and broadcasts a standard ENT
-   transaction.
-5. `POST /v1/invoices/{id}/submit` checks one exact merchant output and forwards
-   the transaction through the merchant's validating node.
-6. `POST /v1/invoices/{id}/claim` returns `202` until the required confirmation,
-   then returns the report and signed receipt. Repeating the claim returns the
-   same persisted delivery.
+The merchant's web workspace lists products dynamically from `GET /v1/info`.
+It can create and display an Invoice, but it never asks for a seed phrase or
+private key. Actual payment is performed by the local Agent:
 
-All private invoice operations require:
-
-```http
-Authorization: Bearer <claim_token>
+```bash
+entpay agent \
+  --endpoint https://merchant.example/entpay/ \
+  --data /path/to/Entropy/mainnet-v1 \
+  --wallet ent1... \
+  --resource example-resource \
+  --input-json '{"request":"Produce the purchased result"}' \
+  --max-amount 0.00100000 \
+  --artifact-output ./delivery.bin \
+  --output ./receipt.json
 ```
 
-The public service rejects unknown JSON fields, duplicate keys, trailing data,
-more than 128 KiB, and nesting deeper than 32 levels. Creation and payment
-requests are rate-limited per proxy-verified client IP.
+Use `--input-file request.json` instead of `--input-json` for larger input.
+`--artifact-output` is optional for JSON-only products and required when the
+user wants an artifact saved. Existing files are rejected before payment. The
+Agent restores the previously active wallet profile after using a dedicated
+wallet.
 
-## API
+Codex performs only semantic approval and delivery summarization. Deterministic
+Go code independently enforces HTTPS (loopback HTTP is allowed for development),
+protocol, network, product terms, merchant, Ed25519 signature, input hash,
+expiry, capabilities, and the hard maximum. Codex never receives a wallet seed,
+private key, claim token, or signing key.
 
-Create an invoice:
+## Merchant integration
 
-```http
-POST /v1/invoices
-Content-Type: application/json
+Implement the public `entpay.Product` interface in the merchant's own project:
 
-{
-  "resource": "network-report",
-  "query": "Compare both public nodes and summarize the network state."
+```go
+type Product interface {
+    Descriptor() ProductDescriptor
+    Validate(context.Context, json.RawMessage) error
+    Fulfill(context.Context, FulfillmentRequest) (Fulfillment, error)
 }
 ```
 
-The response contains an `entpay-v1` invoice and a separate `claim_token`.
-Amounts are unsigned integer Entcoin atoms. The initial production price is
-`10000` atoms (`0.00010000 ENT`) and delivery requires one confirmation.
+`Descriptor` advertises the resource ID, display name, description, atom price,
+required confirmations, visual accent, and input fields. `Validate` performs
+cheap input checks before an Invoice exists. `Fulfill` runs only after the
+Gateway has verified payment and confirmations.
 
-Service discovery and health:
+Register one or more implementations:
+
+```go
+gateway, err := entpay.NewGateway(entpay.MerchantConfig{
+    MerchantAddress:      merchantAddress,
+    SigningKey:           signingKey,
+    NodeURL:              localValidatingNode,
+    DatabasePath:         dataDirectory + "/entpay.db",
+    FulfillmentDirectory: dataDirectory + "/fulfillments",
+    Products:             []entpay.Product{productA, productB},
+})
+```
+
+Serve `gateway.Handler()` behind the merchant's HTTPS reverse proxy. The SDK
+provides the complete web workspace and these routes:
 
 ```text
-GET /v1/info
-GET /healthz
+GET  /healthz
+GET  /v1/info
+POST /v1/invoices
+GET  /v1/invoices/{id}
+POST /v1/invoices/{id}/submit
+POST /v1/invoices/{id}/claim
+GET  /v1/invoices/{id}/artifact
 ```
 
-Production endpoints:
+Call `gateway.Close(ctx)` during graceful shutdown. Product fulfillment should
+honor context cancellation. Mark non-retryable product failures with
+`entpay.PermanentFailure(err)`; other failures receive a bounded retry.
 
-```text
-https://entcoin.xyz/entpay/
-https://template-chat.xyz/entpay/
-```
+## Safety and idempotency
 
-## Agent client
+- Invoice input is canonicalized and SHA-256 bound before signing.
+- Requests reject unknown outer fields, duplicate keys, trailing data, more
+  than 128 KiB, and nesting deeper than 32 levels.
+- A transaction ID is unique across all invoices. Submission is idempotent.
+- Delivery starts only after the configured confirmation count.
+- SQLite serializes fulfillment jobs. Stale jobs can recover after a crash.
+- A fulfillment payload and artifact are staged atomically before the signed
+  delivery is committed, avoiding a second paid provider call after a crash.
+- Claim tokens are 256-bit bearer capabilities; only their SHA-256 digests are
+  stored. Unauthorized invoice and artifact lookups return `404`.
+- Artifact bytes, size, media type, and SHA-256 are verified before download and
+  again by the Agent before atomic storage. HTTP Range is supported.
 
-The Agent client must exclusively lock the selected Entcoin data directory. Stop
-the desktop wallet before invoking it. A dedicated wallet profile can be selected
-with `--wallet`; the previous active profile is restored before the database is
-closed.
+## Private deployment boundary
 
-```bash
-entpay-linux-amd64 agent \
-  --endpoint https://entcoin.xyz/entpay/ \
-  --data /path/to/Entropy/mainnet-v1 \
-  --wallet ent1... \
-  --max-amount 0.00010000 \
-  --query "Compare both public nodes and summarize the network state."
-```
+The merchant service is not part of an Entcoin node deployment. It may live in
+a separate private repository or only on the merchant's server. Even a private
+repository must not contain:
 
-The client uses the locally configured `codex` executable by default. `--model`
-may select another configured model. Codex credentials are never copied to the
-merchant server.
+- model API keys or private model base URLs;
+- wallet private keys, recovery words, or wallet-control tokens;
+- EntPay Ed25519 private signing keys or claim tokens;
+- production node URLs, server addresses, inventory, or access credentials;
+- SQLite databases, logs, prompts, provider responses, or generated artifacts.
 
-## Merchant deployment
+Inject sensitive values at runtime with systemd credentials, a secret manager,
+or root-owned restricted files. Avoid command-line secrets because process
+arguments are observable. The merchant service needs only a receiving address,
+an EntPay signing key, and access to a validating Entcoin node; it never needs a
+receiving-wallet private key.
 
-Build the static Linux service:
+## Protocol limitations
 
-```bash
-go build -trimpath -ldflags="-s -w" -o entpay ./cmd/entpay
-```
-
-Generate a signing key on each merchant host:
-
-```bash
-install -d -m 0700 /etc/entpay
-entpay generate-key --output /etc/entpay/signing.key
-```
-
-Install `deploy/linux-seed/entpay.service`, create an environment file from
-`entpay.env.example`, and proxy `/entpay/*` to `127.0.0.1:47841` while stripping
-the prefix. The service account needs write access only to `/var/lib/entpay` and
-read access to its environment and signing key.
-
-## Limitations
-
-- Version 1 delivers only after one confirmation. A one-block reorganization can
-  still reverse payment after delivery; do not use it for high-value resources.
-- The verifier uses the merchant address's bounded wallet history. The current
-  deployment is intended for low-volume demonstration and community services,
-  not high-frequency settlement.
-- ENT is not a stable unit of account and does not have broad merchant liquidity.
-- There is no subscription debit, escrow, refund transaction, payment channel,
-  stablecoin, bridge, or custody service.
-- The paid report proves what the configured nodes returned at delivery time; it
-  is not an independent security audit or investment signal.
+- Confirmation depth is merchant policy. Low depth can deliver before a chain
+  reorganization; high-value products should require more confirmations.
+- The current verifier reads bounded merchant wallet history and targets modest
+  commerce volume, not high-frequency settlement.
+- ENT is not a stable unit of account. EntPay does not provide escrow, refunds,
+  subscriptions, payment channels, bridges, custody, or legal dispute handling.
+- Receipt integrity proves what a merchant delivered for a payment. It does not
+  prove that an external model, data source, or business claim was correct.

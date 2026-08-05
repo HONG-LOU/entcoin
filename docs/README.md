@@ -18,7 +18,7 @@ implementation disagree.
 | [Security policy](../SECURITY.md) | Supported versions, reporting, disclosure, and user guidance |
 | [Roadmap](next-step.md) | Explicitly unfinished production-readiness work |
 | [移动 PWA 钱包](mobile-pwa.zh-CN.md) | 中文实现说明、安全边界、构建、安装与发布顺序 |
-| [Release notes](../RELEASE_NOTES.md) | Complete bilingual v1.3.0 release log and upgrade notes |
+| [Release notes](../RELEASE_NOTES.md) | Complete bilingual v1.4.0 release log and upgrade notes |
 
 ## 文档导航
 
