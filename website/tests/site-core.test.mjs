@@ -154,7 +154,7 @@ test("desktop update fallback names the current official release", async () => {
   const manifest = JSON.parse(await readFile(new URL("../update.json", import.meta.url), "utf8"));
   assert.deepEqual(manifest, {
     version: "1.3.0",
-    published_at: "2026-07-29T00:00:00Z",
+    published_at: "2026-08-05T00:00:00Z",
     release_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.3.0",
   });
 });
