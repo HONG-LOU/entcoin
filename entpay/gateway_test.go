@@ -403,7 +403,7 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 	if appResponse.Header.Get("Cache-Control") != "no-store" {
 		t.Fatalf("JavaScript Cache-Control = %q, want no-store", appResponse.Header.Get("Cache-Control"))
 	}
-	for _, expected := range []string{"window.open(launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", `headers:{"Content-Type":"application/json"}`} {
+	for _, expected := range []string{"window.open(launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", "桌面应用 1.5.2 或更高版本", `headers:{"Content-Type":"application/json"}`} {
 		if !bytes.Contains(appContents, []byte(expected)) {
 			t.Fatalf("merchant JavaScript does not contain %q", expected)
 		}
