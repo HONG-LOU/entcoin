@@ -647,7 +647,7 @@ async function refreshDashboard() {
 function renderUpdate(status) {
   state.updateStatus = status;
   state.updateChecked = true;
-  setText("current-version", `v${status.current_version || "1.5.0"}`);
+  setText("current-version", `v${status.current_version || "1.5.1"}`);
   const available = Boolean(status.available);
   setText("update-status", available ? `Entcoin v${status.latest_version} is available` : "Entcoin is up to date");
   $("install-update").hidden = !available;

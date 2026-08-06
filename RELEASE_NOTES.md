@@ -1,10 +1,15 @@
-# Entcoin v1.5.0
+# Entcoin v1.5.1
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.5.0 completes the interactive EntPay Agent payment flow without
+Entcoin v1.5.1 completes the interactive EntPay Agent payment flow without
 changing `entropy-mainnet-v1`, consensus, genesis, transaction encoding,
 wallets, addresses, balances, chain data, or peer compatibility.
+
+This patch release fixes the production browser handoff from an HTTPS merchant
+to the loopback confirmation page. The local Agent now permits only the initial
+cross-site top-level `GET /` document navigation; all cross-site API requests,
+approval calls, subresources, and non-loopback hosts remain blocked.
 
 ## Local Agent confirmation
 
@@ -48,8 +53,11 @@ desktop/mobile browser handoff, checksums, and build provenance.
 
 ## 简体中文
 
-Entcoin v1.5.0 补齐 EntPay 的可交互 Agent 支付流程，但不改变
+Entcoin v1.5.1 补齐 EntPay 的可交互 Agent 支付流程，但不改变
 `entropy-mainnet-v1`、共识、创世块、交易编码、钱包、地址、余额、链数据或节点兼容性。
+
+本补丁修复 HTTPS 商家页面打开本机确认页时的生产浏览器交接。Agent 只额外允许首次跨站、
+顶层文档形式的 `GET /` 导航；跨站 API、确认请求、子资源和非 loopback 主机仍全部拒绝。
 
 ## 本机 Agent 确认
 

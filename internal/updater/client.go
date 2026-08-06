@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	CurrentVersion          = "1.5.0"
+	CurrentVersion          = "1.5.1"
 	ReleasesURL             = "https://github.com/HONG-LOU/entcoin/releases/latest"
 	releaseFeedURL          = "https://github.com/HONG-LOU/entcoin/releases.atom"
 	updateManifestURL       = "https://entcoin.xyz/update.json"

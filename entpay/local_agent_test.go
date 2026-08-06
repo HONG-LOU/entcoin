@@ -254,3 +254,53 @@ func TestLocalAgentRejectsCrossSiteAndFormApproval(t *testing.T) {
 		t.Fatalf("cross-site approval returned %d", response.StatusCode)
 	}
 }
+
+func TestLocalAgentAllowsCrossSiteTopLevelNavigation(t *testing.T) {
+	fixture := newGatewayFixture(t, false)
+	_, server := newTestLocalAgent(t, fixture, func(context.Context, string, uint64) (Payment, error) {
+		t.Fatal("page navigation reached payment")
+		return Payment{}, nil
+	})
+	request, err := http.NewRequest(http.MethodGet, server.URL+"/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Sec-Fetch-Site", "cross-site")
+	request.Header.Set("Sec-Fetch-Mode", "navigate")
+	request.Header.Set("Sec-Fetch-Dest", "document")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("cross-site top-level navigation returned %d", response.StatusCode)
+	}
+}
+
+func TestLocalAgentRejectsCrossSiteSubresourceNavigation(t *testing.T) {
+	fixture := newGatewayFixture(t, false)
+	_, server := newTestLocalAgent(t, fixture, func(context.Context, string, uint64) (Payment, error) {
+		t.Fatal("subresource request reached payment")
+		return Payment{}, nil
+	})
+	for _, destination := range []string{"iframe", "image", "script"} {
+		t.Run(destination, func(t *testing.T) {
+			request, err := http.NewRequest(http.MethodGet, server.URL+"/", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			request.Header.Set("Sec-Fetch-Site", "cross-site")
+			request.Header.Set("Sec-Fetch-Mode", "navigate")
+			request.Header.Set("Sec-Fetch-Dest", destination)
+			response, err := http.DefaultClient.Do(request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			response.Body.Close()
+			if response.StatusCode != http.StatusForbidden {
+				t.Fatalf("cross-site %s request returned %d", destination, response.StatusCode)
+			}
+		})
+	}
+}

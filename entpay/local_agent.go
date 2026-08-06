@@ -303,7 +303,11 @@ func validLocalBrowserRequest(request *http.Request) bool {
 		return false
 	}
 	if site := request.Header.Get("Sec-Fetch-Site"); site == "cross-site" {
-		return false
+		return request.Method == http.MethodGet &&
+			request.URL.Path == "/" &&
+			request.Header.Get("Sec-Fetch-Mode") == "navigate" &&
+			request.Header.Get("Sec-Fetch-Dest") == "document" &&
+			request.Header.Get("Origin") == ""
 	}
 	origin := request.Header.Get("Origin")
 	if origin == "" {

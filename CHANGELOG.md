@@ -5,6 +5,14 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-08-06
+
+### Fixed
+
+- Allowed the merchant-to-loopback handoff to open the local Agent as a
+  browser top-level document navigation. Cross-site API requests, approvals,
+  iframes, images, scripts, and non-loopback hosts remain rejected.
+
 ## [1.5.0] - 2026-08-06
 
 ### Added
