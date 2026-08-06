@@ -67,7 +67,7 @@ const indexHTML = `<!doctype html>
     </main>
     <footer><span>ENTROPY MAINNET</span><span data-t="footer">SIGNED INVOICE · LOCAL APPROVAL · VERIFIED DELIVERY</span></footer>
   </div>
-  <script src="app.js"></script>
+  <script src="app.js?v=desktop-relay"></script>
 </body>
 </html>`
 

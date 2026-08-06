@@ -170,6 +170,7 @@ func (g *Gateway) Handler() http.Handler {
 
 func (g *Gateway) handleHome(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+	writer.Header().Set("Cache-Control", "no-store")
 	_, _ = io.WriteString(writer, indexHTML)
 }
 
@@ -180,13 +181,13 @@ func (g *Gateway) handleFavicon(writer http.ResponseWriter, _ *http.Request) {
 
 func (g *Gateway) handleJavaScript(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/javascript; charset=utf-8")
-	writer.Header().Set("Cache-Control", "public, max-age=3600")
+	writer.Header().Set("Cache-Control", "no-store")
 	_, _ = io.WriteString(writer, appJavaScript)
 }
 
 func (g *Gateway) handleStyle(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/css; charset=utf-8")
-	writer.Header().Set("Cache-Control", "public, max-age=3600")
+	writer.Header().Set("Cache-Control", "no-store")
 	_, _ = io.WriteString(writer, styleCSS)
 }
 

@@ -384,6 +384,12 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 			t.Fatalf("responsive CSS does not contain %q", expected)
 		}
 	}
+	if response.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("home Cache-Control = %q, want no-store", response.Header.Get("Cache-Control"))
+	}
+	if !bytes.Contains(contents, []byte(`src="app.js?v=desktop-relay"`)) {
+		t.Fatal("home does not use the cache-busting desktop relay script URL")
+	}
 	policy := response.Header.Get("Content-Security-Policy")
 	if !strings.Contains(policy, "connect-src 'self' http://127.0.0.1:47833") || response.Header.Get("X-Frame-Options") != "DENY" {
 		t.Fatal("security headers are missing")
@@ -394,6 +400,9 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 	}
 	appContents, _ := io.ReadAll(appResponse.Body)
 	appResponse.Body.Close()
+	if appResponse.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("JavaScript Cache-Control = %q, want no-store", appResponse.Header.Get("Cache-Control"))
+	}
 	for _, expected := range []string{"window.open(launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", `headers:{"Content-Type":"application/json"}`} {
 		if !bytes.Contains(appContents, []byte(expected)) {
 			t.Fatalf("merchant JavaScript does not contain %q", expected)
