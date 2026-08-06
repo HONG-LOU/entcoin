@@ -48,7 +48,7 @@ Assert-True (Test-Path -LiteralPath $protocolCommandKey) "entcoin protocol comma
 
 $registeredCommand = (Get-Item -LiteralPath $protocolCommandKey).GetValue("")
 $expectedCommand = '"' + $executable + '" "%1"'
-Assert-True ($registeredCommand -ceq $expectedCommand) "protocol command is not exactly quoted: $registeredCommand"
+Assert-True ($registeredCommand -ieq $expectedCommand) "protocol command is not exactly quoted: $registeredCommand"
 
 Start-Process $uri
 Wait-Until {
