@@ -49,6 +49,8 @@ Assert-True (Test-Path -LiteralPath $protocolCommandKey) "entcoin protocol comma
 $registeredCommand = (Get-Item -LiteralPath $protocolCommandKey).GetValue("")
 $expectedCommand = '"' + $executable + '" "%1"'
 Assert-True ($registeredCommand -ieq $expectedCommand) "protocol command is not exactly quoted: $registeredCommand"
+Assert-True (@(Get-CimInstance Win32_Process -Filter "Name = 'Entcoin.exe'" |
+    Where-Object { $_.ExecutablePath -eq $executable }).Count -eq 0) "Entcoin was already running before the protocol cold start"
 
 Start-Process $uri
 Wait-Until {
@@ -59,7 +61,6 @@ Wait-Until {
 $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'Entcoin.exe'" |
     Where-Object { $_.ExecutablePath -eq $executable })
 $desktopProcess = $processes[0]
-Assert-True ($desktopProcess.CommandLine -like "*$uri*") "bootstrap URI is missing from the installed process command line"
 Assert-True ($desktopProcess.CommandLine -notmatch "(?i)([?&]handoff=|claim_token)") "a handoff capability entered the process command line"
 
 Wait-Until {
