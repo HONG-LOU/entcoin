@@ -88,13 +88,18 @@ func secureArtifactDirectory(directory string) (string, error) {
 	if err := os.MkdirAll(absolute, 0o700); err != nil {
 		return "", fmt.Errorf("create artifact directory: %w", err)
 	}
-	resolved, err := filepath.EvalSymlinks(absolute)
-	if err != nil || resolved != absolute {
-		return "", fmt.Errorf("artifact directory must not contain symbolic links")
-	}
 	info, err := os.Lstat(absolute)
-	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+	if err != nil || !info.IsDir() {
 		return "", fmt.Errorf("artifact directory is unsafe")
+	}
+	for component := absolute; ; component = filepath.Dir(component) {
+		unsafe, err := unsafeArtifactPathComponent(component)
+		if err != nil || unsafe {
+			return "", fmt.Errorf("artifact directory must not contain symbolic links or reparse points")
+		}
+		if parent := filepath.Dir(component); parent == component {
+			break
+		}
 	}
 	if err := os.Chmod(absolute, 0o700); err != nil {
 		return "", err

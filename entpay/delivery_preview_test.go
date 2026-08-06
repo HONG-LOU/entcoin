@@ -43,4 +43,11 @@ func TestSecureArtifactDirectoryRejectsSymlink(t *testing.T) {
 	if _, err := secureArtifactDirectory(link); err == nil {
 		t.Fatal("symlink artifact directory was accepted")
 	}
+	nested := filepath.Join(link, "nested")
+	if err := os.Mkdir(filepath.Join(target, "nested"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := secureArtifactDirectory(nested); err == nil {
+		t.Fatal("artifact directory below a symlink was accepted")
+	}
 }

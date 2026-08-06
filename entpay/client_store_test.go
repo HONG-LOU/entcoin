@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -46,8 +47,12 @@ func TestClientStoreEncryptsAndDeduplicatesReceivedHandoff(t *testing.T) {
 	if bytes.Contains(contents, []byte(code)) || bytes.Contains(contents, []byte(nonce)) {
 		t.Fatal("client database contains handoff secret plaintext")
 	}
-	if info, err := os.Stat(path); err != nil || info.Mode().Perm() != 0o600 {
-		t.Fatalf("client database permissions = %v, %v", info.Mode().Perm(), err)
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
+		t.Fatalf("client database permissions = %v", info.Mode().Perm())
 	}
 }
 
