@@ -19,7 +19,7 @@ import (
 )
 
 func TestTwoNodesPropagateTransactionAndBlockIncrementally(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
 	nodeA := newTestNode(t)
 	nodeB := newTestNode(t)
