@@ -42,6 +42,11 @@ jobs:
           ENTCOIN_WINDOWS_CERTIFICATE_BASE64: ${{ secrets.ENTCOIN_WINDOWS_CERTIFICATE_BASE64 }}
           ENTCOIN_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.ENTCOIN_WINDOWS_CERTIFICATE_PASSWORD }}
           ENTCOIN_WINDOWS_TIMESTAMP_URL: ${{ vars.ENTCOIN_WINDOWS_TIMESTAMP_URL }}
+          ENTCOIN_REQUIRE_WINDOWS_SIGNING: "true"
+
+      - name: Smoke-test signed Windows installer and protocol handoff
+        shell: pwsh
+        run: .\scripts\smoke-windows-installer.ps1 -Installer .\build\bin\entcoin-amd64-installer.exe
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

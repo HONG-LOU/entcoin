@@ -12,8 +12,14 @@
   "info": {
     "companyName": "Entcoin Project",
     "productName": "Entcoin",
-    "productVersion": "1.5.1",
+    "productVersion": "1.5.2",
     "copyright": "2026 Entcoin Project",
-    "comments": "Entcoin proof-of-work mainnet desktop full node"
+    "comments": "Entcoin proof-of-work mainnet desktop full node",
+    "protocols": [
+      {
+        "scheme": "entcoin",
+        "description": "Entcoin Agent Pay link"
+      }
+    ]
   }
 }

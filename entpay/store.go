@@ -2,12 +2,15 @@ package entpay
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -21,6 +24,7 @@ var (
 	errInvoiceNotFound = errors.New("invoice not found")
 	errUnauthorized    = errors.New("invoice authorization failed")
 	errConflict        = errors.New("invoice state conflict")
+	errHandoffNotFound = errors.New("handoff not found")
 )
 
 type invoiceRecord struct {
@@ -90,12 +94,119 @@ func openStore(path string) (*store, error) {
 			updated_at INTEGER NOT NULL,
 			last_error TEXT NOT NULL DEFAULT ''
 		);
-		CREATE INDEX IF NOT EXISTS delivery_jobs_status ON delivery_jobs(status, updated_at);
+			CREATE INDEX IF NOT EXISTS delivery_jobs_status ON delivery_jobs(status, updated_at);
+			CREATE TABLE IF NOT EXISTS handoffs (
+				code_hash BLOB PRIMARY KEY,
+				invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+				capsule BLOB NOT NULL,
+				expires_at INTEGER NOT NULL,
+				nonce_hash BLOB,
+				redeemed_at INTEGER
+			);
+			CREATE INDEX IF NOT EXISTS handoffs_expiry ON handoffs(expires_at);
 	`); err != nil {
 		_ = database.Close()
 		return nil, fmt.Errorf("create invoice schema: %w", err)
 	}
 	return &store{database: database}, nil
+}
+
+func (s *store) CreateHandoff(ctx context.Context, code, invoiceID string, capsule HandoffCapsule, expiresAt time.Time, key [32]byte) error {
+	encoded, err := json.Marshal(capsule)
+	if err != nil {
+		return fmt.Errorf("encode handoff capsule: %w", err)
+	}
+	sealed, err := sealHandoffCapsule(key, invoiceID, encoded)
+	if err != nil {
+		return err
+	}
+	digest := opaqueTokenDigest(code)
+	_, err = s.database.ExecContext(ctx, `INSERT INTO handoffs(code_hash, invoice_id, capsule, expires_at) VALUES (?, ?, ?, ?)`, digest[:], invoiceID, sealed, expiresAt.UTC().Unix())
+	if err != nil {
+		return fmt.Errorf("store handoff: %w", err)
+	}
+	return nil
+}
+
+func (s *store) RedeemHandoff(ctx context.Context, code, nonce string, now time.Time, key [32]byte) (HandoffCapsule, string, error) {
+	codeHash := opaqueTokenDigest(code)
+	nonceHash := opaqueTokenDigest(nonce)
+	tx, err := s.database.BeginTx(ctx, nil)
+	if err != nil {
+		return HandoffCapsule{}, "", fmt.Errorf("begin handoff redemption: %w", err)
+	}
+	defer tx.Rollback()
+	var invoiceID string
+	var sealed, existingNonce []byte
+	var expiresAt int64
+	var redeemedAt sql.NullInt64
+	err = tx.QueryRowContext(ctx, `SELECT invoice_id, capsule, expires_at, nonce_hash, redeemed_at FROM handoffs WHERE code_hash = ?`, codeHash[:]).Scan(&invoiceID, &sealed, &expiresAt, &existingNonce, &redeemedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return HandoffCapsule{}, "", errHandoffNotFound
+	}
+	if err != nil {
+		return HandoffCapsule{}, "", fmt.Errorf("read handoff: %w", err)
+	}
+	if now.Unix() > expiresAt || (redeemedAt.Valid && (now.Unix()-redeemedAt.Int64 > 30 || subtle.ConstantTimeCompare(existingNonce, nonceHash[:]) != 1)) {
+		return HandoffCapsule{}, "", errHandoffNotFound
+	}
+	if !redeemedAt.Valid {
+		result, updateErr := tx.ExecContext(ctx, `UPDATE handoffs SET nonce_hash = ?, redeemed_at = ? WHERE code_hash = ? AND redeemed_at IS NULL`, nonceHash[:], now.Unix(), codeHash[:])
+		if updateErr != nil {
+			return HandoffCapsule{}, "", fmt.Errorf("bind handoff nonce: %w", updateErr)
+		}
+		changed, updateErr := result.RowsAffected()
+		if updateErr != nil || changed != 1 {
+			return HandoffCapsule{}, "", errHandoffNotFound
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return HandoffCapsule{}, "", fmt.Errorf("commit handoff redemption: %w", err)
+	}
+	plaintext, err := openHandoffCapsule(key, invoiceID, sealed)
+	if err != nil {
+		return HandoffCapsule{}, "", err
+	}
+	var capsule HandoffCapsule
+	if err := json.Unmarshal(plaintext, &capsule); err != nil {
+		return HandoffCapsule{}, "", fmt.Errorf("decode handoff capsule: %w", err)
+	}
+	return capsule, invoiceID, nil
+}
+
+func sealHandoffCapsule(key [32]byte, invoiceID string, plaintext []byte) ([]byte, error) {
+	aead, err := handoffAEAD(key)
+	if err != nil {
+		return nil, err
+	}
+	nonce := make([]byte, aead.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return nil, fmt.Errorf("create handoff nonce: %w", err)
+	}
+	return aead.Seal(nonce, nonce, plaintext, []byte("entpay-v1-handoff\x00"+invoiceID)), nil
+}
+
+func openHandoffCapsule(key [32]byte, invoiceID string, sealed []byte) ([]byte, error) {
+	aead, err := handoffAEAD(key)
+	if err != nil {
+		return nil, err
+	}
+	if len(sealed) < aead.NonceSize()+aead.Overhead() {
+		return nil, fmt.Errorf("handoff capsule is invalid")
+	}
+	plaintext, err := aead.Open(nil, sealed[:aead.NonceSize()], sealed[aead.NonceSize():], []byte("entpay-v1-handoff\x00"+invoiceID))
+	if err != nil {
+		return nil, fmt.Errorf("decrypt handoff capsule: %w", err)
+	}
+	return plaintext, nil
+}
+
+func handoffAEAD(key [32]byte) (cipher.AEAD, error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, fmt.Errorf("create handoff cipher: %w", err)
+	}
+	return cipher.NewGCM(block)
 }
 
 func (s *store) Close() error {

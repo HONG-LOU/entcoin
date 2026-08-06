@@ -384,8 +384,20 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 			t.Fatalf("responsive CSS does not contain %q", expected)
 		}
 	}
-	if response.Header.Get("Content-Security-Policy") == "" || response.Header.Get("X-Frame-Options") != "DENY" {
+	policy := response.Header.Get("Content-Security-Policy")
+	if !strings.Contains(policy, "connect-src 'self' http://127.0.0.1:47833") || response.Header.Get("X-Frame-Options") != "DENY" {
 		t.Fatal("security headers are missing")
+	}
+	appResponse, err := http.Get(fixture.server.URL + "/app.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	appContents, _ := io.ReadAll(appResponse.Body)
+	appResponse.Body.Close()
+	for _, expected := range []string{"window.open(launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", `headers:{"Content-Type":"application/json"}`} {
+		if !bytes.Contains(appContents, []byte(expected)) {
+			t.Fatalf("merchant JavaScript does not contain %q", expected)
+		}
 	}
 }
 

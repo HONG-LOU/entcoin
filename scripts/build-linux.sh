@@ -11,6 +11,7 @@ project=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 bin="$project/build/bin"
 stage=$(mktemp -d "${TMPDIR:-/tmp}/entcoin-linux-package.XXXXXX")
 trap 'rm -rf "$stage"' EXIT
+chmod 0755 "$stage"
 
 command -v node >/dev/null || { echo "Node.js 22 is required" >&2; exit 1; }
 project_version=$(node -p "require('$project/frontend/package.json').version")
@@ -46,6 +47,8 @@ install -m 0644 "$project/deploy/linux-desktop/entcoin.desktop" \
     "$stage/usr/share/applications/entcoin.desktop"
 install -m 0644 "$project/build/appicon.png" \
     "$stage/usr/share/icons/hicolor/512x512/apps/entcoin.png"
+install -m 0755 "$project/deploy/linux-desktop/postinst" "$stage/DEBIAN/postinst"
+install -m 0755 "$project/deploy/linux-desktop/postrm" "$stage/DEBIAN/postrm"
 installed_size=$(du -sk "$stage/usr" | cut -f1)
 sed \
     -e "s/@VERSION@/$version/g" \

@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
+	"github.com/HONG-LOU/entcoin/entpay"
 	"github.com/HONG-LOU/entcoin/internal/core"
 	"github.com/HONG-LOU/entcoin/internal/ledger"
 	"github.com/HONG-LOU/entcoin/internal/node"
@@ -16,16 +19,36 @@ import (
 )
 
 type App struct {
-	mu       sync.RWMutex
-	startMu  sync.Mutex
-	wait     sync.WaitGroup
-	service  *node.Service
-	start    error
-	ctx      context.Context
-	cancel   context.CancelFunc
-	closing  bool
-	updating bool
-	updater  *updater.Client
+	mu             sync.RWMutex
+	startMu        sync.Mutex
+	wait           sync.WaitGroup
+	service        *node.Service
+	start          error
+	ctx            context.Context
+	cancel         context.CancelFunc
+	closing        bool
+	updating       bool
+	updater        *updater.Client
+	entpayManager  *entpay.ClientManager
+	entpayStore    *entpay.ClientStore
+	entpayStart    error
+	handoffQueue   chan entpay.LaunchRequest
+	handoffQueued  map[[32]byte]struct{}
+	handoffOrigins map[string]time.Time
+	launchError    bool
+	relayServer    *http.Server
+	relayStart     error
+}
+
+func (a *App) recordInvalidEntPayLaunch() {
+	a.mu.Lock()
+	a.launchError = true
+	ctx := a.ctx
+	closing := a.closing
+	a.mu.Unlock()
+	if ctx != nil && !closing {
+		wailsruntime.EventsEmit(ctx, "entcoin:entpay-launch-error", "The EntPay payment link was invalid and was not opened.")
+	}
 }
 
 type ActionResult struct {
@@ -39,8 +62,15 @@ type StartupState struct {
 	Message string `json:"message"`
 }
 
-func NewApp() *App {
-	return &App{updater: updater.New()}
+func NewApp(initial ...entpay.LaunchRequest) *App {
+	app := &App{
+		updater: updater.New(), handoffQueue: make(chan entpay.LaunchRequest, 8),
+		handoffQueued: make(map[[32]byte]struct{}), handoffOrigins: make(map[string]time.Time),
+	}
+	for _, launch := range initial {
+		app.routeSystemLaunch(launch)
+	}
+	return app
 }
 
 func (a *App) focusWindow() {
@@ -61,6 +91,12 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = nodeContext
 	a.cancel = cancel
 	a.mu.Unlock()
+	if err := a.startEntPayHandoffRelay(nodeContext); err != nil {
+		a.mu.Lock()
+		a.relayStart = err
+		a.launchError = true
+		a.mu.Unlock()
+	}
 	a.wait.Add(1)
 	go func() {
 		defer a.wait.Done()
@@ -85,6 +121,9 @@ func (a *App) startNode(ctx context.Context) {
 	})
 	if err == nil {
 		err = service.Start(ctx)
+	}
+	if err == nil {
+		a.initializeEntPay(ctx, service)
 	}
 	if err != nil && service != nil {
 		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -127,13 +166,99 @@ func (a *App) shutdown(context.Context) {
 	a.wait.Wait()
 	a.mu.RLock()
 	service := a.service
+	manager := a.entpayManager
+	clientStore := a.entpayStore
 	a.mu.RUnlock()
+	if manager != nil {
+		waitContext, waitCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		_ = manager.Wait(waitContext)
+		waitCancel()
+	}
+	if clientStore != nil {
+		_ = clientStore.Close()
+	}
 	if service == nil {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_ = service.Close(ctx)
+}
+
+func (a *App) initializeEntPay(ctx context.Context, service *node.Service) {
+	clientStore, err := entpay.OpenDesktopClientStore(service.DataDirectory())
+	if err != nil {
+		a.mu.Lock()
+		a.entpayStart = err
+		a.mu.Unlock()
+		return
+	}
+	artifactDirectory, err := entpay.DefaultArtifactDirectory()
+	if err != nil {
+		_ = clientStore.Close()
+		a.mu.Lock()
+		a.entpayStart = err
+		a.mu.Unlock()
+		return
+	}
+	manager, err := entpay.NewClientManager(ctx, clientStore, service, 1_000_000, artifactDirectory)
+	if err != nil {
+		_ = clientStore.Close()
+		a.mu.Lock()
+		a.entpayStart = err
+		a.mu.Unlock()
+		return
+	}
+	manager.SetListener(a.emitEntPaySession)
+	a.mu.Lock()
+	a.entpayStore = clientStore
+	a.entpayManager = manager
+	a.entpayStart = nil
+	a.mu.Unlock()
+	_ = manager.Recover()
+	a.wait.Add(1)
+	go func() {
+		defer a.wait.Done()
+		a.consumeHandoffs(ctx, manager)
+	}()
+}
+
+func (a *App) enqueueHandoff(launch entpay.LaunchRequest) bool {
+	digest := sha256.Sum256([]byte(launch.Merchant + "\x00" + launch.Handoff))
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.closing {
+		return false
+	}
+	if _, exists := a.handoffQueued[digest]; exists {
+		return true
+	}
+	select {
+	case a.handoffQueue <- launch:
+		a.handoffQueued[digest] = struct{}{}
+		return true
+	default:
+		return false
+	}
+}
+
+func (a *App) consumeHandoffs(ctx context.Context, manager *entpay.ClientManager) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case launch := <-a.handoffQueue:
+			digest := sha256.Sum256([]byte(launch.Merchant + "\x00" + launch.Handoff))
+			a.mu.Lock()
+			delete(a.handoffQueued, digest)
+			a.mu.Unlock()
+			session, err := manager.ReceiveQueued(ctx, launch)
+			if err == nil {
+				a.focusWindow()
+				wailsruntime.EventsEmit(ctx, "entcoin:entpay-incoming", session)
+			}
+		}
+	}
 }
 
 func (a *App) GetDashboard() (node.Dashboard, error) {

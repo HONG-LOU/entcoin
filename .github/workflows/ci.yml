@@ -12,7 +12,7 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -53,6 +53,20 @@ jobs:
         run: |
           npm test
           npm run build
+
+      - name: Install pinned Windows packaging tools
+        shell: pwsh
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.13.0
+          choco install nsis --version=3.11 -y --no-progress
+
+      - name: Build Windows installer
+        shell: pwsh
+        run: .\scripts\build.ps1
+
+      - name: Smoke-test Windows installer and protocol handoff
+        shell: pwsh
+        run: .\scripts\smoke-windows-installer.ps1 -Installer .\build\bin\entcoin-amd64-installer.exe
 
       - name: Validate Windows seed deployment scripts
         shell: pwsh

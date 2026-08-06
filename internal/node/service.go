@@ -585,6 +585,15 @@ func (s *Service) ActualAddress() string {
 	return s.actualAddress
 }
 
+func (s *Service) DataDirectory() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if s.store == nil {
+		return ""
+	}
+	return s.store.Directory()
+}
+
 func (s *Service) Dashboard() (Dashboard, error) {
 	s.walletMutationMu.Lock()
 	s.mu.Lock()

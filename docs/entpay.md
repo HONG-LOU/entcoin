@@ -47,7 +47,13 @@ verifies every binding before analysis or file storage.
 
 The merchant's web workspace lists products dynamically from `GET /v1/info`.
 It can create and display an Invoice, but it never asks for a seed phrase or
-private key. For an interactive purchase, start the local confirmation UI once:
+private key. The default interactive flow uses the installed Entcoin desktop:
+the merchant opens a secret-free `entcoin://pay` bootstrap URI, then POSTs the
+separate short-lived handoff code to the desktop loopback relay. Entcoin opens
+Agent Pay and performs all verification and payment locally.
+
+The standalone local confirmation UI remains available as a developer and
+compatibility path:
 
 ```bash
 entpay agent-ui \
@@ -57,13 +63,11 @@ entpay agent-ui \
   --artifacts ~/Downloads/EntPay
 ```
 
-It listens only on `127.0.0.1:47831`. On a merchant page, create the signed
-invoice and choose **Confirm in local Agent**. The browser passes the merchant
-endpoint, original input, signed invoice, and short-lived claim capability in a
-URL fragment. Fragments are not sent in HTTP requests; the local page consumes
-and immediately removes it from the address bar. The local Agent then fetches
-the merchant metadata again and independently verifies the protocol, network,
-product, price, input hash, signature, expiry, and local spending limit.
+It listens only on `127.0.0.1:47831`. The compatibility UI accepts its legacy
+URL-fragment envelope, removes it from the address bar immediately, and then
+performs the same independent protocol, network, product, price, input hash,
+signature, expiry, and local spending-limit checks. This fragment transport is
+not used by the installed desktop flow.
 
 The confirmation page shows the exact merchant, request, amount, expiry, and
 required confirmations. Rejecting creates no transaction. Approving signs with
@@ -129,6 +133,7 @@ gateway, err := entpay.NewGateway(entpay.MerchantConfig{
     DatabasePath:         dataDirectory + "/entpay.db",
     FulfillmentDirectory: dataDirectory + "/fulfillments",
     Products:             []entpay.Product{productA, productB},
+    PublicEndpoint:       "https://merchant.example/entpay/",
 })
 ```
 
@@ -139,11 +144,18 @@ provides the complete web workspace and these routes:
 GET  /healthz
 GET  /v1/info
 POST /v1/invoices
+POST /v1/handoffs/redeem
 GET  /v1/invoices/{id}
 POST /v1/invoices/{id}/submit
 POST /v1/invoices/{id}/claim
 GET  /v1/invoices/{id}/artifact
 ```
+
+When `PublicEndpoint` is configured, invoice creation also returns a short-lived
+`launch` object. Its `url` contains only the public merchant endpoint and is safe
+to pass to the operating-system protocol handler. The merchant page sends the
+separate `launch.handoff` value to Entcoin's `127.0.0.1:47833` relay after the
+desktop app starts. Do not concatenate the handoff into a system URI or log it.
 
 Call `gateway.Close(ctx)` during graceful shutdown. Product fulfillment should
 honor context cancellation. Mark non-retryable product failures with

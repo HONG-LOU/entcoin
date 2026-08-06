@@ -119,6 +119,24 @@ type CreateInvoiceRequest struct {
 type CreateInvoiceResponse struct {
 	Invoice    Invoice `json:"invoice"`
 	ClaimToken string  `json:"claim_token"`
+	Launch     *Launch `json:"launch,omitempty"`
+}
+
+type Launch struct {
+	URL       string    `json:"url"`
+	Handoff   string    `json:"handoff"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type RedeemHandoffRequest struct {
+	Code        string `json:"code"`
+	ClientNonce string `json:"client_nonce"`
+}
+
+type HandoffCapsule struct {
+	Endpoint string                `json:"endpoint"`
+	Input    json.RawMessage       `json:"input"`
+	Created  CreateInvoiceResponse `json:"created"`
 }
 
 type SubmitPaymentRequest struct {

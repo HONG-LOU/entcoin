@@ -1,0 +1,77 @@
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.entpay-unread { width: 7px; height: 7px; margin-left: 1px; border-radius: 50%; background: #ff6b5f; }
+.entpay-heading { align-items: end; }
+.entpay-link-form { display: flex; align-items: center; gap: 8px; width: min(520px, 60%); }
+.entpay-link-form input { min-width: 0; flex: 1; height: 38px; padding: 0 11px; border: 1px solid #cbd2ce; border-radius: 4px; background: #fff; }
+.entpay-link-form button { flex: 0 0 auto; }
+.entpay-status { min-height: 32px; padding: 8px 0; color: #68716d; border-top: 1px solid #d8ddda; border-bottom: 1px solid #d8ddda; font-size: 11px; }
+.entpay-status[data-kind="error"] { color: #b94735; }
+.entpay-desk { display: grid; grid-template-columns: minmax(250px, 32%) minmax(0, 1fr); min-height: 500px; }
+.entpay-inbox { min-width: 0; border-right: 1px solid #d8ddda; }
+.entpay-inbox-title { height: 43px; display: flex; align-items: center; justify-content: space-between; padding-right: 18px; font-size: 11px; text-transform: uppercase; }
+.entpay-inbox-title span { color: #68716d; font-variant-numeric: tabular-nums; }
+.entpay-list { margin: 0; padding: 0; list-style: none; }
+.entpay-row { border-top: 1px solid #e4e8e5; }
+.entpay-row button { position: relative; width: 100%; min-height: 92px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; padding: 13px 18px 13px 12px; text-align: left; color: #111413; background: transparent; border: 0; border-left: 3px solid transparent; }
+.entpay-row button:hover { background: #eef2ef; }
+.entpay-row button.selected { background: #e7f7f2; border-left-color: #58d6bd; }
+.entpay-row strong, .entpay-row-merchant { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entpay-row strong { font-size: 12px; }
+.entpay-row-merchant { grid-column: 1 / -1; color: #68716d; font-size: 10px; }
+.entpay-stage { color: #28765f; font-size: 10px; font-weight: 700; }
+.entpay-row-amount { font-size: 11px; font-variant-numeric: tabular-nums; }
+.stage-failed_terminal, .stage-invalid, .stage-expired { color: #b94735; }
+.stage-failed_retryable { color: #9a650f; }
+.entpay-list-empty { padding: 24px 18px; color: #68716d; font-size: 11px; }
+.entpay-detail { min-width: 0; padding: 25px 0 32px 30px; }
+.entpay-empty { max-width: 380px; margin: 92px auto; text-align: center; color: #68716d; }
+.entpay-empty svg { width: 30px; height: 30px; color: #58a995; }
+.entpay-empty h2 { margin: 12px 0 5px; color: #111413; font-size: 17px; }
+.entpay-empty p { margin: 0; font-size: 12px; line-height: 18px; }
+.entpay-detail-header { display: flex; align-items: end; justify-content: space-between; gap: 18px; }
+.entpay-detail-header h2 { margin: 0; overflow-wrap: anywhere; font-size: 20px; }
+.entpay-amount { flex: 0 0 auto; font-size: 22px; font-variant-numeric: tabular-nums; }
+.entpay-rail { display: grid; grid-template-columns: repeat(5, 1fr); margin: 24px 0; padding: 0; list-style: none; }
+.entpay-rail li { position: relative; padding-top: 15px; color: #7a827e; border-top: 3px solid #d8ddda; font-size: 10px; font-weight: 700; }
+.entpay-rail li::before { position: absolute; top: -6px; left: 0; width: 9px; height: 9px; content: ""; border-radius: 50%; background: #c4cbc7; }
+.entpay-rail li.reached { color: #176e58; border-color: #58d6bd; }
+.entpay-rail li.reached::before { background: #58d6bd; }
+.entpay-rail li[aria-current="step"]::before { box-shadow: 0 0 0 4px rgba(88, 214, 189, 0.22); }
+.entpay-error { display: grid; gap: 3px; margin: 0 0 18px; padding: 11px 13px; color: #74392f; background: #fff0ed; border-left: 3px solid #ff6b5f; font-size: 11px; }
+.entpay-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-top: 1px solid #d8ddda; }
+.entpay-facts div { min-width: 0; padding: 11px 14px 11px 0; border-bottom: 1px solid #e4e8e5; }
+.entpay-facts dt { color: #68716d; font-size: 10px; }
+.entpay-facts dd { margin: 4px 0 0; overflow-wrap: anywhere; font-size: 11px; }
+.entpay-code { font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace; }
+.entpay-input { margin-top: 20px; }
+.entpay-input h3 { margin: 0 0 7px; font-size: 12px; }
+.entpay-input pre { max-height: 170px; margin: 0; padding: 12px; overflow: auto; color: #27302c; background: #eef1ef; border: 1px solid #d8ddda; font-size: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.entpay-preview { margin: 20px 0 0; }
+.entpay-preview img { display: block; width: 100%; max-height: 520px; object-fit: contain; object-position: left center; background: #eef1ef; }
+.entpay-preview span { color: #68716d; font-size: 11px; }
+.entpay-actions { min-height: 48px; display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+.entpay-pay-button { min-height: 38px; padding: 0 18px; color: #0f2922; background: #58d6bd; border: 1px solid #42bfa7; border-radius: 4px; font-weight: 800; }
+.entpay-pay-button:hover:not(:disabled) { background: #6fe0c9; }
+.entpay-progress-copy { color: #68716d; font-size: 11px; }
+.entpay-settings { padding: 18px 0; border-top: 1px solid #d8ddda; }
+.entpay-settings summary { cursor: pointer; font-size: 12px; font-weight: 750; }
+.entpay-settings form { max-width: 620px; display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 12px 18px; align-items: center; margin-top: 18px; }
+.entpay-settings label { margin: 0; }
+.entpay-fixed-setting { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.entpay-fixed-setting input { width: 16px; height: 16px; flex: 0 0 auto; margin: 0; accent-color: #18784f; }
+.entpay-settings input:not([type="checkbox"]), .entpay-settings select { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #cbd2ce; border-radius: 4px; background: #fff; }
+.entpay-folder-row { display: flex; gap: 7px; }
+.entpay-folder-row input { min-width: 0; }
+.entpay-settings-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 900px) {
+  .entpay-heading { align-items: stretch; flex-direction: column; }
+  .entpay-link-form { width: 100%; }
+  .entpay-desk { grid-template-columns: 230px minmax(0, 1fr); }
+  .entpay-detail { padding-left: 20px; }
+  .entpay-facts { grid-template-columns: 1fr; }
+  .entpay-settings form { grid-template-columns: 1fr; }
+  .entpay-fixed-setting, .entpay-settings-actions { grid-column: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entpay-view *, .entpay-view *::before { animation: none !important; transition: none !important; }
+}

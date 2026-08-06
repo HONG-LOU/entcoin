@@ -34,6 +34,11 @@ type ApprovalRequest struct {
 	MaximumAtoms uint64            `json:"maximum_atoms"`
 }
 
+type PreparedPaymentInspection struct {
+	Approval ApprovalRequest `json:"approval"`
+	Service  ServiceInfo     `json:"service"`
+}
+
 type Reasoner interface {
 	Approve(context.Context, ApprovalRequest) (Decision, error)
 	Analyze(context.Context, Delivery) (string, error)
@@ -128,30 +133,38 @@ func RunAgent(ctx context.Context, config AgentConfig) (AgentResult, error) {
 }
 
 func InspectPreparedPayment(ctx context.Context, endpoint string, input json.RawMessage, maximum uint64, created CreateInvoiceResponse) (ApprovalRequest, error) {
+	inspection, err := InspectPreparedPaymentDetails(ctx, endpoint, input, maximum, created)
+	return inspection.Approval, err
+}
+
+func InspectPreparedPaymentDetails(ctx context.Context, endpoint string, input json.RawMessage, maximum uint64, created CreateInvoiceResponse) (PreparedPaymentInspection, error) {
 	normalizedEndpoint, err := normalizeEntPayURL(endpoint)
 	if err != nil {
-		return ApprovalRequest{}, err
+		return PreparedPaymentInspection{}, err
 	}
 	canonicalInput, err := canonicalObject(input)
 	if err != nil {
-		return ApprovalRequest{}, err
+		return PreparedPaymentInspection{}, err
 	}
 	if maximum == 0 || strings.TrimSpace(created.ClaimToken) == "" {
-		return ApprovalRequest{}, fmt.Errorf("prepared payment is incomplete")
+		return PreparedPaymentInspection{}, fmt.Errorf("prepared payment is incomplete")
 	}
 	client := &http.Client{Timeout: 20 * time.Second}
 	var info ServiceInfo
 	if err := agentJSON(ctx, client, http.MethodGet, normalizedEndpoint+"v1/info", "", nil, &info); err != nil {
-		return ApprovalRequest{}, err
+		return PreparedPaymentInspection{}, err
 	}
 	product, err := advertisedProduct(info, created.Invoice.Resource)
 	if err != nil {
-		return ApprovalRequest{}, err
+		return PreparedPaymentInspection{}, err
 	}
 	if _, err := validateRemoteInvoice(info, product, created.Invoice, canonicalInput, maximum); err != nil {
-		return ApprovalRequest{}, err
+		return PreparedPaymentInspection{}, err
 	}
-	return ApprovalRequest{Invoice: created.Invoice, Product: product, Input: canonicalInput, MaximumAtoms: maximum}, nil
+	return PreparedPaymentInspection{
+		Approval: ApprovalRequest{Invoice: created.Invoice, Product: product, Input: canonicalInput, MaximumAtoms: maximum},
+		Service:  info,
+	}, nil
 }
 
 func RunPreparedAgent(ctx context.Context, config PreparedAgentConfig) (AgentResult, error) {

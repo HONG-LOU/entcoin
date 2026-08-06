@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ed25519"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -27,6 +28,7 @@ type MerchantConfig struct {
 	FulfillmentDirectory string
 	InvoiceLifetime      time.Duration
 	FulfillmentTimeout   time.Duration
+	PublicEndpoint       string
 	Products             []Product
 	Logger               *slog.Logger
 }
@@ -39,6 +41,8 @@ type Gateway struct {
 	fulfillments       *fulfillmentStore
 	lifetime           time.Duration
 	fulfillmentTimeout time.Duration
+	publicEndpoint     string
+	handoffKey         [32]byte
 	products           map[string]Product
 	descriptors        []ProductDescriptor
 	logger             *slog.Logger
@@ -57,6 +61,14 @@ func NewGateway(config MerchantConfig) (*Gateway, error) {
 	}
 	if len(config.SigningKey) != ed25519.PrivateKeySize {
 		return nil, fmt.Errorf("Ed25519 signing key is invalid")
+	}
+	publicEndpoint := ""
+	if strings.TrimSpace(config.PublicEndpoint) != "" {
+		var err error
+		publicEndpoint, err = validatePublicEndpoint(config.PublicEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("public endpoint: %w", err)
+		}
 	}
 	if config.InvoiceLifetime == 0 {
 		config.InvoiceLifetime = 15 * time.Minute
@@ -110,10 +122,12 @@ func NewGateway(config MerchantConfig) (*Gateway, error) {
 		logger = slog.Default()
 	}
 	workerContext, cancelWorkers := context.WithCancel(context.Background())
+	handoffKey := sha256.Sum256(append([]byte("entpay-v1-handoff-capsule\x00"), config.SigningKey.Seed()...))
 	return &Gateway{
 		merchant: config.MerchantAddress, signingKey: append(ed25519.PrivateKey(nil), config.SigningKey...),
 		node: node, store: dataStore, fulfillments: fulfillments,
 		lifetime: config.InvoiceLifetime, fulfillmentTimeout: config.FulfillmentTimeout,
+		publicEndpoint: publicEndpoint, handoffKey: handoffKey,
 		products: products, descriptors: descriptors, logger: logger, limiter: newRateLimiter(),
 		workerContext: workerContext, cancelWorkers: cancelWorkers,
 		closeDone: make(chan struct{}),
@@ -146,6 +160,7 @@ func (g *Gateway) Handler() http.Handler {
 	mux.HandleFunc("GET /healthz", g.handleHealth)
 	mux.HandleFunc("GET /v1/info", g.handleInfo)
 	mux.HandleFunc("POST /v1/invoices", g.handleCreateInvoice)
+	mux.HandleFunc("POST /v1/handoffs/redeem", g.handleRedeemHandoff)
 	mux.HandleFunc("GET /v1/invoices/{id}", g.handleInvoiceStatus)
 	mux.HandleFunc("POST /v1/invoices/{id}/submit", g.handleSubmitPayment)
 	mux.HandleFunc("POST /v1/invoices/{id}/claim", g.handleClaim)
@@ -232,7 +247,48 @@ func (g *Gateway) handleCreateInvoice(writer http.ResponseWriter, request *http.
 		return
 	}
 	signInvoice(g.signingKey, &record.Invoice)
-	writeJSON(writer, http.StatusCreated, CreateInvoiceResponse{Invoice: record.Invoice, ClaimToken: token})
+	created := CreateInvoiceResponse{Invoice: record.Invoice, ClaimToken: token}
+	if g.publicEndpoint != "" {
+		code, codeErr := newOpaqueToken()
+		expiresAt := time.Now().UTC().Add(2 * time.Minute)
+		if expiresAt.After(record.ExpiresAt) {
+			expiresAt = record.ExpiresAt
+		}
+		capsule := HandoffCapsule{Endpoint: g.publicEndpoint, Input: canonical, Created: created}
+		if codeErr != nil || g.store.CreateHandoff(request.Context(), code, record.ID, capsule, expiresAt, g.handoffKey) != nil {
+			g.logger.Error("create handoff", "invoice", record.ID)
+			writeError(writer, http.StatusInternalServerError, "payment handoff could not be created")
+			return
+		}
+		created.Launch = &Launch{URL: buildLaunchURL(g.publicEndpoint), Handoff: code, ExpiresAt: expiresAt}
+	}
+	writeJSON(writer, http.StatusCreated, created)
+}
+
+func (g *Gateway) handleRedeemHandoff(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	if !g.limiter.Allow("handoff-ip:"+clientIP(request), 20, time.Minute) {
+		writeError(writer, http.StatusTooManyRequests, "handoff rate limit exceeded")
+		return
+	}
+	var input RedeemHandoffRequest
+	if err := decodeJSON(request, &input); err != nil || validateOpaqueToken(input.Code) != nil || validateOpaqueToken(input.ClientNonce) != nil {
+		writeError(writer, http.StatusNotFound, "payment handoff was not found")
+		return
+	}
+	capsule, invoiceID, err := g.store.RedeemHandoff(request.Context(), input.Code, input.ClientNonce, time.Now().UTC(), g.handoffKey)
+	if err != nil {
+		if !errors.Is(err, errHandoffNotFound) {
+			g.logger.Error("redeem handoff", "error", err)
+		}
+		writeError(writer, http.StatusNotFound, "payment handoff was not found")
+		return
+	}
+	if !g.limiter.Allow("handoff-invoice:"+invoiceID, 5, time.Minute) {
+		writeError(writer, http.StatusTooManyRequests, "handoff rate limit exceeded")
+		return
+	}
+	writeJSON(writer, http.StatusOK, capsule)
 }
 
 func (g *Gateway) handleInvoiceStatus(writer http.ResponseWriter, request *http.Request) {
@@ -263,10 +319,6 @@ func (g *Gateway) handleSubmitPayment(writer http.ResponseWriter, request *http.
 	if !ok {
 		return
 	}
-	if time.Now().UTC().After(record.ExpiresAt) {
-		writeError(writer, http.StatusConflict, "invoice is not payable")
-		return
-	}
 	var input SubmitPaymentRequest
 	if err := decodeJSON(request, &input); err != nil {
 		writeError(writer, http.StatusBadRequest, err.Error())
@@ -283,6 +335,10 @@ func (g *Gateway) handleSubmitPayment(writer http.ResponseWriter, request *http.
 	}
 	if record.Status == "submitted" && record.TxID == transaction.ID {
 		writeJSON(writer, http.StatusAccepted, PaymentStatus{InvoiceID: record.ID, Status: "submitted", TransactionID: transaction.ID, Required: record.Confirmations})
+		return
+	}
+	if time.Now().UTC().After(record.ExpiresAt) {
+		writeError(writer, http.StatusConflict, "invoice is not payable")
 		return
 	}
 	if record.Status != "open" {
@@ -513,7 +569,7 @@ func bearerToken(request *http.Request) string {
 
 func (g *Gateway) securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		writer.Header().Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'")
+		writer.Header().Set("Content-Security-Policy", "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; connect-src 'self' http://127.0.0.1:47833; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'")
 		writer.Header().Set("Referrer-Policy", "no-referrer")
 		writer.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
 		writer.Header().Set("X-Content-Type-Options", "nosniff")

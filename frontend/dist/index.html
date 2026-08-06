@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#171b1a" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'self'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' ws: http://127.0.0.1:*; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'"
     />
     <link rel="icon" href="data:," />
     <title>Entcoin Node</title>
-    <script type="module" crossorigin src="/assets/index-CNPqZwB9.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-B6_2A4ly.css">
+    <script type="module" crossorigin src="/assets/index-Ct0BQ7SO.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CKG0V38T.css">
   </head>
   <body>
     <div id="app">
@@ -44,6 +44,9 @@
           </button>
           <button class="view-tab" type="button" data-view="transactions">
             <i data-lucide="history"></i><span>Transactions</span>
+          </button>
+          <button class="view-tab" id="entpay-tab" type="button" data-view="entpay">
+            <i data-lucide="badge-check"></i><span>Agent Pay</span><span class="entpay-unread" id="entpay-unread" hidden></span>
           </button>
           <button class="view-tab" type="button" data-view="wallet">
             <i data-lucide="shield-check"></i><span>Wallet</span>
@@ -184,6 +187,44 @@
           </section>
         </section>
 
+        <section class="view entpay-view" id="view-entpay" data-view-panel="entpay" hidden>
+          <div class="view-heading entpay-heading">
+            <div><p class="eyebrow">Verified commerce</p><h1>Agent Pay</h1></div>
+            <form class="entpay-link-form" id="entpay-link-form">
+              <label class="sr-only" for="entpay-link">Payment link</label>
+              <input id="entpay-link" type="url" autocomplete="off" spellcheck="false" placeholder="entcoin://pay?..." required />
+              <button class="secondary-button" type="submit"><i data-lucide="link"></i><span>Open payment link</span></button>
+            </form>
+          </div>
+          <div class="entpay-status" id="entpay-status" role="status" aria-live="polite">Loading payment requests</div>
+          <div class="entpay-desk">
+            <aside class="entpay-inbox" aria-label="Payment requests">
+              <div class="entpay-inbox-title"><strong>Requests</strong><span id="entpay-count">0</span></div>
+              <ol id="entpay-list" class="entpay-list"></ol>
+            </aside>
+            <article class="entpay-detail" id="entpay-detail" aria-live="polite">
+              <div class="entpay-empty">
+                <i data-lucide="badge-check"></i>
+                <h2>No payment selected</h2>
+                <p>Verified requests appear here before any transaction can be created.</p>
+              </div>
+            </article>
+          </div>
+          <details class="entpay-settings" id="entpay-settings">
+            <summary>Agent Pay settings</summary>
+            <form id="entpay-settings-form">
+              <label class="entpay-fixed-setting"><input type="checkbox" checked disabled /><span>Require approval for every payment</span></label>
+              <label for="entpay-maximum">Maximum per purchase</label>
+              <div class="amount-input"><input id="entpay-maximum" inputmode="decimal" required /><span>ENT</span></div>
+              <label for="entpay-artifact-directory">Artifact folder</label>
+              <div class="entpay-folder-row"><input id="entpay-artifact-directory" readonly required /><button class="icon-button outlined" id="entpay-choose-folder" type="button" title="Choose folder" aria-label="Choose folder"><i data-lucide="folder-open"></i></button></div>
+              <label for="entpay-retention">Keep encrypted request details</label>
+              <select id="entpay-retention"><option value="0">Clear after completion</option><option value="7">7 days</option><option value="30">30 days</option><option value="-1">Forever</option></select>
+              <div class="entpay-settings-actions"><button class="secondary-button" id="entpay-register-links" type="button"><i data-lucide="link"></i><span>Register payment links</span></button><button class="primary-button" type="submit"><i data-lucide="save"></i><span>Save settings</span></button></div>
+            </form>
+          </details>
+        </section>
+
         <section class="view" id="view-wallet" data-view-panel="wallet" hidden>
           <div class="view-heading">
             <div><p class="eyebrow">Local identity</p><h1>Wallet security</h1></div>
@@ -238,7 +279,7 @@
           <section class="surface update-surface" aria-labelledby="update-heading">
             <span class="action-icon blue"><i data-lucide="download"></i></span>
             <div class="update-copy">
-              <div class="update-title"><div><p class="eyebrow">Desktop application</p><h2 id="update-heading">Software update</h2></div><code id="current-version">v1.5.1</code></div>
+              <div class="update-title"><div><p class="eyebrow">Desktop application</p><h2 id="update-heading">Software update</h2></div><code id="current-version">v1.5.2</code></div>
               <strong id="update-status">Checking for updates</strong>
             </div>
             <div class="update-actions">
