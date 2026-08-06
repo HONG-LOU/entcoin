@@ -42,7 +42,7 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'sha256-BmxT0jPSx2ddrN1p6pY7mRYILp1dMaCgVzFeblIWTF4='; style-src 'self'; upgrade-insecure-requests" always;
+    add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'sha256-u/Gg6eZWf4BVlq+jJJNK3UP29WLVc7e6KWwtoeTktag='; style-src 'self'; upgrade-insecure-requests" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "camera=(), geolocation=(), microphone=(), payment=()" always;

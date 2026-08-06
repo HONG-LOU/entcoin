@@ -4,7 +4,9 @@ import (
 	"embed"
 	"log"
 	"os"
+	"strings"
 
+	"github.com/HONG-LOU/entcoin/entpay"
 	"github.com/HONG-LOU/entcoin/internal/updater"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -21,7 +23,19 @@ func main() {
 		}
 		return
 	}
-	app := NewApp()
+	initial := make([]entpay.LaunchRequest, 0, 1)
+	invalidLaunch := false
+	for _, argument := range os.Args[1:] {
+		if launch, parseErr := entpay.ParseLaunchURL(argument); parseErr == nil && launch.Handoff == "" {
+			initial = append(initial, launch)
+		} else if strings.HasPrefix(strings.ToLower(strings.TrimSpace(argument)), "entcoin:") {
+			invalidLaunch = true
+		}
+	}
+	app := NewApp(initial...)
+	if invalidLaunch {
+		app.recordInvalidEntPayLaunch()
+	}
 	err := wails.Run(&options.App{
 		Title:             "Entcoin",
 		Width:             1180,
@@ -39,7 +53,14 @@ func main() {
 		OnShutdown:        app.shutdown,
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId: "d959ac6b-bfbc-478f-9aa1-43b06a52f76b",
-			OnSecondInstanceLaunch: func(options.SecondInstanceData) {
+			OnSecondInstanceLaunch: func(data options.SecondInstanceData) {
+				for _, argument := range data.Args {
+					if launch, parseErr := entpay.ParseLaunchURL(argument); parseErr == nil && launch.Handoff == "" {
+						app.routeSystemLaunch(launch)
+					} else if strings.HasPrefix(strings.ToLower(strings.TrimSpace(argument)), "entcoin:") {
+						app.recordInvalidEntPayLaunch()
+					}
+				}
 				app.focusWindow()
 			},
 		},

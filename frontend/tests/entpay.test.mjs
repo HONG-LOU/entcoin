@@ -1,0 +1,39 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+
+globalThis.window = {
+  localStorage: { getItem: () => "en", setItem: () => {} },
+};
+
+const { entpayStageLabel, formatEnt, parseEnt, paymentSent, revisionMatches } = await import("../src/entpay.js");
+
+test("formats atomic EntPay amounts exactly without floating point", () => {
+  assert.equal(formatEnt(1), "0.00000001 ENT");
+  assert.equal(formatEnt(123456789), "1.23456789 ENT");
+  assert.equal(formatEnt("900719925474099300"), "9,007,199,254.740993 ENT");
+});
+
+test("parses settings amounts without floating point rounding", () => {
+  assert.equal(parseEnt("0.01000000"), 1000000);
+  assert.equal(parseEnt("1.23456789"), 123456789);
+  assert.throws(() => parseEnt("0.000000001"));
+  assert.throws(() => parseEnt("0"));
+});
+
+test("maps every user-facing terminal and approval stage", () => {
+  assert.equal(entpayStageLabel("awaiting_approval"), "Awaiting approval");
+  assert.equal(entpayStageLabel("failed_retryable"), "Action required");
+  assert.equal(entpayStageLabel("failed_terminal"), "Verification failed");
+});
+
+test("revision guards reject stale or malformed actions", () => {
+  assert.equal(revisionMatches("7", 7), true);
+  assert.equal(revisionMatches("6", 7), false);
+  assert.equal(revisionMatches("not-a-number", 7), false);
+});
+
+test("transaction presence keeps post-broadcast failures labelled as paid", () => {
+  assert.equal(paymentSent({ stage: "failed_retryable", transaction_id: "tx1" }), true);
+  assert.equal(paymentSent({ stage: "failed_terminal", transaction_id: "tx1" }), true);
+  assert.equal(paymentSent({ stage: "awaiting_approval" }), false);
+});

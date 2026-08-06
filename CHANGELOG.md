@@ -5,6 +5,52 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-08-06
+
+### Added
+
+- Integrated Agent Pay into the Wails desktop with inbox, evidence-based
+  approval, exact-amount payment, progress, verified result previews, history,
+  artifact actions, retention settings, and English/Chinese UI.
+- Added a separate forward-only `entpay-client.db`, encrypted recovery
+  capsules, persistent revision-CAS state transitions, journal-before-broadcast
+  recovery, and idempotent post-payment continuation.
+- Added desktop payment preview and commit APIs that reuse the running
+  `node.Service`, bind approval to the expected wallet, and enforce backup,
+  synchronization, peer, balance, fee-ceiling, and exact-output gates.
+- Added Windows and Ubuntu `entcoin://` registration, portable Windows
+  registration controls, single-instance routing, and package uninstall rules
+  that preserve wallet, chain, Agent Pay database, and delivered artifacts.
+
+### Changed
+
+- Replaced the default merchant-to-local-Agent fragment flow with **Open in
+  Entcoin**. The standalone `entpay agent` and `entpay agent-ui` remain
+  available for development and compatibility.
+- Added `launch.url`, `launch.handoff`, and `launch.expires_at` to invoice
+  responses while preserving EntPay v1 Invoice and Receipt signature fields.
+
+### Security
+
+- Made the system bootstrap URI secret-free. The handoff code now travels in a
+  separate JSON body to a fixed loopback relay with exact Origin authorization,
+  strict PNA CORS, bounded input and queueing, short expiry, and one-use replay
+  protection. System arguments containing handoff capabilities are rejected.
+- Encrypted Gateway handoff capsules at rest, stored only code digests, bound
+  redemption to a client nonce, added rate limits, and returned generic 404s.
+- Added Linux Secret Service plus XChaCha20-Poly1305 and Windows DPAPI client
+  encryption, secure database permissions, symlink rejection, merchant identity
+  continuity checks, explicit re-trust, and verified atomic artifact storage.
+
+### Verification
+
+- Added URI, relay, handoff, state-machine, recovery, wallet-race, transaction,
+  Receipt, artifact, security-storage, frontend revision, and amount tests.
+- Verified Linux package install, system launch, single-instance relay, Chromium
+  public-HTTPS-to-loopback CORS, uninstall preservation, and Windows amd64 cross
+  compilation. Windows installer and real mainnet recovery remain release
+  environment acceptance gates.
+
 ## [1.5.1] - 2026-08-06
 
 ### Fixed

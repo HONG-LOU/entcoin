@@ -1,6 +1,9 @@
 /bin/
 /build/bin/
 /build/windows/installer/
+!/build/windows/installer/
+/build/windows/installer/*
+!/build/windows/installer/project.nsi
 /data/
 *.wallet.json
 wallet.json

@@ -13,6 +13,8 @@ implementation disagree.
 | [Operations](operations.md) | Installation, node operation, backup, recovery, pruning, and troubleshooting |
 | [Public seed](public-seed.md) | Hardened archive seed deployment and proxy boundary |
 | [EntPay Agent payments](entpay.md) | Signed invoices, local Codex policy, payment verification, receipts, deployment, and limits |
+| [EntPay desktop integration plan](entpay-desktop-integration-plan.zh-CN.md) | 中文桌面集成方案：系统唤起、状态机、钱包复用、界面、安全、测试与发布顺序 |
+| [EntPay desktop security contract](entpay-desktop-security.md) | Desktop trust boundaries, launch vectors, invariants, threats, and release evidence |
 | [v1.1.0 security audit](security-audit-v1.1.0.md) | Audit scope, findings, mathematical checks, evidence, and residual risk |
 | [v1.2 consensus upgrade audit](consensus-upgrade-audit-v1.2.md) | Difficulty incident, hard-fork classification, consensus-path review, and activation requirements |
 | [Security policy](../SECURITY.md) | Supported versions, reporting, disclosure, and user guidance |

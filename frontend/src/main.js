@@ -3,6 +3,7 @@ import {
   ArrowDownLeft,
   ArrowRightLeft,
   ArrowUpRight,
+  BadgeCheck,
   CircleAlert,
   CircleCheck,
   Clock3,
@@ -12,9 +13,11 @@ import {
   Download,
   Eye,
   EyeOff,
+  FolderOpen,
   FileKey,
   History,
   KeyRound,
+  Link,
   Languages,
   LayoutDashboard,
   LoaderCircle,
@@ -40,14 +43,17 @@ import {
   createIcons,
 } from "lucide";
 import "./style.css";
+import "./entpay.css";
 import { transactionKind } from "./transaction-filter.js";
 import { currentLocale, initializeI18n, onLanguageChange, toggleLanguage, translate, translateError } from "./i18n.js";
+import { entpayViewActivated, initializeEntPay, refreshEntPay } from "./entpay.js";
 
 const appIcons = {
   Activity,
   ArrowDownLeft,
   ArrowRightLeft,
   ArrowUpRight,
+  BadgeCheck,
   CircleAlert,
   CircleCheck,
   Clock3,
@@ -57,9 +63,11 @@ const appIcons = {
   Download,
   Eye,
   EyeOff,
+  FolderOpen,
   FileKey,
   History,
   KeyRound,
+  Link,
   Languages,
   LayoutDashboard,
   LoaderCircle,
@@ -647,7 +655,7 @@ async function refreshDashboard() {
 function renderUpdate(status) {
   state.updateStatus = status;
   state.updateChecked = true;
-  setText("current-version", `v${status.current_version || "1.5.1"}`);
+  setText("current-version", `v${status.current_version || "1.5.2"}`);
   const available = Boolean(status.available);
   setText("update-status", available ? `Entcoin v${status.latest_version} is available` : "Entcoin is up to date");
   $("install-update").hidden = !available;
@@ -889,6 +897,7 @@ function activateView(name) {
     panel.classList.toggle("active", active);
   }
   if (name === "transactions") refreshHistory(true);
+  if (name === "entpay") void entpayViewActivated();
   if (name === "diagnostics" && !state.updateChecked) void checkForUpdates(false);
 }
 
@@ -1366,6 +1375,7 @@ async function heartbeat() {
 }
 
 initializeI18n();
+initializeEntPay({ invoke, showToast, activateView });
 if (window.runtime?.EventsOnMultiple) {
   window.runtime.EventsOnMultiple("entcoin:update-progress", renderUpdateProgress, -1);
 }
@@ -1373,6 +1383,7 @@ onLanguageChange(() => {
   if (state.dashboard) renderDashboard(state.dashboard);
   if (state.history.length > 0) renderHistory(state.history);
   if (state.updateStatus) renderUpdate(state.updateStatus);
+  if (!$("view-entpay").hidden) void refreshEntPay(true);
   updateAllSensitiveCounters();
 });
 createIcons({ icons: appIcons });
