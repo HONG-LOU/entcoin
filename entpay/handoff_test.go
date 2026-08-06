@@ -32,6 +32,7 @@ func TestParseLaunchURL(t *testing.T) {
 		"wrong scheme":      strings.Replace(valid, "entcoin:", "https:", 1),
 		"wrong host":        strings.Replace(valid, "//pay?", "//send?", 1),
 		"path":              strings.Replace(valid, "//pay?", "//pay/path?", 1),
+		"encoded path":      strings.Replace(valid, "//pay?", "//pay/%2F?", 1),
 		"fragment":          valid + "#secret",
 		"userinfo":          strings.Replace(valid, "//pay?", "//user@pay?", 1),
 		"unknown parameter": valid + "&extra=true",
@@ -54,6 +55,10 @@ func TestParseLaunchURL(t *testing.T) {
 	bootstrap, err := ParseLaunchURL(buildLaunchURL("https://merchant.example/entpay/"))
 	if err != nil || bootstrap.Merchant != "https://merchant.example/entpay/" || bootstrap.Handoff != "" {
 		t.Fatalf("bootstrap launch = %+v, %v", bootstrap, err)
+	}
+	windowsBootstrap, err := ParseLaunchURL(strings.Replace(buildLaunchURL("https://merchant.example/entpay/"), "pay?", "pay/?", 1))
+	if err != nil || windowsBootstrap != bootstrap {
+		t.Fatalf("canonical Windows bootstrap = %+v, %v", windowsBootstrap, err)
 	}
 }
 

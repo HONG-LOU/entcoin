@@ -62,6 +62,7 @@ $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'Entcoin.exe'" |
     Where-Object { $_.ExecutablePath -eq $executable })
 $desktopProcess = $processes[0]
 Assert-True ($desktopProcess.CommandLine -notmatch "(?i)([?&]handoff=|claim_token)") "a handoff capability entered the process command line"
+Assert-True ($desktopProcess.CommandLine -match "(?i)entcoin:") "the protocol bootstrap URI did not reach the installed process"
 
 Wait-Until {
     @(Get-NetTCPConnection -State Listen -LocalAddress "127.0.0.1" -LocalPort 47833 -ErrorAction SilentlyContinue |

@@ -26,7 +26,7 @@ func ParseLaunchURL(value string) (LaunchRequest, error) {
 		return LaunchRequest{}, fmt.Errorf("payment link length is invalid")
 	}
 	parsed, err := url.Parse(value)
-	if err != nil || parsed.Scheme != "entcoin" || parsed.Host != "pay" || parsed.Path != "" || parsed.User != nil || parsed.Fragment != "" {
+	if err != nil || parsed.Scheme != "entcoin" || parsed.Host != "pay" || (parsed.EscapedPath() != "" && parsed.EscapedPath() != "/") || parsed.User != nil || parsed.Fragment != "" {
 		return LaunchRequest{}, fmt.Errorf("payment link is invalid")
 	}
 	query, err := url.ParseQuery(parsed.RawQuery)
