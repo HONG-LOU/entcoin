@@ -174,6 +174,7 @@ test("homepage translation keys are all defined", async () => {
     "main",
     "network",
     "about",
+    "entpay",
     "technology",
     "economics",
     "download",
@@ -258,23 +259,46 @@ test("visual system includes responsive and accessibility contracts", async () =
   for (const contract of [
     ":focus-visible",
     "prefers-reduced-motion: reduce",
-    "@media (max-width: 1050px)",
+    "@media (max-width: 960px)",
     "@media (max-width: 700px)",
-    ".live-strip",
+    ".hero-live",
     ".download-menu",
     ".node-scene",
+    ".entpay-scene",
+    ".payment-rail",
     ".protocol-scene",
     ".supply-scene",
     ".join-scene",
-    ".chain-rail",
+    ".continuum",
   ]) {
     assert.ok(css.includes(contract), `missing CSS contract: ${contract}`);
   }
 
   assert.doesNotMatch(css, /font-size\s*:[^;]*vw/i);
   assert.doesNotMatch(css, /border-radius\s*:\s*(?:[1-9]\d|\d{3,})px/i);
+  assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
   assert.match(css, /\.scene\s*{[^}]*position:\s*relative/s);
-  assert.match(css, /\.protocol-scene\s*{[^}]*background:\s*#111517/s);
+  assert.match(css, /\.protocol-scene\s*{[^}]*background:\s*var\(--paper\)/s);
+  assert.match(css, /\.motion-ready \[data-reveal\]/);
+});
+
+test("homepage uses the real EntPay approval and delivery assets", async () => {
+  const [html, approval, delivery] = await Promise.all([
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    readFile(new URL("../assets/entpay-agent-approval.png", import.meta.url)),
+    readFile(new URL("../assets/entpay-generated-photo.jpg", import.meta.url)),
+  ]);
+
+  assert.match(html, /\/assets\/entpay-agent-approval\.png/);
+  assert.match(html, /\/assets\/entpay-generated-photo\.jpg/);
+  assert.equal(
+    createHash("sha256").update(approval).digest("hex"),
+    "7e65021a82ca2ef753c7072ae49121dacf952a944308b1d434d127be589e937e",
+  );
+  assert.equal(
+    createHash("sha256").update(delivery).digest("hex"),
+    "66150d33df60aaf75230ee590ee1de281c49439cef6412646185717f1877c8d9",
+  );
 });
 
 test("browser module wires language, live data, menus, and motion preferences", async () => {
@@ -287,6 +311,7 @@ test("browser module wires language, live data, menus, and motion preferences", 
     'navigator.language.toLowerCase().startsWith("zh")',
     'fetchWithTimeout("/api/network-status"',
     'matchMedia("(prefers-reduced-motion: reduce)")',
+    '"IntersectionObserver" in window',
     'addEventListener("visibilitychange"',
     'addEventListener("keydown"',
     'event.key === "Escape"',
@@ -300,10 +325,10 @@ test("browser module wires language, live data, menus, and motion preferences", 
 });
 
 test("production nginx host isolates the website and read-only status proxy", async () => {
-  const nginx = await readFile(
-    new URL("../deploy/entcoin-website.nginx", import.meta.url),
-    "utf8",
-  );
+  const [nginx, html] = await Promise.all([
+    readFile(new URL("../deploy/entcoin-website.nginx", import.meta.url), "utf8"),
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+  ]);
 
   assert.match(nginx, /root \/var\/www\/entcoin\/current;/);
   assert.match(nginx, /server_name www\.entcoin\.xyz;/);
@@ -317,6 +342,17 @@ test("production nginx host isolates the website and read-only status proxy", as
   assert.match(nginx, /Accept-Ranges "bytes"/);
   assert.match(nginx, /max-age=31536000, immutable/);
   assert.match(nginx, /Content-Security-Policy/);
+  const structuredData = html.match(
+    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+  )?.[1];
+  assert.ok(structuredData, "homepage structured data must exist");
+  const structuredDataHash = createHash("sha256")
+    .update(structuredData)
+    .digest("base64");
+  assert.ok(
+    nginx.includes(`'sha256-${structuredDataHash}'`),
+    "website CSP must allow the current structured data",
+  );
   assert.match(nginx, /location \^~ \/wallet\//);
   assert.match(nginx, /root \/var\/www\/entcoin-wallet\/current;/);
   assert.match(nginx, /script-src 'self' 'wasm-unsafe-eval'/);

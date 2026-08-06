@@ -2,13 +2,13 @@ export const FALLBACK_RELEASE_URL =
   "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.1";
 
 const en = {
-  "meta.title": "Entcoin — Your wallet, your node.",
+  "meta.title": "Entcoin - Your node. Your wallet. Your agent.",
   "meta.description":
-    "Entcoin is an independent proof-of-work network with a local wallet, fully validating node, transaction history, peer connectivity, and optional mining in one desktop application.",
+    "Entcoin is an independent proof-of-work network with a local wallet, a fully validating node, and verifiable Agent payments.",
   "skip.content": "Skip to content",
   "brand.tagline": "Proof-of-work, held locally",
-  "nav.about": "About",
-  "nav.technology": "Technology",
+  "nav.about": "The node",
+  "nav.technology": "Verification",
   "nav.economics": "Economics",
   "nav.download": "Download",
   "nav.wallet": "Mobile wallet",
@@ -20,9 +20,11 @@ const en = {
   "nav.close": "Close navigation",
   "hero.eyebrow": "Entcoin mainnet / protocol v1",
   "hero.title": "Entcoin",
+  "hero.thesis": "Your node. Your wallet. Your agent.",
   "hero.body":
-    "Entcoin is an independent proof-of-work network. Its desktop app gives you a local wallet, a fully validating node, transaction history, peer connectivity, and optional mining without an online account.",
+    "A proof-of-work network you can run and verify yourself, with a local wallet and verifiable Agent payments built on ordinary ENT transactions.",
   "hero.download": "Run a node",
+  "hero.entpay": "Explore EntPay",
   "hero.protocol": "Read the protocol",
   "hero.signal": "Public archive seed",
   "hero.online": "Online",
@@ -54,10 +56,10 @@ const en = {
   "about.step.sync.body":
     "Let the node synchronize, then receive, send, or mine",
   "about.steps.label": "Getting started",
-  "product.eyebrow": "02 / The desktop app",
-  "product.title": "Everything local. Nothing hidden behind an account.",
+  "product.eyebrow": "The desktop node",
+  "product.title": "The network becomes real when it runs on your machine.",
   "product.body":
-    "Opening Entcoin starts a real validating node. Private keys stay in the local node process, the ledger is stored in SQLite, and every accepted block is checked before state changes.",
+    "Entcoin is not a browser wallet wrapped around a remote account. The desktop app keeps your wallet and ledger local, discovers peers, verifies every accepted block, and can mine without a hosted login.",
   "product.window.status": "Node active",
   "product.window.overview": "Overview",
   "product.window.transactions": "Transactions",
@@ -79,8 +81,21 @@ const en = {
   "product.point.process.title": "One process",
   "product.point.process.body":
     "No hosted login, browser wallet, external database, or coordinator.",
-  "technology.eyebrow": "03 / Verification path",
-  "technology.title": "From peer message to committed ledger.",
+  "entpay.eyebrow": "New in v1.5.1 / Agent payments",
+  "entpay.title": "Software can buy a result. You still approve the payment.",
+  "entpay.body":
+    "An independent merchant signs a quote. Your local Agent checks the product, request, price, merchant, expiry, and spending limit. Only then can your local wallet pay and verify the signed delivery.",
+  "entpay.open": "Open the live merchant",
+  "entpay.guide": "Merchant and user guide",
+  "entpay.result": "Verified delivery",
+  "entpay.local": "Local approval / wallet keys stay here",
+  "entpay.step.discover": "Discover",
+  "entpay.step.invoice": "Signed invoice",
+  "entpay.step.approve": "Approve locally",
+  "entpay.step.pay": "Pay on-chain",
+  "entpay.step.verify": "Verify delivery",
+  "technology.eyebrow": "Verification path",
+  "technology.title": "Trust less. Verify the path.",
   "technology.body":
     "Headers arrive first. Candidate work is compared locally. Bodies are fetched only for a viable chain, fully validated, and committed atomically with undo data.",
   "technology.discover.title": "Discover",
@@ -96,8 +111,8 @@ const en = {
   "technology.relay.body":
     "Accepted blocks and transactions move over bounded HTTP and WebSocket paths.",
   "technology.architecture": "Explore the architecture",
-  "economics.eyebrow": "04 / Monetary rules",
-  "economics.title": "A small, explicit issuance schedule.",
+  "economics.eyebrow": "Monetary rules",
+  "economics.title": "The supply is a rule, not a promise on a webpage.",
   "economics.body":
     "No premine, no account balances, and no floating-point supply math. Rewards are determined by block height and sum to an exact terminal amount.",
   "economics.max": "Maximum supply",
@@ -110,8 +125,8 @@ const en = {
   "economics.schedule": "across an approximately ten-year target schedule",
   "economics.progress":
     "Issuance progress is derived from the validated chain, never a hosted counter.",
-  "download.eyebrow": "05 / Join",
-  "download.title": "Choose your node.",
+  "download.eyebrow": "Run it yourself",
+  "download.title": "Choose where your node lives.",
   "download.body":
     "Desktop builds include the wallet and operational interface. The headless CLI runs the same validation, ledger, and peer-to-peer implementation.",
   "download.windows.platform": "Windows 10/11 · x64",
@@ -173,13 +188,13 @@ const en = {
 };
 
 const zh = {
-  "meta.title": "Entcoin — 钱包和节点，都在自己手里",
+  "meta.title": "Entcoin - 节点、钱包与 Agent，都在自己手里",
   "meta.description":
-    "Entcoin 是一条独立、开源的工作量证明网络。桌面端集成钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
+    "Entcoin 是一条独立的工作量证明网络，提供本地钱包、完整验证节点与可验证的 Agent 支付。",
   "skip.content": "跳到正文",
   "brand.tagline": "钱包与节点，本地掌控",
-  "nav.about": "了解 Entcoin",
-  "nav.technology": "运行原理",
+  "nav.about": "本机节点",
+  "nav.technology": "验证路径",
   "nav.economics": "发行规则",
   "nav.download": "下载",
   "nav.wallet": "移动钱包",
@@ -191,9 +206,11 @@ const zh = {
   "nav.close": "关闭导航",
   "hero.eyebrow": "Entcoin 主网 / 协议 v1",
   "hero.title": "Entcoin",
+  "hero.thesis": "你的节点，你的钱包，你的 Agent。",
   "hero.body":
-    "Entcoin 是一条独立的工作量证明网络。安装一个桌面应用，就能拥有本地钱包、完整节点、交易记录、节点连接和可选挖矿，无需注册在线账户。",
+    "一条可以自己运行、自己验证的工作量证明网络；本地钱包与可验证的 Agent 支付，都建立在普通 ENT 交易之上。",
   "hero.download": "下载桌面端",
+  "hero.entpay": "体验 EntPay",
   "hero.protocol": "查看技术协议",
   "hero.signal": "公共节点",
   "hero.online": "在线",
@@ -224,10 +241,10 @@ const zh = {
   "about.step.sync.label": "第三步：联网",
   "about.step.sync.body": "等待同步完成，再收款、转账或挖矿",
   "about.steps.label": "开始使用 Entcoin",
-  "product.eyebrow": "02 / 桌面端",
-  "product.title": "打开应用，你就在运行自己的节点。",
+  "product.eyebrow": "本机完整节点",
+  "product.title": "当网络运行在你的电脑上，它才真正属于你。",
   "product.body":
-    "Entcoin 不是连接远程账户的钱包外壳。它会在本机保存钱包和账本，并逐个核对收到的区块与交易；只有符合网络规则的数据，才会写入你的账本。",
+    "Entcoin 不是套在远程账户外面的浏览器钱包。桌面端在本机保存钱包和账本，发现其他节点，验证每一个接受的区块，也可以在不登录托管账户的情况下挖矿。",
   "product.window.status": "节点运行中",
   "product.window.overview": "概览",
   "product.window.transactions": "交易",
@@ -249,8 +266,21 @@ const zh = {
   "product.point.process.title": "一个应用即可运行",
   "product.point.process.body":
     "钱包、账本、节点连接和挖矿都在桌面端里，不需要另装数据库。",
-  "technology.eyebrow": "03 / 运行原理",
-  "technology.title": "网络发来的数据，要先核对再入账。",
+  "entpay.eyebrow": "v1.5.1 新能力 / Agent 支付",
+  "entpay.title": "软件可以买到结果，但付款仍由你确认。",
+  "entpay.body":
+    "独立商家先签发报价。本机 Agent 核对商品、请求、价格、商家、有效期和付款上限，确认无误后，本机钱包才会付款并验证签名交付。",
+  "entpay.open": "打开在线商家",
+  "entpay.guide": "查看商家与用户指南",
+  "entpay.result": "已验证交付",
+  "entpay.local": "本机确认 / 钱包密钥留在这里",
+  "entpay.step.discover": "发现服务",
+  "entpay.step.invoice": "签名账单",
+  "entpay.step.approve": "本机确认",
+  "entpay.step.pay": "链上付款",
+  "entpay.step.verify": "验证交付",
+  "technology.eyebrow": "验证路径",
+  "technology.title": "少一点信任，多一条可核对的路径。",
   "technology.body":
     "节点先了解其他节点有哪些新区块，比较哪条链投入的总工作量更多，再下载需要的完整数据。所有规则检查通过后，区块和回退记录才会一起写入本地账本。",
   "technology.discover.title": "找到网络",
@@ -264,8 +294,8 @@ const zh = {
   "technology.relay.title": "继续转发",
   "technology.relay.body": "把已经通过验证的区块和交易转发给其他节点。",
   "technology.architecture": "查看完整技术架构",
-  "economics.eyebrow": "04 / 发行规则",
-  "economics.title": "ENT 怎么产生，总量是多少？",
+  "economics.eyebrow": "发行规则",
+  "economics.title": "供应量是一条规则，不是网页上的承诺。",
   "economics.body":
     "ENT 没有预挖，创世区块也没有奖励。新 ENT 按区块高度通过挖矿产生，发行上限固定为 2,000,000 ENT；转账手续费只是在用户之间流转，不会增加总量。",
   "economics.max": "最大供应量",
@@ -277,8 +307,8 @@ const zh = {
   "economics.blocks": "个奖励区块",
   "economics.schedule": "按 10 秒目标出块时间计算，发行期约为十年",
   "economics.progress": "实际进度以各节点验证过的区块链为准，不依赖官网统计。",
-  "download.eyebrow": "05 / 下载使用",
-  "download.title": "选择适合你的版本。",
+  "download.eyebrow": "自己运行",
+  "download.title": "选择你的节点运行在哪里。",
   "download.body":
     "普通用户选择桌面端即可，里面已经包含钱包和完整节点。CLI 适合需要长期运行服务器、公共节点或自定义存储方式的用户。",
   "download.windows.platform": "Windows 10/11 · x64",

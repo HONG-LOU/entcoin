@@ -25,8 +25,31 @@ setLanguage(language, { updateUrl: false });
 bindNavigation();
 bindDownloadMenu();
 bindPageMotion();
+bindReveals();
 void loadNodeStatus();
 startNetworkCanvas();
+
+function bindReveals() {
+  const elements = [...document.querySelectorAll("[data-reveal]")];
+  if (elements.length === 0) return;
+  if (reducedMotion.matches || !("IntersectionObserver" in window)) {
+    elements.forEach((element) => element.classList.add("revealed"));
+    return;
+  }
+
+  document.documentElement.classList.add("motion-ready");
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("revealed");
+        observer.unobserve(entry.target);
+      }
+    },
+    { rootMargin: "0px 0px -12%", threshold: 0.08 },
+  );
+  elements.forEach((element) => observer.observe(element));
+}
 
 function bindPageMotion() {
   const progress = document.querySelector("[data-page-progress]");
@@ -266,7 +289,7 @@ function startNetworkCanvas() {
   const context = canvas.getContext("2d", { alpha: true });
   if (!context) return;
 
-  const nodes = createNodes(17);
+  const nodes = createNodes(24);
   const pointer = { x: 0, y: 0 };
   let width = 0;
   let height = 0;
@@ -301,7 +324,7 @@ function startNetworkCanvas() {
         pointer.y * node.depth,
     }));
     drawLinks(context, positions);
-    drawNodes(context, positions);
+    drawNodes(context, positions, elapsed);
   };
 
   const loop = (now) => {
@@ -361,18 +384,23 @@ function pseudoRandom(seed) {
 }
 
 function drawGrid(context, width, height) {
-  context.strokeStyle = "rgba(66, 86, 94, 0.24)";
+  context.strokeStyle = "rgba(216, 225, 221, 0.055)";
   context.lineWidth = 1;
-  const spacing = 32;
+  const spacing = 64;
   context.beginPath();
   for (let x = 0.5; x <= width; x += spacing) {
-    context.moveTo(x, 0);
-    context.lineTo(x, height);
+    context.moveTo(x, height * 0.08);
+    context.lineTo(x, height * 0.92);
   }
   for (let y = 0.5; y <= height; y += spacing) {
-    context.moveTo(0, y);
-    context.lineTo(width, y);
+    context.moveTo(width * 0.04, y);
+    context.lineTo(width * 0.96, y);
   }
+  context.stroke();
+
+  context.strokeStyle = "rgba(88, 214, 189, 0.1)";
+  context.beginPath();
+  context.arc(width * 0.73, height * 0.48, Math.min(width, height) * 0.3, 0, Math.PI * 2);
   context.stroke();
 }
 
@@ -383,8 +411,8 @@ function drawLinks(context, nodes) {
       const dx = nodes[left].px - nodes[right].px;
       const dy = nodes[left].py - nodes[right].py;
       const distance = Math.hypot(dx, dy);
-      if (distance > 128) continue;
-      context.strokeStyle = `rgba(36, 107, 206, ${0.24 * (1 - distance / 128)})`;
+      if (distance > 160) continue;
+      context.strokeStyle = `rgba(88, 214, 189, ${0.2 * (1 - distance / 160)})`;
       context.beginPath();
       context.moveTo(nodes[left].px, nodes[left].py);
       context.lineTo(nodes[right].px, nodes[right].py);
@@ -393,20 +421,26 @@ function drawLinks(context, nodes) {
   }
 }
 
-function drawNodes(context, nodes) {
+function drawNodes(context, nodes, elapsed) {
   nodes.forEach((node, index) => {
     context.beginPath();
     context.arc(node.px, node.py, node.radius, 0, Math.PI * 2);
     context.fillStyle = node.primary
-      ? "#f06449"
+      ? "#ff6b5f"
       : index % 3 === 0
-        ? "#19a974"
-        : "#246bce";
+        ? "#58d6bd"
+        : "#aeb9b5";
     context.fill();
     if (node.primary) {
       context.beginPath();
-      context.arc(node.px, node.py, 18, 0, Math.PI * 2);
-      context.strokeStyle = "rgba(240, 100, 73, 0.32)";
+      context.arc(
+        node.px,
+        node.py,
+        16 + Math.sin(elapsed * 2) * 4,
+        0,
+        Math.PI * 2,
+      );
+      context.strokeStyle = "rgba(255, 107, 95, 0.4)";
       context.stroke();
     }
   });

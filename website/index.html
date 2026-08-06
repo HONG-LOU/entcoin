@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Entcoin - Your wallet, your node.</title>
+    <title>Entcoin - Your node. Your wallet. Your agent.</title>
     <meta
       name="description"
-      content="Entcoin is an independent proof-of-work network with a local wallet and fully validating node."
+      content="Entcoin is an independent proof-of-work network with a local wallet, a fully validating node, and verifiable Agent payments."
     />
-    <meta name="theme-color" content="#f3f5f2" />
+    <meta name="theme-color" content="#101412" />
     <link rel="canonical" href="https://entcoin.xyz/" />
     <link rel="alternate" hreflang="en" href="https://entcoin.xyz/" />
     <link rel="alternate" hreflang="zh" href="https://entcoin.xyz/?lang=zh" />
@@ -18,26 +18,20 @@
     <link rel="stylesheet" href="/styles.css" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Entcoin" />
-    <meta property="og:title" content="Entcoin - Your wallet, your node." />
+    <meta property="og:title" content="Entcoin - Your node. Your wallet. Your agent." />
     <meta
       property="og:description"
-      content="An independent proof-of-work network with a local wallet and fully validating node."
+      content="A proof-of-work network you can validate locally, now with verifiable Agent payments."
     />
     <meta property="og:url" content="https://entcoin.xyz/" />
-    <meta
-      property="og:image"
-      content="https://entcoin.xyz/assets/social-preview.png"
-    />
+    <meta property="og:image" content="https://entcoin.xyz/assets/social-preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Entcoin - Your wallet, your node." />
+    <meta name="twitter:title" content="Entcoin - Your node. Your wallet. Your agent." />
     <meta
       name="twitter:description"
-      content="An independent proof-of-work network with a local wallet and fully validating node."
+      content="A proof-of-work network you can validate locally, now with verifiable Agent payments."
     />
-    <meta
-      name="twitter:image"
-      content="https://entcoin.xyz/assets/social-preview.png"
-    />
+    <meta name="twitter:image" content="https://entcoin.xyz/assets/social-preview.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -50,41 +44,28 @@
         "url": "https://entcoin.xyz/",
         "downloadUrl": "https://github.com/HONG-LOU/entcoin/releases/latest",
         "codeRepository": "https://github.com/HONG-LOU/entcoin",
-        "description": "A compact proof-of-work desktop full node with a local wallet, SQLite ledger, peer relay, and optional miner."
+        "description": "A compact proof-of-work desktop full node with a local wallet, SQLite ledger, peer relay, optional miner, and EntPay Agent payments."
       }
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main" data-i18n="skip.content"
-      >Skip to content</a
-    >
-    <div class="page-progress" aria-hidden="true">
-      <i data-page-progress></i>
-    </div>
+    <a class="skip-link" href="#main" data-i18n="skip.content">Skip to content</a>
+    <div class="page-progress" aria-hidden="true"><i data-page-progress></i></div>
 
     <header class="site-header" data-header>
       <a class="brand" href="#top" aria-label="Entcoin home">
         <img src="/assets/appicon.png" width="34" height="34" alt="" />
-        <span><strong>ENTCOIN</strong><small data-live-height>--</small></span>
+        <span><strong>ENTCOIN</strong><small>MAINNET / <b data-live-height>--</b></small></span>
       </a>
       <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="#about" data-i18n="nav.about">About</a>
-        <a href="#technology" data-i18n="nav.technology">Technology</a>
+        <a href="#about" data-i18n="nav.about">The node</a>
+        <a href="#entpay" data-i18n="nav.entpay">Agent payments</a>
+        <a href="#technology" data-i18n="nav.technology">Verification</a>
         <a href="#economics" data-i18n="nav.economics">Economics</a>
-        <a href="/entpay/" data-i18n="nav.entpay">Agent payments</a>
-        <a href="https://community.entcoin.xyz" data-i18n="nav.community"
-          >Community</a
-        >
+        <a href="https://community.entcoin.xyz" data-i18n="nav.community">Community</a>
       </nav>
       <div class="header-actions">
-        <button
-          class="language-toggle"
-          id="language-toggle"
-          type="button"
-          data-i18n="nav.language"
-        >
-          中文
-        </button>
+        <button class="language-toggle" id="language-toggle" type="button" data-i18n="nav.language">中文</button>
         <button
           class="header-download"
           id="header-download"
@@ -92,10 +73,7 @@
           aria-haspopup="menu"
           aria-expanded="false"
           aria-controls="download-menu"
-        >
-          <span data-i18n="hero.download">Run a node</span
-          ><span aria-hidden="true">↓</span>
-        </button>
+        ><span data-i18n="hero.download">Run a node</span><span aria-hidden="true">↓</span></button>
         <button
           class="menu-toggle"
           id="menu-toggle"
@@ -103,455 +81,211 @@
           aria-expanded="false"
           aria-controls="mobile-nav"
           data-i18n-aria-label="nav.open"
-        >
-          <span></span><span></span>
-        </button>
+        ><span></span><span></span></button>
       </div>
       <div class="download-menu" id="download-menu" role="menu" hidden>
-        <a
-          role="menuitem"
-          href="https://template-chat.xyz/downloads/v1.5.1/entcoin-amd64-installer.exe"
-          data-download="windowsInstaller"
-          data-i18n="menu.windows.installer"
-          >Windows installer</a
-        >
-        <a
-          role="menuitem"
-          href="https://template-chat.xyz/downloads/v1.5.1/Entcoin.exe"
-          data-download="windowsPortable"
-          data-i18n="menu.windows.portable"
-          >Windows portable</a
-        >
-        <a
-          role="menuitem"
-          href="https://template-chat.xyz/downloads/v1.5.1/entcoin_1.5.1_amd64.deb"
-          data-download="ubuntu"
-          data-i18n="menu.ubuntu"
-          >Ubuntu .deb</a
-        >
-        <a
-          role="menuitem"
-          href="https://template-chat.xyz/downloads/v1.5.1/entcoin-cli-linux-amd64"
-          data-download="linuxCli"
-          data-i18n="menu.linux.cli"
-          >Linux CLI</a
-        >
-        <a
-          role="menuitem"
-          href="https://template-chat.xyz/downloads/v1.5.1/entcoin-cli.exe"
-          data-download="windowsCli"
-          data-i18n="menu.windows.cli"
-          >Windows CLI</a
-        >
+        <a role="menuitem" href="https://template-chat.xyz/downloads/v1.5.1/entcoin-amd64-installer.exe" data-download="windowsInstaller" data-i18n="menu.windows.installer">Windows installer</a>
+        <a role="menuitem" href="https://template-chat.xyz/downloads/v1.5.1/Entcoin.exe" data-download="windowsPortable" data-i18n="menu.windows.portable">Windows portable</a>
+        <a role="menuitem" href="https://template-chat.xyz/downloads/v1.5.1/entcoin_1.5.1_amd64.deb" data-download="ubuntu" data-i18n="menu.ubuntu">Ubuntu .deb</a>
+        <a role="menuitem" href="https://template-chat.xyz/downloads/v1.5.1/entcoin-cli-linux-amd64" data-download="linuxCli" data-i18n="menu.linux.cli">Linux CLI</a>
+        <a role="menuitem" href="https://template-chat.xyz/downloads/v1.5.1/entcoin-cli.exe" data-download="windowsCli" data-i18n="menu.windows.cli">Windows CLI</a>
       </div>
-      <nav
-        class="mobile-nav"
-        id="mobile-nav"
-        aria-label="Mobile navigation"
-        hidden
-      >
-        <a href="#about" data-i18n="nav.about">About</a
-        ><a href="#technology" data-i18n="nav.technology">Technology</a
-        ><a href="#economics" data-i18n="nav.economics">Economics</a
-        ><a href="#download" data-i18n="nav.download">Download</a
-        ><a href="/entpay/" data-i18n="nav.entpay">Agent payments</a
-        ><a href="https://community.entcoin.xyz" data-i18n="nav.community"
-          >Community</a
-        >
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+        <a href="#about" data-i18n="nav.about">The node</a>
+        <a href="#entpay" data-i18n="nav.entpay">Agent payments</a>
+        <a href="#technology" data-i18n="nav.technology">Verification</a>
+        <a href="#economics" data-i18n="nav.economics">Economics</a>
+        <a href="#download" data-i18n="nav.download">Download</a>
+        <a href="https://community.entcoin.xyz" data-i18n="nav.community">Community</a>
       </nav>
     </header>
 
     <main id="main">
       <section class="hero scene" id="top" aria-labelledby="hero-title">
         <canvas id="network-canvas" aria-hidden="true"></canvas>
-        <div class="hero-orbit" aria-hidden="true">
-          <span></span><span></span><span></span>
+        <div class="hero-engraving" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+          <img src="/assets/appicon.png" width="280" height="280" alt="" />
         </div>
-        <div class="hero-copy">
-          <p class="signal">
-            <i data-status-dot></i
-            ><span data-live-state data-i18n="status.loading"
-              >Reading the public node</span
-            >
-          </p>
-          <h1 id="hero-title"><span>ENT</span><span>COIN</span></h1>
-          <p class="hero-body" data-i18n="hero.body">
-            Entcoin is an independent proof-of-work network. Its desktop app
-            gives you a local wallet, a fully validating node, transaction
-            history, peer connectivity, and optional mining without an online
-            account.
-          </p>
+        <div class="hero-copy" data-reveal>
+          <p class="signal"><i data-status-dot></i><span data-live-state data-i18n="status.loading">Reading the public node</span></p>
+          <h1 id="hero-title" data-i18n="hero.title">Entcoin</h1>
+          <p class="hero-thesis" data-i18n="hero.thesis">Your node. Your wallet. Your agent.</p>
+          <p class="hero-body" data-i18n="hero.body">A proof-of-work network you can run and verify yourself, with a local wallet and verifiable Agent payments built on ordinary ENT transactions.</p>
           <div class="hero-actions">
-            <button
-              class="button button-primary"
-              id="hero-download"
-              type="button"
-              aria-haspopup="menu"
-              aria-expanded="false"
-              aria-controls="download-menu"
-            >
-              <span data-i18n="hero.download">Run a node</span
-              ><span aria-hidden="true">↘</span>
-            </button>
-            <a
-              class="button button-quiet"
-              href="https://github.com/HONG-LOU/entcoin/blob/main/docs/protocol.md"
-              target="_blank"
-              rel="noreferrer"
-              ><span data-i18n="hero.protocol">Read the protocol</span
-              ><span aria-hidden="true">↗</span></a
-            >
+            <button class="button button-primary" id="hero-download" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="download-menu"><span data-i18n="hero.download">Run a node</span><span aria-hidden="true">↓</span></button>
+            <a class="button button-quiet" href="/entpay/"><span data-i18n="hero.entpay">Explore EntPay</span><span aria-hidden="true">↗</span></a>
           </div>
         </div>
-        <div class="hero-coin" aria-hidden="true">
-          <img src="/assets/appicon.png" width="360" height="360" alt="" /><span
-            >PROOF / OF / WORK</span
-          >
+        <div class="hero-live" id="network" aria-label="Live network">
+          <div><span data-i18n="metric.height">Live height</span><strong data-live-height>--</strong></div>
+          <div><span data-i18n="metric.spacing">Block target</span><strong>10 SEC</strong></div>
+          <div><span data-i18n="metric.supply">Maximum ENT</span><strong>2,000,000</strong></div>
+          <div><span data-i18n="metric.premine">Premine</span><strong>0</strong></div>
         </div>
-        <div class="live-strip" id="network" aria-label="Live network">
-          <div>
-            <span data-i18n="metric.height">Live height</span
-            ><strong data-live-height>--</strong>
-          </div>
-          <div>
-            <span data-i18n="metric.spacing">Block target</span
-            ><strong>10 SEC</strong>
-          </div>
-          <div>
-            <span data-i18n="metric.supply">Maximum ENT</span
-            ><strong>2,000,000</strong>
-          </div>
-          <div>
-            <span data-i18n="metric.premine">Premine</span><strong>0</strong>
-          </div>
-        </div>
-        <a class="scroll-cue" href="#about"
-          ><span data-i18n="about.eyebrow">Start here</span><i></i
-        ></a>
+        <a class="scroll-cue" href="#about"><span data-i18n="about.eyebrow">Inside the node</span><i></i></a>
       </section>
 
-      <section
-        class="node-scene scene"
-        id="about"
-        aria-labelledby="about-title"
-      >
-        <div class="chain-rail" aria-hidden="true">
-          <i></i><b></b><b></b><b></b>
+      <div class="continuum" aria-hidden="true"><i></i><span>VERIFY / OWN / EXCHANGE</span></div>
+
+      <section class="node-scene scene" id="about" aria-labelledby="about-title">
+        <div class="chapter-copy" data-reveal>
+          <p class="eyebrow" data-i18n="product.eyebrow">The desktop node</p>
+          <h2 id="about-title" data-i18n="product.title">The network becomes real when it runs on your machine.</h2>
+          <p data-i18n="product.body">Entcoin is not a browser wallet wrapped around a remote account. The desktop app keeps your wallet and ledger local, discovers peers, verifies every accepted block, and can mine without a hosted login.</p>
+          <a class="text-link" href="https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.1"><span data-i18n="download.release">View release notes</span><span>↗</span></a>
         </div>
-        <div class="scene-copy sticky-copy">
-          <p class="eyebrow" data-i18n="product.eyebrow">The desktop app</p>
-          <h2 id="about-title" data-i18n="product.title">
-            Everything local. Nothing hidden behind an account.
-          </h2>
-          <p data-i18n="product.body">
-            Opening Entcoin starts a real validating node. Private keys stay in
-            the local node process, the ledger is stored in SQLite, and every
-            accepted block is checked before state changes.
-          </p>
-        </div>
-        <div class="node-stage">
+
+        <div class="node-composition" data-reveal>
+          <div class="node-halo" aria-hidden="true"></div>
           <div class="app-window" aria-label="Entcoin desktop node interface">
             <div class="app-bar">
-              <span
-                ><img src="/assets/appicon.png" width="20" height="20" alt="" />
-                ENTCOIN / NODE</span
-              ><span
-                ><i></i
-                ><span data-i18n="product.window.status"
-                  >Node active</span
-                ></span
-              >
+              <span><img src="/assets/appicon.png" width="20" height="20" alt="" />ENTCOIN / NODE</span>
+              <span><i></i><span data-i18n="product.window.status">Node active</span></span>
             </div>
             <div class="app-body">
               <aside>
-                <strong>ENT</strong
-                ><span class="active" data-i18n="product.window.overview"
-                  >Overview</span
-                ><span data-i18n="product.window.transactions"
-                  >Transactions</span
-                ><span data-i18n="product.window.wallet">Wallet</span
-                ><span data-i18n="product.window.diagnostics">Diagnostics</span>
+                <strong>E</strong>
+                <span class="active" data-i18n="product.window.overview">Overview</span>
+                <span data-i18n="product.window.transactions">Transactions</span>
+                <span data-i18n="product.window.wallet">Wallet</span>
+                <span data-i18n="product.window.diagnostics">Diagnostics</span>
               </aside>
               <div class="app-main">
                 <p data-i18n="product.window.confirmed">Confirmed</p>
                 <h3>84.21000000 <small>ENT</small></h3>
                 <div class="app-data">
-                  <div>
-                    <span data-i18n="product.window.height">Chain height</span
-                    ><strong data-product-height>--</strong>
-                  </div>
-                  <div>
-                    <span data-i18n="product.window.network">Network</span
-                    ><strong data-i18n="product.window.online">Online</strong>
-                  </div>
-                  <div>
-                    <span data-i18n="product.window.storage">Storage</span
-                    ><strong data-i18n="product.window.archive">Archive</strong>
-                  </div>
+                  <div><span data-i18n="product.window.height">Chain height</span><strong data-product-height>--</strong></div>
+                  <div><span data-i18n="product.window.network">Network</span><strong data-i18n="product.window.online">Online</strong></div>
+                  <div><span data-i18n="product.window.storage">Storage</span><strong data-i18n="product.window.archive">Archive</strong></div>
                 </div>
-                <div class="block-wave" aria-hidden="true">
-                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
-                  ><i></i>
-                </div>
+                <div class="block-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
               </div>
             </div>
           </div>
-          <div class="node-notes">
-            <article>
-              <span>KEYS</span>
-              <h3 data-i18n="product.point.wallet.title">
-                Self-custodied wallet
-              </h3>
-              <p data-i18n="product.point.wallet.body">
-                24-word recovery and an encrypted portable backup, protected
-                locally.
-              </p>
-            </article>
-            <article>
-              <span>RULES</span>
-              <h3 data-i18n="product.point.validation.title">
-                Full validation
-              </h3>
-              <p data-i18n="product.point.validation.body">
-                UTXOs, signatures, proof of work, issuance, maturity, and reorg
-                rules.
-              </p>
-            </article>
-            <article>
-              <span>NODE</span>
-              <h3 data-i18n="product.point.process.title">One process</h3>
-              <p data-i18n="product.point.process.body">
-                No hosted login, browser wallet, external database, or
-                coordinator.
-              </p>
-            </article>
+          <div class="node-principles">
+            <article><span>01</span><h3 data-i18n="product.point.wallet.title">Self-custodied wallet</h3><p data-i18n="product.point.wallet.body">Recovery words and encrypted backups stay under your control.</p></article>
+            <article><span>02</span><h3 data-i18n="product.point.validation.title">Full validation</h3><p data-i18n="product.point.validation.body">UTXOs, signatures, work, issuance, maturity, and reorg rules are checked locally.</p></article>
+            <article><span>03</span><h3 data-i18n="product.point.process.title">One process</h3><p data-i18n="product.point.process.body">Wallet, ledger, peers, and mining run without a coordinator.</p></article>
           </div>
         </div>
       </section>
 
-      <section
-        class="protocol-scene scene"
-        id="technology"
-        aria-labelledby="technology-title"
-      >
-        <div class="protocol-intro">
-          <p class="eyebrow" data-i18n="technology.eyebrow">
-            Verification path
-          </p>
-          <h2 id="technology-title" data-i18n="technology.title">
-            From peer message to committed ledger.
-          </h2>
-          <p data-i18n="technology.body">
-            Headers arrive first. Candidate work is compared locally. Bodies are
-            fetched only for a viable chain, fully validated, and committed
-            atomically with undo data.
-          </p>
-        </div>
-        <ol class="verification-flow">
-          <li>
-            <i></i>
-            <div>
-              <span>DISCOVER</span>
-              <h3 data-i18n="technology.discover.title">Discover</h3>
-              <p data-i18n="technology.discover.body">
-                Built-in HTTPS bootstrap seeds and local network discovery
-                connect the node automatically.
-              </p>
-            </div>
-          </li>
-          <li>
-            <i></i>
-            <div>
-              <span>VERIFY</span>
-              <h3 data-i18n="technology.validate.title">Validate</h3>
-              <p data-i18n="technology.validate.body">
-                Headers, timestamps, difficulty, work, ownership, and
-                signatures.
-              </p>
-            </div>
-          </li>
-          <li>
-            <i></i>
-            <div>
-              <span>COMMIT</span>
-              <h3 data-i18n="technology.commit.title">Commit</h3>
-              <p data-i18n="technology.commit.body">
-                One SQLite transaction with WAL, full synchronization, and undo
-                records.
-              </p>
-            </div>
-          </li>
-          <li>
-            <i></i>
-            <div>
-              <span>RELAY</span>
-              <h3 data-i18n="technology.relay.title">Relay</h3>
-              <p data-i18n="technology.relay.body">
-                Accepted blocks and transactions move over bounded HTTP and
-                WebSocket paths.
-              </p>
-            </div>
-          </li>
-        </ol>
-        <div class="terminal" aria-label="Public node response">
-          <div>
-            <span></span><span></span><span></span
-            ><code>node.entcoin.xyz / status</code>
+      <section class="entpay-scene scene" id="entpay" aria-labelledby="entpay-title">
+        <div class="entpay-copy" data-reveal>
+          <p class="eyebrow" data-i18n="entpay.eyebrow">New in v1.5.1 / Agent payments</p>
+          <h2 id="entpay-title" data-i18n="entpay.title">Software can buy a result. You still approve the payment.</h2>
+          <p data-i18n="entpay.body">An independent merchant signs a quote. Your local Agent checks the product, request, price, merchant, expiry, and spending limit. Only then can your local wallet pay and verify the signed delivery.</p>
+          <div class="entpay-actions">
+            <a class="button button-primary" href="/entpay/"><span data-i18n="entpay.open">Open the live merchant</span><span>↗</span></a>
+            <a class="text-link" href="https://community.entcoin.xyz/t/9"><span data-i18n="entpay.guide">Merchant and user guide</span><span>↗</span></a>
           </div>
+        </div>
+
+        <div class="entpay-art" data-reveal>
+          <figure class="delivery-photo">
+            <img src="/assets/entpay-generated-photo.jpg" width="1402" height="1122" alt="A photograph generated and delivered through a real EntPay purchase" />
+            <figcaption><span data-i18n="entpay.result">VERIFIED DELIVERY</span><strong>0.00100000 ENT</strong></figcaption>
+          </figure>
+          <figure class="approval-shot">
+            <img src="/assets/entpay-agent-approval.png" width="1440" height="1000" alt="Local EntPay Agent approval screen" />
+            <figcaption><i></i><span data-i18n="entpay.local">LOCAL APPROVAL / WALLET KEYS STAY HERE</span></figcaption>
+          </figure>
+        </div>
+
+        <ol class="payment-rail" data-reveal>
+          <li><i></i><span>01</span><strong data-i18n="entpay.step.discover">Discover</strong></li>
+          <li><i></i><span>02</span><strong data-i18n="entpay.step.invoice">Signed invoice</strong></li>
+          <li><i></i><span>03</span><strong data-i18n="entpay.step.approve">Approve locally</strong></li>
+          <li><i></i><span>04</span><strong data-i18n="entpay.step.pay">Pay on-chain</strong></li>
+          <li><i></i><span>05</span><strong data-i18n="entpay.step.verify">Verify delivery</strong></li>
+        </ol>
+      </section>
+
+      <section class="protocol-scene scene" id="technology" aria-labelledby="technology-title">
+        <div class="protocol-copy" data-reveal>
+          <p class="eyebrow" data-i18n="technology.eyebrow">Verification path</p>
+          <h2 id="technology-title" data-i18n="technology.title">Trust less. Verify the path.</h2>
+          <p data-i18n="technology.body">Headers arrive first. Candidate work is compared locally. Bodies are fetched only for a viable chain, validated completely, and committed atomically with undo data.</p>
+        </div>
+        <ol class="verification-flow" data-reveal>
+          <li><span>DISCOVER</span><h3 data-i18n="technology.discover.title">Discover</h3><p data-i18n="technology.discover.body">Bootstrap and local discovery connect peers.</p></li>
+          <li><span>VERIFY</span><h3 data-i18n="technology.validate.title">Validate</h3><p data-i18n="technology.validate.body">Check work, ownership, timing, and signatures.</p></li>
+          <li><span>COMMIT</span><h3 data-i18n="technology.commit.title">Commit</h3><p data-i18n="technology.commit.body">Write one complete SQLite transaction.</p></li>
+          <li><span>RELAY</span><h3 data-i18n="technology.relay.title">Relay</h3><p data-i18n="technology.relay.body">Move accepted blocks and transactions.</p></li>
+        </ol>
+        <div class="terminal" aria-label="Public node response" data-reveal>
+          <div><i data-status-dot></i><code>node.entcoin.xyz / v2/status</code><span data-live-state data-i18n="status.loading">Reading the public node</span></div>
           <pre>{
   "protocol": "entropy-mainnet-v1",
   "height": <b data-terminal-height>--</b>,
   "tip_hash": "<b data-terminal-tip>connecting...</b>",
-  "validation": "local",
-  "transport": ["HTTPS", "WebSocket"]
+  "validation": "local"
 }</pre>
         </div>
       </section>
 
-      <section
-        class="supply-scene scene"
-        id="economics"
-        aria-labelledby="economics-title"
-      >
-        <div class="supply-number" aria-hidden="true">2M</div>
-        <div class="supply-copy">
+      <section class="supply-scene scene" id="economics" aria-labelledby="economics-title">
+        <div class="supply-figure" aria-hidden="true"><span>2,000,000</span><i>ENT</i></div>
+        <div class="supply-copy" data-reveal>
           <p class="eyebrow" data-i18n="economics.eyebrow">Monetary rules</p>
-          <h2 id="economics-title" data-i18n="economics.title">
-            A small, explicit issuance schedule.
-          </h2>
-          <p data-i18n="economics.body">
-            No premine, no account balances, and no floating-point supply math.
-            Rewards are determined by block height and sum to an exact terminal
-            amount.
-          </p>
+          <h2 id="economics-title" data-i18n="economics.title">The supply is a rule, not a promise on a webpage.</h2>
+          <p data-i18n="economics.body">No premine, no account balances, and no floating-point issuance. Rewards follow block height and sum to an exact terminal amount.</p>
         </div>
-        <div class="supply-facts">
-          <div>
-            <span data-i18n="economics.max">Maximum supply</span
-            ><strong>2,000,000 ENT</strong>
-          </div>
-          <div>
-            <span data-i18n="economics.spacing">Target spacing</span
-            ><strong>10 SEC</strong>
-          </div>
-          <div>
-            <span data-i18n="economics.maturity">Coinbase maturity</span
-            ><strong>100 BLOCKS</strong>
-          </div>
-          <div>
-            <span data-i18n="economics.choice">Fork choice</span
-            ><strong data-i18n="economics.choice.value">Cumulative work</strong>
-          </div>
-        </div>
-        <div class="issuance-line" aria-hidden="true">
-          <i></i><b>GENESIS</b><b>HALVINGS</b><b>TERMINAL</b>
-        </div>
+        <dl class="supply-facts" data-reveal>
+          <div><dt data-i18n="economics.max">Maximum supply</dt><dd>2,000,000 ENT</dd></div>
+          <div><dt data-i18n="economics.spacing">Target spacing</dt><dd>10 SEC</dd></div>
+          <div><dt data-i18n="economics.maturity">Coinbase maturity</dt><dd>100 BLOCKS</dd></div>
+          <div><dt data-i18n="economics.choice">Fork choice</dt><dd data-i18n="economics.choice.value">Cumulative work</dd></div>
+        </dl>
       </section>
 
-      <section
-        class="join-scene scene"
-        id="download"
-        aria-labelledby="download-title"
-      >
-        <div class="join-copy">
-          <p class="eyebrow" data-i18n="download.eyebrow">Join</p>
-          <h2 id="download-title" data-i18n="download.title">
-            Choose your node.
-          </h2>
-          <p data-i18n="download.body">
-            Desktop builds include the wallet and operational interface. The
-            headless CLI runs the same validation, ledger, and peer-to-peer
-            implementation.
-          </p>
+      <section class="join-scene scene" id="download" aria-labelledby="download-title">
+        <div class="join-copy" data-reveal>
+          <p class="eyebrow" data-i18n="download.eyebrow">Run it yourself</p>
+          <h2 id="download-title" data-i18n="download.title">Choose where your node lives.</h2>
+          <p data-i18n="download.body">Desktop builds include the wallet and operational interface. The headless CLI runs the same validation, ledger, and peer implementation.</p>
         </div>
-        <div class="download-list">
+        <div class="download-list" data-reveal>
           <article>
-            <span>WINDOWS 10/11</span>
+            <span data-i18n="download.windows.platform">Windows 10/11 · x64</span>
             <h3 data-i18n="download.windows.title">Desktop node</h3>
-            <p data-i18n="download.windows.body">
-              Installer or portable build with wallet, mining, peers, history,
-              and diagnostics.
-            </p>
-            <button type="button" data-menu-trigger="windows">
-              <span data-i18n="download.windows.action">Windows downloads</span
-              ><b>↓</b>
-            </button>
+            <p data-i18n="download.windows.body">Installer or portable build with wallet, mining, peers, history, and diagnostics.</p>
+            <button type="button" data-menu-trigger="windows"><span data-i18n="download.windows.action">Windows downloads</span><b>↓</b></button>
           </article>
           <article>
-            <span>UBUNTU 24.04+</span>
+            <span data-i18n="download.ubuntu.platform">Ubuntu 24.04+ · amd64</span>
             <h3 data-i18n="download.ubuntu.title">Desktop node</h3>
-            <p data-i18n="download.ubuntu.body">
-              Native .deb with a Secret Service protected local wallet.
-            </p>
-            <a
-              data-download="ubuntu"
-              href="https://template-chat.xyz/downloads/v1.5.1/entcoin_1.5.1_amd64.deb"
-              ><span data-i18n="download.ubuntu.action">Download .deb</span
-              ><b>↓</b></a
-            >
+            <p data-i18n="download.ubuntu.body">Native .deb with a Secret Service protected local wallet.</p>
+            <a data-download="ubuntu" href="https://template-chat.xyz/downloads/v1.5.1/entcoin_1.5.1_amd64.deb"><span data-i18n="download.ubuntu.action">Download .deb</span><b>↓</b></a>
           </article>
           <article>
-            <span>LINUX / WINDOWS</span>
+            <span data-i18n="download.cli.platform">Linux / Windows</span>
             <h3 data-i18n="download.cli.title">Headless CLI</h3>
-            <p data-i18n="download.cli.body">
-              Archive, pruned, wallet, or public seed deployments from one
-              binary.
-            </p>
-            <button type="button" data-menu-trigger="cli">
-              <span data-i18n="download.cli.action">CLI downloads</span><b>↓</b>
-            </button>
+            <p data-i18n="download.cli.body">Archive, pruned, wallet, or public seed deployments from one binary.</p>
+            <button type="button" data-menu-trigger="cli"><span data-i18n="download.cli.action">CLI downloads</span><b>↓</b></button>
           </article>
         </div>
-        <div class="source-row" id="open-source">
-          <div>
-            <p data-i18n="source.title">The implementation is the claim.</p>
-            <span data-i18n="source.body"
-              >Entcoin is MIT-licensed. Consensus, wallet, ledger, networking,
-              tests, operations, and known limitations are public in the
-              repository.</span
-            >
-          </div>
-          <a
-            href="https://github.com/HONG-LOU/entcoin"
-            target="_blank"
-            rel="noreferrer"
-            ><span data-i18n="source.repository">Browse source</span><b>↗</b></a
-          >
+        <div class="source-row" id="open-source" data-reveal>
+          <div><p data-i18n="source.title">The implementation is the claim.</p><span data-i18n="source.body">Consensus, wallet, ledger, networking, tests, operations, and known limitations are public.</span></div>
+          <a href="https://github.com/HONG-LOU/entcoin" target="_blank" rel="noreferrer"><span data-i18n="source.repository">Browse source</span><b>↗</b></a>
         </div>
         <div class="release-meta" id="security">
-          <span>v1.5.1 / SHA-256</span
-          ><a
-            href="https://github.com/HONG-LOU/entcoin/releases/download/v1.5.1/SHA256SUMS.txt"
-            data-i18n="download.checksums"
-            >Checksums</a
-          ><a
-            href="https://github.com/HONG-LOU/entcoin/security"
-            data-i18n="source.security"
-            >Security policy</a
-          >
+          <span>v1.5.1 / SHA-256</span>
+          <a href="https://github.com/HONG-LOU/entcoin/releases/download/v1.5.1/SHA256SUMS.txt" data-i18n="download.checksums">Checksums</a>
+          <a href="https://github.com/HONG-LOU/entcoin/security" data-i18n="source.security">Security policy</a>
         </div>
       </section>
     </main>
 
     <footer>
-      <a class="footer-brand" href="#top"
-        ><img src="/assets/appicon.png" width="42" height="42" alt="" /><strong
-          >ENTCOIN</strong
-        ></a
-      >
-      <p data-i18n="footer.description">
-        A compact, independent proof-of-work network.
-      </p>
+      <a class="footer-brand" href="#top"><img src="/assets/appicon.png" width="42" height="42" alt="" /><strong>ENTCOIN</strong></a>
+      <p data-i18n="footer.description">A compact, independent proof-of-work network.</p>
       <nav>
-        <a href="https://github.com/HONG-LOU/entcoin" data-i18n="footer.github"
-          >GitHub</a
-        ><a
-          href="https://github.com/HONG-LOU/entcoin/releases"
-          data-i18n="footer.releases"
-          >Releases</a
-        ><a href="https://community.entcoin.xyz" data-i18n="nav.community"
-          >Community</a
-        ><a href="/entpay/" data-i18n="nav.entpay">Agent payments</a>
+        <a href="https://github.com/HONG-LOU/entcoin" data-i18n="footer.github">GitHub</a>
+        <a href="https://github.com/HONG-LOU/entcoin/releases" data-i18n="footer.releases">Releases</a>
+        <a href="https://community.entcoin.xyz" data-i18n="nav.community">Community</a>
+        <a href="/entpay/" data-i18n="nav.entpay">Agent payments</a>
       </nav>
       <code>ENTROPY MAINNET / v1.5.1</code>
     </footer>

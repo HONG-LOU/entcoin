@@ -5,44 +5,46 @@
   <style>
     * { box-sizing: border-box; }
     html, body { width: 1200px; height: 630px; margin: 0; overflow: hidden; }
-    body {
-      color: #f4f7f5;
-      background-color: #0b0f12;
-      background-image:
-        linear-gradient(rgb(120 165 182 / 12%) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(120 165 182 / 12%) 1px, transparent 1px);
-      background-size: 48px 48px;
-      font-family: "Noto Sans", sans-serif;
+    body { color: #f4f6f2; background: #101412; font-family: "Noto Sans", sans-serif; }
+    body::before, body::after {
+      content: "";
+      position: absolute;
+      left: 56px;
+      right: 56px;
+      height: 1px;
+      background: #aeb9b52b;
     }
-    .copy { position: absolute; left: 82px; top: 76px; }
-    img { width: 94px; height: 94px; }
-    h1 { margin: 55px 0 19px 4px; font-size: 62px; line-height: 1; letter-spacing: 0; }
-    .tagline { margin: 0 0 38px 4px; font-size: 31px; }
-    .meta, .domain { margin-left: 6px; color: #9aa7a3; font: 17px "DejaVu Sans Mono", monospace; }
-    .accent { width: 72px; height: 5px; margin: 67px 0 23px 6px; background: #54e6b0; }
-    svg { position: absolute; inset: 0; }
+    body::before { top: 54px; }
+    body::after { bottom: 54px; }
+    .copy { position: absolute; left: 72px; top: 82px; z-index: 2; }
+    .signal { margin: 0 0 42px; color: #aeb9b5; font: 14px "DejaVu Sans Mono", monospace; }
+    .signal i { width: 8px; height: 8px; margin-right: 12px; display: inline-block; border-radius: 50%; background: #ff6b5f; }
+    h1 { margin: 0; font-size: 126px; line-height: .84; letter-spacing: 0; text-transform: uppercase; }
+    .tagline { margin: 28px 0 0; color: #58d6bd; font-size: 34px; font-weight: 700; }
+    .meta { margin: 74px 0 0; color: #aeb9b5; font: 14px "DejaVu Sans Mono", monospace; }
+    .domain { position: absolute; right: 70px; bottom: 73px; margin: 0; color: #f4f6f2; font: 15px "DejaVu Sans Mono", monospace; }
+    .mark { position: absolute; right: 85px; top: 50px; width: 440px; height: 440px; }
+    .mark i { position: absolute; inset: 0; border: 1px solid #58d6bd30; border-radius: 50%; }
+    .mark i:nth-child(2) { inset: 54px; border-color: #aeb9b528; }
+    .mark i:nth-child(3) { inset: 112px; border-color: #58d6bd45; }
+    .mark::before, .mark::after { content: ""; position: absolute; background: #58d6bd; }
+    .mark::before { left: -36px; top: 220px; width: 512px; height: 1px; }
+    .mark::after { left: 220px; top: -36px; width: 1px; height: 512px; }
+    .mark img { position: absolute; left: 147px; top: 147px; width: 146px; height: 146px; z-index: 2; box-shadow: 0 22px 55px #0008; }
+    .node { position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #58d6bd; z-index: 3; }
+    .node-a { right: 15px; top: 132px; }
+    .node-b { left: 24px; bottom: 91px; background: #ff6b5f; }
+    .node-c { right: 78px; bottom: 42px; background: #aeb9b5; }
   </style>
 </head>
 <body>
-  <svg viewBox="0 0 1200 630" aria-hidden="true">
-    <g fill="none" stroke="#54e6b0" stroke-opacity=".38" stroke-width="2">
-      <path d="M760 135 925 95 1080 185 1035 340 1110 470 950 500 750 415 850 265 760 135M925 95 850 265 1035 340 950 500M1035 340 1110 470"/>
-    </g>
-    <g fill="#54e6b0">
-      <circle cx="760" cy="135" r="5"/><circle cx="925" cy="95" r="5"/>
-      <circle cx="1080" cy="185" r="5"/><circle cx="1035" cy="340" r="5"/>
-      <circle cx="1110" cy="470" r="5"/><circle cx="950" cy="500" r="5"/>
-      <circle cx="750" cy="415" r="5"/>
-    </g>
-    <circle cx="850" cy="265" r="8" fill="#f4f7f5"/>
-  </svg>
   <div class="copy">
-    <img src="../assets/appicon.png" alt="">
+    <p class="signal"><i></i>ENTROPY MAINNET / RELEASE 1.5.1</p>
     <h1>Entcoin</h1>
-    <p class="tagline">Run the network. Verify everything.</p>
-    <p class="meta">PROOF OF WORK / DESKTOP FULL NODE / OPEN SOURCE</p>
-    <div class="accent"></div>
-    <p class="domain">entcoin.xyz</p>
+    <p class="tagline">Your node. Your wallet. Your agent.</p>
+    <p class="meta">PROOF OF WORK / LOCAL VALIDATION / AGENT PAYMENTS</p>
   </div>
+  <div class="mark" aria-hidden="true"><i></i><i></i><i></i><img src="../assets/appicon.png" alt=""><span class="node node-a"></span><span class="node node-b"></span><span class="node node-c"></span></div>
+  <p class="domain">entcoin.xyz ↗</p>
 </body>
 </html>
