@@ -395,8 +395,13 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 	if response.Header.Get("Cache-Control") != "no-store" {
 		t.Fatalf("home Cache-Control = %q, want no-store", response.Header.Get("Cache-Control"))
 	}
-	if !bytes.Contains(contents, []byte(`src="app.js?v=desktop-relay"`)) {
-		t.Fatal("home does not use the cache-busting desktop relay script URL")
+	if !bytes.Contains(contents, []byte(`src="app.js?v=manual-handoff"`)) {
+		t.Fatal("home does not use the cache-busting manual handoff script URL")
+	}
+	for _, expected := range []string{`id="copy-handoff"`, `id="manual-handoff-link" type="text" readonly`, `data-t="manual.copy"`} {
+		if !bytes.Contains(contents, []byte(expected)) {
+			t.Fatalf("home does not contain manual handoff control %q", expected)
+		}
 	}
 	policy := response.Header.Get("Content-Security-Policy")
 	if !strings.Contains(policy, "connect-src 'self' http://127.0.0.1:47833") || response.Header.Get("X-Frame-Options") != "DENY" {
@@ -411,12 +416,12 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 	if appResponse.Header.Get("Cache-Control") != "no-store" {
 		t.Fatalf("JavaScript Cache-Control = %q, want no-store", appResponse.Header.Get("Cache-Control"))
 	}
-	for _, expected := range []string{"window.location.href=launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", "桌面应用 1.5.2 或更高版本", `headers:{"Content-Type":"application/json"}`} {
+	for _, expected := range []string{"window.location.href=launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", "桌面应用 1.5.2 或更高版本", `headers:{"Content-Type":"application/json"}`, `url.searchParams.set("handoff",launch.handoff)`, "navigator.clipboard.writeText(value)", "clearManualHandoff()"} {
 		if !bytes.Contains(appContents, []byte(expected)) {
 			t.Fatalf("merchant JavaScript does not contain %q", expected)
 		}
 	}
-	for _, forbidden := range []string{"window.open(launch.url", "generated-photo", "network-report"} {
+	for _, forbidden := range []string{"window.open(launch.url", "generated-photo", "network-report", "claim_token"} {
 		if bytes.Contains(appContents, []byte(forbidden)) {
 			t.Fatalf("merchant JavaScript contains product-specific or blank-tab behavior %q", forbidden)
 		}

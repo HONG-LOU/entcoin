@@ -11,6 +11,8 @@ const zh = Object.freeze({
   "Agent Pay": "Agent 支付",
   "Verified commerce": "可验证交易",
   "Payment link": "支付链接",
+  "Payment link or manual payment link": "支付链接或手工支付链接",
+  "Paste entcoin:// payment link": "粘贴 entcoin:// 支付链接",
   "Open payment link": "打开支付链接",
   "Loading payment requests": "正在读取支付请求",
   "Payment requests": "支付请求",
