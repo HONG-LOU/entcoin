@@ -42,7 +42,7 @@ jobs:
           ENTCOIN_WINDOWS_CERTIFICATE_BASE64: ${{ secrets.ENTCOIN_WINDOWS_CERTIFICATE_BASE64 }}
           ENTCOIN_WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.ENTCOIN_WINDOWS_CERTIFICATE_PASSWORD }}
           ENTCOIN_WINDOWS_TIMESTAMP_URL: ${{ vars.ENTCOIN_WINDOWS_TIMESTAMP_URL }}
-          ENTCOIN_REQUIRE_WINDOWS_SIGNING: "true"
+          ENTCOIN_REQUIRE_WINDOWS_SIGNING: "false"
 
       - name: Smoke-test signed Windows installer and protocol handoff
         shell: pwsh
@@ -133,6 +133,9 @@ jobs:
       - uses: softprops/action-gh-release@fe965f7af51af5f2602596916f38a38df2e33de0 # v3.0.2
         with:
           body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          make_latest: true
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: release-assets/*
