@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	ProtocolVersion  = "entpay-v1"
-	maxArtifactBytes = 20 << 20
+	ProtocolVersion    = "entpay-v1"
+	ResultSchema       = "entpay-result-v1"
+	LegacyResultSchema = "entpay-result-legacy"
+	maxArtifactBytes   = 20 << 20
 )
 
 type InputField struct {
@@ -53,8 +55,30 @@ type FulfillmentRequest struct {
 }
 
 type Fulfillment struct {
-	Payload  json.RawMessage
+	Result   ResultEnvelope
 	Artifact *Artifact
+}
+
+type ResultEnvelope struct {
+	Schema  string          `json:"schema"`
+	Summary string          `json:"summary"`
+	Data    json.RawMessage `json:"data"`
+}
+
+func NewResult(summary string, data any) (ResultEnvelope, error) {
+	encoded, err := json.Marshal(data)
+	if err != nil {
+		return ResultEnvelope{}, fmt.Errorf("encode fulfillment result data: %w", err)
+	}
+	result := ResultEnvelope{Schema: ResultSchema, Summary: summary, Data: encoded}
+	canonical, err := canonicalResult(result)
+	if err != nil {
+		return ResultEnvelope{}, err
+	}
+	if err := json.Unmarshal(canonical, &result); err != nil {
+		return ResultEnvelope{}, fmt.Errorf("decode canonical fulfillment result: %w", err)
+	}
+	return result, nil
 }
 
 type Artifact struct {

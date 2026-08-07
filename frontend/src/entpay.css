@@ -46,9 +46,18 @@
 .entpay-input { margin-top: 20px; }
 .entpay-input h3 { margin: 0 0 7px; font-size: 12px; }
 .entpay-input pre { max-height: 170px; margin: 0; padding: 12px; overflow: auto; color: #27302c; background: #eef1ef; border: 1px solid #d8ddda; font-size: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.entpay-preview { margin: 20px 0 0; }
-.entpay-preview img { display: block; width: 100%; max-height: 520px; object-fit: contain; object-position: left center; background: #eef1ef; }
-.entpay-preview span { color: #68716d; font-size: 11px; }
+.entpay-result, .entpay-artifact-evidence { margin-top: 20px; border-top: 1px solid #d8ddda; }
+.entpay-result-header { min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.entpay-result-label { display: block; color: #28765f; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.entpay-result h3, .entpay-artifact-evidence h3 { margin: 4px 0 0; font-size: 14px; }
+.entpay-result-schema { flex: 0 0 auto; padding: 4px 7px; color: #4d5752; background: #eef1ef; border: 1px solid #d8ddda; font-size: 9px; }
+.entpay-result h4 { margin: 8px 0 7px; color: #68716d; font-size: 10px; }
+.entpay-result pre { max-height: 260px; margin: 0; padding: 12px; overflow: auto; color: #27302c; background: #eef1ef; border: 1px solid #d8ddda; font-size: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.entpay-artifact-evidence { padding-top: 18px; }
+.entpay-artifact-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 12px 0 0; border-top: 1px solid #e4e8e5; }
+.entpay-artifact-facts div { min-width: 0; padding: 10px 14px 10px 0; border-bottom: 1px solid #e4e8e5; }
+.entpay-artifact-facts dt { color: #68716d; font-size: 9px; }
+.entpay-artifact-facts dd { margin: 4px 0 0; overflow-wrap: anywhere; font-size: 10px; }
 .entpay-actions { min-height: 48px; display: flex; align-items: center; justify-content: flex-end; gap: 9px; margin-top: 22px; }
 .entpay-pay-button { min-height: 38px; padding: 0 18px; color: #0f2922; background: #58d6bd; border: 1px solid #42bfa7; border-radius: 4px; font-weight: 800; }
 .entpay-pay-button:hover:not(:disabled) { background: #6fe0c9; }
@@ -69,8 +78,17 @@
   .entpay-desk { grid-template-columns: 230px minmax(0, 1fr); }
   .entpay-detail { padding-left: 20px; }
   .entpay-facts { grid-template-columns: 1fr; }
+  .entpay-artifact-facts { grid-template-columns: 1fr; }
   .entpay-settings form { grid-template-columns: 1fr; }
   .entpay-fixed-setting, .entpay-settings-actions { grid-column: 1; }
+}
+@media (max-width: 700px) {
+  .entpay-desk { grid-template-columns: minmax(0, 1fr); }
+  .entpay-inbox { border-right: 0; border-bottom: 1px solid #d8ddda; }
+  .entpay-detail { padding-left: 0; }
+  .entpay-detail-header, .entpay-result-header { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .entpay-result-header { padding: 14px 0; }
+  .entpay-actions { flex-wrap: wrap; }
 }
 @media (prefers-reduced-motion: reduce) {
   .entpay-view *, .entpay-view *::before { animation: none !important; transition: none !important; }

@@ -48,7 +48,11 @@ func (p *testProduct) Validate(_ context.Context, input json.RawMessage) error {
 
 func (p *testProduct) Fulfill(_ context.Context, request FulfillmentRequest) (Fulfillment, error) {
 	p.calls.Add(1)
-	result := Fulfillment{Payload: json.RawMessage(`{"result":"delivered"}`)}
+	envelope, err := NewResult("Test result delivered", map[string]any{"result": "delivered"})
+	if err != nil {
+		return Fulfillment{}, err
+	}
+	result := Fulfillment{Result: envelope}
 	if p.artifact {
 		result.Artifact = &Artifact{Contents: []byte("test-image-contents"), MediaType: "image/jpeg", FileName: "result.jpg"}
 	}
@@ -251,6 +255,10 @@ func TestGatewayPaymentConfirmationReceiptAndArtifact(t *testing.T) {
 	if contentHash(payload) != delivery.Receipt.PayloadSHA256 || delivery.Artifact == nil || delivery.Artifact.SHA256 != delivery.Receipt.ArtifactSHA256 {
 		t.Fatal("delivery hashes are not bound to the receipt")
 	}
+	envelope, err := decodeResult(delivery.Payload)
+	if err != nil || envelope.Schema != ResultSchema || envelope.Summary != "Test result delivered" {
+		t.Fatalf("delivery result envelope is invalid: %+v, %v", envelope, err)
+	}
 
 	unauthorized := gatewayRequest(t, http.MethodGet, fixture.server.URL+"/v1/invoices/"+created.Invoice.ID+"/artifact", "wrong", nil)
 	response, err = http.DefaultClient.Do(unauthorized)
@@ -403,9 +411,14 @@ func TestGatewayHomeIsResponsiveAndHardened(t *testing.T) {
 	if appResponse.Header.Get("Cache-Control") != "no-store" {
 		t.Fatalf("JavaScript Cache-Control = %q, want no-store", appResponse.Header.Get("Cache-Control"))
 	}
-	for _, expected := range []string{"window.open(launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", "桌面应用 1.5.2 或更高版本", `headers:{"Content-Type":"application/json"}`} {
+	for _, expected := range []string{"window.location.href=launch.url", "handoff:launch.handoff", "http://127.0.0.1:47833/v1/handoffs", "桌面应用 1.5.2 或更高版本", `headers:{"Content-Type":"application/json"}`} {
 		if !bytes.Contains(appContents, []byte(expected)) {
 			t.Fatalf("merchant JavaScript does not contain %q", expected)
+		}
+	}
+	for _, forbidden := range []string{"window.open(launch.url", "generated-photo", "network-report"} {
+		if bytes.Contains(appContents, []byte(forbidden)) {
+			t.Fatalf("merchant JavaScript contains product-specific or blank-tab behavior %q", forbidden)
 		}
 	}
 }

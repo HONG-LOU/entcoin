@@ -28,7 +28,6 @@ let invokeBackend;
 let notify;
 let activate;
 let settingsRevision = 0;
-let artifactPreviewURL = "";
 
 const byID = (id) => document.getElementById(id);
 
@@ -119,6 +118,14 @@ function detailRow(term, value, code = false) {
   return row;
 }
 
+export function normalizeEntPayResult(result) {
+  if (!result || typeof result !== "object") return null;
+  const schema = String(result.schema || "");
+  const summary = String(result.summary || "").trim();
+  if (!schema || !summary || !("data" in result)) return null;
+  return { schema, summary, data: result.data };
+}
+
 function verificationRail(session) {
   const current = session.stage === "awaiting_approval" ? 0 :
     ["preparing_payment", "broadcast", "submitting"].includes(session.stage) ? 1 :
@@ -157,10 +164,6 @@ async function mutate(method, session, button) {
 function renderDetail(detail) {
   const session = detail.session;
   const root = byID("entpay-detail");
-	if (artifactPreviewURL) {
-		URL.revokeObjectURL(artifactPreviewURL);
-		artifactPreviewURL = "";
-	}
   root.replaceChildren();
   const header = element("header", "entpay-detail-header");
   const title = element("div");
@@ -196,27 +199,32 @@ function renderDetail(detail) {
     root.append(input);
   }
 
-  if (session.payload) {
-    const result = element("section", "entpay-input");
-    result.append(element("h3", "", "Verified result"));
-    const pre = element("pre");
-    pre.textContent = JSON.stringify(session.payload, null, 2);
-    result.append(pre);
-    root.append(result);
-  }
-	if (session.stage === "complete" && ["image/jpeg", "image/png"].includes(String(session.artifact_media_type).toLowerCase())) {
-		const preview = element("figure", "entpay-preview");
-		preview.append(element("span", "", "Loading verified image"));
-		root.append(preview);
-		void invokeBackend("GetEntPayArtifactPreview", session.id).then((result) => {
-			if (selectedID !== session.id) return;
-			const bytes = Uint8Array.from(atob(result.data), (character) => character.charCodeAt(0));
-			artifactPreviewURL = URL.createObjectURL(new Blob([bytes], { type: result.media_type }));
-			const image = element("img");
-			image.alt = session.product?.name || "Verified EntPay delivery";
-			image.src = artifactPreviewURL;
-			preview.replaceChildren(image);
-		}).catch(() => preview.replaceChildren(element("span", "", "Verified image preview unavailable")));
+	const delivery = normalizeEntPayResult(session.result);
+	if (delivery) {
+		const result = element("section", "entpay-result");
+		const resultHeader = element("header", "entpay-result-header");
+		const resultTitle = element("div");
+		resultTitle.append(element("span", "entpay-result-label", "Verified result"), element("h3", "", delivery.summary));
+		resultHeader.append(resultTitle, element("code", "entpay-result-schema", delivery.schema));
+		const dataLabel = element("h4", "", "Merchant data");
+		const pre = element("pre");
+		try { pre.textContent = JSON.stringify(delivery.data, null, 2); } catch { pre.textContent = "Result data unavailable"; }
+		result.append(resultHeader, dataLabel, pre);
+		root.append(result);
+	}
+	if (session.delivery_artifact) {
+		const artifact = session.delivery_artifact;
+		const evidence = element("section", "entpay-artifact-evidence");
+		evidence.append(element("h3", "", "Verified attachment"));
+		const artifactFacts = element("dl", "entpay-artifact-facts");
+		artifactFacts.append(
+			detailRow("File", artifact.file_name || "--", true),
+			detailRow("Media type", artifact.media_type || "--", true),
+			detailRow("Size", `${Number(artifact.bytes || 0).toLocaleString(currentLocale())} bytes`),
+			detailRow("SHA-256", artifact.sha256 || "--", true),
+		);
+		evidence.append(artifactFacts);
+		root.append(evidence);
 	}
 
   const actions = element("div", "entpay-actions");
@@ -301,9 +309,6 @@ export function initializeEntPay({ invoke, showToast, activateView }) {
   invokeBackend = invoke;
   notify = showToast;
   activate = activateView;
-	window.addEventListener("beforeunload", () => {
-		if (artifactPreviewURL) URL.revokeObjectURL(artifactPreviewURL);
-	});
   byID("entpay-link-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = byID("entpay-link");

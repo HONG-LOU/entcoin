@@ -88,6 +88,49 @@ func canonicalPayload(raw json.RawMessage) ([]byte, error) {
 	return json.Marshal(value)
 }
 
+func canonicalResult(value ResultEnvelope) ([]byte, error) {
+	if value.Schema != ResultSchema {
+		return nil, fmt.Errorf("fulfillment result schema is invalid")
+	}
+	summary := strings.TrimSpace(value.Summary)
+	if summary != value.Summary || len(summary) < 1 || len(summary) > 500 || strings.ContainsAny(summary, "\r\n\t") {
+		return nil, fmt.Errorf("fulfillment result summary is invalid")
+	}
+	data, err := canonicalObject(value.Data)
+	if err != nil {
+		return nil, fmt.Errorf("fulfillment result data is invalid: %w", err)
+	}
+	encoded, err := json.Marshal(ResultEnvelope{Schema: ResultSchema, Summary: summary, Data: data})
+	if err != nil {
+		return nil, fmt.Errorf("encode fulfillment result: %w", err)
+	}
+	return canonicalPayload(encoded)
+}
+
+func decodeResult(raw json.RawMessage) (ResultEnvelope, error) {
+	canonical, err := canonicalPayload(raw)
+	if err != nil {
+		return ResultEnvelope{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(canonical))
+	decoder.DisallowUnknownFields()
+	var result ResultEnvelope
+	if err := decoder.Decode(&result); err != nil {
+		return ResultEnvelope{}, fmt.Errorf("fulfillment result envelope is invalid: %w", err)
+	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		return ResultEnvelope{}, fmt.Errorf("fulfillment result envelope contains trailing data")
+	}
+	encoded, err := canonicalResult(result)
+	if err != nil {
+		return ResultEnvelope{}, err
+	}
+	if err := json.Unmarshal(encoded, &result); err != nil {
+		return ResultEnvelope{}, err
+	}
+	return result, nil
+}
+
 func rejectDuplicateJSONKeys(contents []byte) error {
 	decoder := json.NewDecoder(bytes.NewReader(contents))
 	decoder.UseNumber()
@@ -181,7 +224,7 @@ func validIdentifier(value string) bool {
 }
 
 func validateFulfillment(value Fulfillment) ([]byte, error) {
-	payload, err := canonicalPayload(value.Payload)
+	payload, err := canonicalResult(value.Result)
 	if err != nil {
 		return nil, err
 	}

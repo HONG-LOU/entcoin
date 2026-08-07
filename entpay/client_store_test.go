@@ -81,6 +81,39 @@ func TestClientStoreTransitionRevisionAndLegality(t *testing.T) {
 	}
 }
 
+func TestClientStorePresentsLegacyPayloadAsGenericResult(t *testing.T) {
+	protector, _ := newXChaChaProtector(bytes.Repeat([]byte{8}, 32))
+	store, err := OpenClientStore(filepath.Join(t.TempDir(), "client.db"), protector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	code, _ := newOpaqueToken()
+	nonce, _ := newOpaqueToken()
+	session, err := store.CreateReceived(context.Background(), LaunchRequest{Merchant: "https://merchant.example/", Handoff: code}, nonce)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := []byte(`{"merchant_field":"value"}`)
+	if _, err := store.database.Exec(`UPDATE sessions SET payload_json = ? WHERE id = ?`, legacy, session.ID); err != nil {
+		t.Fatal(err)
+	}
+	session, err = store.Session(context.Background(), session.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if session.Result == nil || session.Result.Schema != LegacyResultSchema || session.Result.Summary != "Legacy merchant delivery" || string(session.Result.Data) != string(legacy) {
+		t.Fatalf("legacy result = %+v", session.Result)
+	}
+	encoded, err := json.Marshal(session)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(encoded, []byte(`"payload"`)) || !bytes.Contains(encoded, []byte(`"result"`)) {
+		t.Fatalf("client session DTO exposed the wrong delivery fields: %s", encoded)
+	}
+}
+
 func TestClientStoreRejectsNewerSchemaAndSymlink(t *testing.T) {
 	protector, _ := newXChaChaProtector(bytes.Repeat([]byte{3}, 32))
 	directory := t.TempDir()

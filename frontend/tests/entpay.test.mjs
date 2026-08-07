@@ -5,7 +5,7 @@ globalThis.window = {
   localStorage: { getItem: () => "en", setItem: () => {} },
 };
 
-const { entpayStageLabel, formatEnt, parseEnt, paymentSent, revisionMatches } = await import("../src/entpay.js");
+const { entpayStageLabel, formatEnt, normalizeEntPayResult, parseEnt, paymentSent, revisionMatches } = await import("../src/entpay.js");
 
 test("formats atomic EntPay amounts exactly without floating point", () => {
   assert.equal(formatEnt(1), "0.00000001 ENT");
@@ -36,4 +36,13 @@ test("transaction presence keeps post-broadcast failures labelled as paid", () =
   assert.equal(paymentSent({ stage: "failed_retryable", transaction_id: "tx1" }), true);
   assert.equal(paymentSent({ stage: "failed_terminal", transaction_id: "tx1" }), true);
   assert.equal(paymentSent({ stage: "awaiting_approval" }), false);
+});
+
+test("generic EntPay results require a schema, summary and opaque data", () => {
+  assert.deepEqual(
+    normalizeEntPayResult({ schema: "entpay-result-v1", summary: "Service completed", data: { value: 42 } }),
+    { schema: "entpay-result-v1", summary: "Service completed", data: { value: 42 } },
+  );
+  assert.equal(normalizeEntPayResult({ summary: "Missing schema", data: {} }), null);
+  assert.equal(normalizeEntPayResult({ schema: "entpay-result-v1", summary: "", data: {} }), null);
 });
