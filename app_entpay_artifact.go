@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -10,35 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-type EntPayArtifactPreview struct {
-	MediaType string `json:"media_type"`
-	Data      string `json:"data"`
-}
-
-func (a *App) GetEntPayArtifactPreview(id string) (EntPayArtifactPreview, error) {
-	path, err := a.verifiedEntPayArtifact(id)
-	if err != nil {
-		return EntPayArtifactPreview{}, err
-	}
-	manager, ctx, err := a.requireEntPayClient()
-	if err != nil {
-		return EntPayArtifactPreview{}, err
-	}
-	detail, err := manager.SessionDetail(ctx, id)
-	if err != nil {
-		return EntPayArtifactPreview{}, err
-	}
-	mediaType := strings.ToLower(strings.TrimSpace(detail.Session.ArtifactMediaType))
-	if mediaType != "image/jpeg" && mediaType != "image/png" {
-		return EntPayArtifactPreview{}, fmt.Errorf("artifact type is not previewable")
-	}
-	contents, err := os.ReadFile(path)
-	if err != nil || int64(len(contents)) != detail.Session.ArtifactBytes {
-		return EntPayArtifactPreview{}, fmt.Errorf("artifact changed while opening preview")
-	}
-	return EntPayArtifactPreview{MediaType: mediaType, Data: base64.StdEncoding.EncodeToString(contents)}, nil
-}
 
 func (a *App) OpenEntPayArtifact(id string) (ActionResult, error) {
 	path, err := a.verifiedEntPayArtifact(id)

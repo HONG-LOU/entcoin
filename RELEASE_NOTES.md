@@ -1,8 +1,8 @@
-# Entcoin v1.5.2
+# Entcoin v1.5.3
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.5.2 integrates EntPay Agent payments into the existing desktop node
+Entcoin v1.5.3 makes EntPay delivery a merchant-independent desktop contract
 without changing `entropy-mainnet-v1`, consensus, transaction encoding, wallet
 formats, addresses, balances, chain data, or peer compatibility.
 
@@ -21,9 +21,13 @@ persists a revision-checked state machine in a separate `entpay-client.db`, so
 post-broadcast submit, confirmation, claim, Receipt verification, and artifact
 delivery can resume without creating another payment.
 
-JPEG and PNG results can be previewed in the desktop. Verified artifacts use
-bounded downloads, safe names, atomic saves, and explicit open/reveal actions.
-English and Simplified Chinese are included.
+Every new merchant returns the same `entpay-result-v1` envelope: a verified
+summary plus opaque JSON data. The desktop does not branch on merchant or
+product IDs. Verified artifacts of any allowed media type use bounded downloads,
+safe names, atomic saves, hash evidence, and explicit open/reveal actions; media
+is not embedded in the payment UI. New services can deploy without a desktop
+release. Merchant launch also uses same-page protocol navigation, avoiding the
+empty `about:blank` tab created by browser popup handling.
 
 ## Secure browser handoff
 
@@ -57,7 +61,7 @@ covered by SHA-256 checksums and GitHub build-provenance attestations.
 
 ## 简体中文
 
-Entcoin v1.5.2 将 EntPay Agent 支付直接集成进现有桌面节点，同时不改变
+Entcoin v1.5.3 将 EntPay 交付统一为与商家无关的桌面协议，同时不改变
 `entropy-mainnet-v1`、共识、交易编码、钱包格式、地址、余额、链数据或节点兼容性。
 
 ## 桌面 Agent 支付
@@ -70,8 +74,10 @@ Entcoin v1.5.2 将 EntPay Agent 支付直接集成进现有桌面节点，同时
 交易，并把带 revision 校验的状态机持久化到独立 `entpay-client.db`。广播后的提交、确认、
 领取、Receipt 验证和文件交付可以在重启后继续，且不会创建第二笔付款。
 
-JPEG 和 PNG 结果可直接预览。已验证文件采用有界下载、安全文件名和原子保存，并提供明确
-的打开与定位操作。界面同时提供英文和简体中文。
+所有新商家统一返回 `entpay-result-v1`：一段已验证摘要和不透明 JSON 数据。桌面端不再按
+商家或商品 ID 分支。任何允许类型的已验证附件都采用有界下载、安全文件名、原子保存和
+哈希证据，只提供打开与定位操作，不在支付界面内嵌媒体。新增服务无需发布桌面新版。
+商家启动桌面时改为当前页面协议导航，不再因弹窗机制留下空白 `about:blank` 标签页。
 
 ## 安全浏览器交接
 

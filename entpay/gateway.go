@@ -501,17 +501,8 @@ func (g *Gateway) fulfill(ctx context.Context, record invoiceRecord) error {
 
 func (g *Gateway) validateStoredDelivery(record invoiceRecord, result Delivery) bool {
 	publicKey := g.signingKey.Public().(ed25519.PublicKey)
-	if result.Receipt.InvoiceID != record.ID || result.Receipt.TransactionID != record.TxID || result.Receipt.Resource != record.Resource || result.Receipt.InputSHA256 != record.InputSHA256 || !verifyReceipt(publicKey, result.Receipt) {
-		return false
-	}
-	payload, err := canonicalPayload(result.Payload)
-	if err != nil || contentHash(payload) != result.Receipt.PayloadSHA256 {
-		return false
-	}
-	if result.Artifact == nil {
-		return result.Receipt.ArtifactSHA256 == ""
-	}
-	return result.Artifact.SHA256 == result.Receipt.ArtifactSHA256 && result.Artifact.DownloadPath == "v1/invoices/"+record.ID+"/artifact"
+	invoice := Invoice{ID: record.ID, Resource: record.Resource, InputSHA256: record.InputSHA256}
+	return validateDelivery(publicKey, invoice, record.TxID, result) == nil
 }
 
 func (g *Gateway) handleArtifact(writer http.ResponseWriter, request *http.Request) {

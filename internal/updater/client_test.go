@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-const testReleaseVersion = "1.5.3"
+const testReleaseVersion = "1.5.4"
 
 func TestCompareVersions(t *testing.T) {
 	tests := []struct {
@@ -42,12 +42,12 @@ func TestCompareVersions(t *testing.T) {
 func TestLatestStableEntryIgnoresPrereleasesAndSelectsHighestVersion(t *testing.T) {
 	entries := []atomEntry{
 		{Title: "v1.0.7"},
-		{Title: "v1.5.3-rc1"},
+		{Title: "v1.5.4-rc1"},
 		{Title: "v1.0.9"},
 		{Title: "v1.0.10"},
 		{Title: "v1.0.15"},
 		{Title: "v1.0.16"},
-		{Title: "v1.5.3"},
+		{Title: "v1.5.4"},
 	}
 
 	entry, version, err := latestStableEntry(entries)

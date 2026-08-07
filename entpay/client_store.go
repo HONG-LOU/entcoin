@@ -71,7 +71,8 @@ type ClientSession struct {
 	ErrorCode             string             `json:"error_code,omitempty"`
 	ErrorMessage          string             `json:"error_message,omitempty"`
 	Receipt               *Receipt           `json:"receipt,omitempty"`
-	Payload               json.RawMessage    `json:"payload,omitempty"`
+	Payload               json.RawMessage    `json:"-"`
+	Result                *ResultEnvelope    `json:"result,omitempty"`
 	DeliveryArtifact      *ArtifactMetadata  `json:"delivery_artifact,omitempty"`
 	ArtifactPath          string             `json:"artifact_path,omitempty"`
 	ArtifactSHA256        string             `json:"artifact_sha256,omitempty"`
@@ -880,6 +881,18 @@ func scanClientSession(row clientRowScanner) (ClientSession, error) {
 	}
 	if len(payloadJSON) > 0 {
 		session.Payload = append(json.RawMessage(nil), payloadJSON...)
+		result, err := decodeResult(session.Payload)
+		if err == nil {
+			session.Result = &result
+		} else {
+			legacy, canonicalErr := canonicalPayload(session.Payload)
+			if canonicalErr != nil {
+				return ClientSession{}, fmt.Errorf("stored EntPay payload is invalid")
+			}
+			session.Result = &ResultEnvelope{
+				Schema: LegacyResultSchema, Summary: "Legacy merchant delivery", Data: legacy,
+			}
+		}
 	}
 	if len(artifactJSON) > 0 {
 		session.DeliveryArtifact = &ArtifactMetadata{}

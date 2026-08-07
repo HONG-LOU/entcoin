@@ -5,6 +5,30 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-08-07
+
+### Changed
+
+- Standardized every new merchant delivery as an `entpay-result-v1` envelope
+  containing a short summary and opaque JSON data while preserving EntPay v1
+  Invoice, Receipt, and payload-hash compatibility.
+- Made the desktop result view independent of merchant and product IDs. Generic
+  attachment evidence and open/reveal actions replace product-specific image
+  previews, so new services do not require a desktop release.
+- Made the merchant workspace render descriptors directly and launch the
+  `entcoin://` handler in the current browsing context.
+
+### Fixed
+
+- Prevented an empty `about:blank` tab when opening Entcoin from a merchant.
+- Canonicalized result envelopes before staging and Receipt hashing so stored
+  deliveries verify identically after restart.
+
+### Verification
+
+- Added standard-envelope, legacy-delivery, unknown-product, generic-artifact,
+  and merchant-launch regression coverage across Go and browser tests.
+
 ## [1.5.2] - 2026-08-06
 
 ### Added

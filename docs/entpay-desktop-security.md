@@ -4,7 +4,7 @@ This document freezes the EntPay v1 desktop trust boundaries and transport vecto
 
 ## Trust boundaries
 
-- The merchant controls its HTTPS endpoint, product metadata, signed Invoice, Delivery payload, and artifact bytes. It never receives wallet keys and cannot authorize a payment.
+- The merchant controls its HTTPS endpoint, product metadata, signed Invoice, standard Delivery result data, and artifact bytes. It never receives wallet keys and cannot authorize a payment.
 - The `entcoin://` URL is untrusted bootstrap data. It contains only a canonical merchant endpoint. The handoff code remains in the merchant HTTPS response and is sent to the desktop loopback relay in an HTTP body after launch; no capability enters process arguments.
 - The desktop backend is the authorization boundary. The WebView can request an action only by session ID and expected revision. It cannot provide a transaction, destination, amount, fee, claim token, or artifact path.
 - The existing `node.Service` is the only wallet and ledger owner. Preview, prepare, wallet mutation, and commit share its mutation boundary and require the reviewed wallet address.
@@ -21,6 +21,7 @@ This document freezes the EntPay v1 desktop trust boundaries and transport vecto
 6. Artifacts are streamed to a same-directory temporary file, bounded, hashed, media-checked, synced, and installed without overwrite. Merchant names never select a directory.
 7. System URI registration passes only a secret-free bootstrap URL as one quoted argument. Parsing is complete before networking and rejects capabilities, extra fields, fragments, userinfo, paths, noncanonical encoding, and unsafe public ports.
 8. The loopback relay accepts a handoff only during a short merchant-specific bootstrap window and only when the browser Origin exactly matches that merchant endpoint. Acceptance consumes the window.
+9. The desktop renders only the common `entpay-result-v1` summary, opaque JSON data, and generic artifact evidence. Product IDs and merchant-specific media types never select desktop components or file extensions.
 
 ## Canonical launch vectors
 

@@ -36,12 +36,12 @@ local wallet signs a normal ENT transaction
         ↓ merchant verifies one exact output and confirmations
 idempotent Product.Fulfill
         ↓
-signed Receipt + JSON payload + optional authorized artifact
+signed Receipt + standard result envelope + optional authorized artifact
 ```
 
 The final `Receipt` binds the invoice, transaction, resource, original input
-hash, JSON payload hash, optional artifact hash, and delivery time. The Agent
-verifies every binding before analysis or file storage.
+hash, canonical result-envelope hash, optional artifact hash, and delivery
+time. The Agent verifies every binding before analysis or file storage.
 
 ## User and Agent usage
 
@@ -123,6 +123,24 @@ required confirmations, visual accent, and input fields. `Validate` performs
 cheap input checks before an Invoice exists. `Fulfill` runs only after the
 Gateway has verified payment and confirmations.
 
+Every product returns the same merchant-independent result envelope:
+
+```json
+{
+  "schema": "entpay-result-v1",
+  "summary": "Service completed",
+  "data": {}
+}
+```
+
+Create it with `entpay.NewResult(summary, data)` and return it in
+`Fulfillment.Result`. `summary` is a short single-line outcome. `data` is a
+bounded JSON object owned by the merchant and treated as opaque business data
+by Entcoin. Downloadable output belongs in the optional generic `Artifact`;
+the desktop verifies and exposes file evidence and open/reveal actions without
+product-specific rendering or inline media previews. Adding a merchant or
+resource therefore does not require an Entcoin desktop release.
+
 Register one or more implementations:
 
 ```go
@@ -169,7 +187,7 @@ honor context cancellation. Mark non-retryable product failures with
 - A transaction ID is unique across all invoices. Submission is idempotent.
 - Delivery starts only after the configured confirmation count.
 - SQLite serializes fulfillment jobs. Stale jobs can recover after a crash.
-- A fulfillment payload and artifact are staged atomically before the signed
+- A canonical result envelope and artifact are staged atomically before the signed
   delivery is committed, avoiding a second paid provider call after a crash.
 - Claim tokens are 256-bit bearer capabilities; only their SHA-256 digests are
   stored. Unauthorized invoice and artifact lookups return `404`.

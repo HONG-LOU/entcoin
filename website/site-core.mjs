@@ -1,5 +1,5 @@
 export const FALLBACK_RELEASE_URL =
-  "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.2";
+  "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.3";
 
 const en = {
   "meta.title": "Entcoin - Your node. Your wallet. Your agent.",
@@ -81,7 +81,7 @@ const en = {
   "product.point.process.title": "One process",
   "product.point.process.body":
     "No hosted login, browser wallet, external database, or coordinator.",
-  "entpay.eyebrow": "New in v1.5.2 / Agent payments",
+  "entpay.eyebrow": "New in v1.5.3 / Agent payments",
   "entpay.title": "Software can buy a result. You still approve the payment.",
   "entpay.body":
     "An independent merchant signs a quote. Your local Agent checks the product, request, price, merchant, expiry, and spending limit. Only then can your local wallet pay and verify the signed delivery.",
@@ -147,7 +147,7 @@ const en = {
   "download.checksums": "Checksums",
   "download.release": "View release notes",
   "download.boundary":
-    "v1.2.0 is superseded. Upgrade to v1.5.2 before block 125555 and verify the published checksums.",
+    "v1.2.0 is superseded. Upgrade to v1.5.3 before block 125555 and verify the published checksums.",
   "infrastructure.eyebrow": "06 / Live infrastructure",
   "infrastructure.title": "Inspect the public node.",
   "infrastructure.body":
@@ -266,7 +266,7 @@ const zh = {
   "product.point.process.title": "一个应用即可运行",
   "product.point.process.body":
     "钱包、账本、节点连接和挖矿都在桌面端里，不需要另装数据库。",
-  "entpay.eyebrow": "v1.5.2 新能力 / Agent 支付",
+  "entpay.eyebrow": "v1.5.3 新能力 / Agent 支付",
   "entpay.title": "软件可以买到结果，但付款仍由你确认。",
   "entpay.body":
     "独立商家先签发报价。本机 Agent 核对商品、请求、价格、商家、有效期和付款上限，确认无误后，本机钱包才会付款并验证签名交付。",
@@ -329,7 +329,7 @@ const zh = {
   "download.checksums": "核对文件完整性",
   "download.release": "查看版本说明",
   "download.boundary":
-    "v1.2.0 已被替代。请在高度 125555 前升级到 v1.5.2，并核对官方 SHA-256。",
+    "v1.2.0 已被替代。请在高度 125555 前升级到 v1.5.3，并核对官方 SHA-256。",
   "infrastructure.eyebrow": "06 / 网络现状",
   "infrastructure.title": "公共节点现在是否在线？",
   "infrastructure.body":
@@ -512,7 +512,7 @@ function findGitHubAsset(assets, pattern) {
 
 function fallbackRelease() {
   return {
-    version: "v1.5.2",
+    version: "v1.5.3",
     release: FALLBACK_RELEASE_URL,
     windowsPortable: FALLBACK_RELEASE_URL,
     windowsInstaller: FALLBACK_RELEASE_URL,

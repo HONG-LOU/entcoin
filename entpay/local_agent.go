@@ -218,11 +218,7 @@ func (a *LocalAgent) handleReject(writer http.ResponseWriter, request *http.Requ
 func (a *LocalAgent) runPayment(id string, handoff LocalHandoffRequest, product ProductDescriptor) {
 	output := ""
 	if a.config.ArtifactDirectory != "" {
-		extension := ".bin"
-		if product.ID == "generated-photo" {
-			extension = ".jpg"
-		}
-		output = filepath.Join(a.config.ArtifactDirectory, product.ID+"-"+handoff.Created.Invoice.ID+extension)
+		output = filepath.Join(a.config.ArtifactDirectory, product.ID+"-"+handoff.Created.Invoice.ID+".bin")
 	}
 	result, err := RunPreparedAgent(context.Background(), PreparedAgentConfig{
 		Endpoint: handoff.Endpoint, DataDirectory: a.config.DataDirectory, WalletAddress: a.config.WalletAddress,
