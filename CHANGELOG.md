@@ -5,6 +5,29 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.4] - 2026-08-07
+
+### Added
+
+- Added a generic, short-lived manual EntPay link that users can copy from any
+  merchant and paste into the desktop when Windows or a browser does not launch
+  the registered `entcoin://` handler.
+- Added a selectable read-only fallback when browser clipboard access is
+  unavailable.
+
+### Changed
+
+- Clarified the desktop payment-link field and kept the manual path on the same
+  locally verified, explicit-approval flow as automatic handoff.
+- Increased the Windows cold-start smoke allowance while retaining exact relay
+  address and process-ownership checks.
+
+### Security
+
+- Manual links contain only the public merchant endpoint and the existing
+  short-lived, one-time handoff capability. They never include claim tokens,
+  wallet material, request payloads, or payment approval.
+
 ## [1.5.3] - 2026-08-07
 
 ### Changed

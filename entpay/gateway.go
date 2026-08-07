@@ -188,7 +188,7 @@ func (g *Gateway) handleJavaScript(writer http.ResponseWriter, _ *http.Request) 
 func (g *Gateway) handleStyle(writer http.ResponseWriter, _ *http.Request) {
 	writer.Header().Set("Content-Type", "text/css; charset=utf-8")
 	writer.Header().Set("Cache-Control", "no-store")
-	_, _ = io.WriteString(writer, styleCSS)
+	_, _ = io.WriteString(writer, styleCSS+manualHandoffCSS)
 }
 
 func (g *Gateway) handleHealth(writer http.ResponseWriter, request *http.Request) {

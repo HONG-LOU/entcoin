@@ -1,8 +1,9 @@
-# Entcoin v1.5.3
+# Entcoin v1.5.4
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.5.3 makes EntPay delivery a merchant-independent desktop contract
+Entcoin v1.5.4 adds a reliable manual EntPay handoff fallback while keeping
+delivery a merchant-independent desktop contract
 without changing `entropy-mainnet-v1`, consensus, transaction encoding, wallet
 formats, addresses, balances, chain data, or peer compatibility.
 
@@ -30,6 +31,13 @@ release. Merchant launch also uses same-page protocol navigation, avoiding the
 empty `about:blank` tab created by browser popup handling.
 
 ## Secure browser handoff
+
+If Windows or the browser does not open Entcoin, every generic merchant page
+can now copy a short-lived manual payment link. Paste it into Agent Pay's
+payment-link field in the desktop. Clipboard-denied browsers expose the same
+value in a selectable read-only field. The desktop performs the same local
+merchant, signature, amount, request, and policy checks and still requires an
+explicit approval click before payment.
 
 Windows installers and Ubuntu packages register `entcoin://`. The operating
 system receives only a public merchant endpoint:
@@ -61,7 +69,8 @@ covered by SHA-256 checksums and GitHub build-provenance attestations.
 
 ## 简体中文
 
-Entcoin v1.5.3 将 EntPay 交付统一为与商家无关的桌面协议，同时不改变
+Entcoin v1.5.4 增加了可靠的 EntPay 手工交接兜底，同时继续把交付统一为
+与商家无关的桌面协议，并且不改变
 `entropy-mainnet-v1`、共识、交易编码、钱包格式、地址、余额、链数据或节点兼容性。
 
 ## 桌面 Agent 支付
@@ -80,6 +89,11 @@ Entcoin v1.5.3 将 EntPay 交付统一为与商家无关的桌面协议，同时
 商家启动桌面时改为当前页面协议导航，不再因弹窗机制留下空白 `about:blank` 标签页。
 
 ## 安全浏览器交接
+
+如果 Windows 或浏览器没有打开 Entcoin，任何使用通用协议的商家页面现在都可以复制一条
+短期手工支付链接，再粘贴到桌面 Agent 支付的支付链接输入框。浏览器无剪贴板权限时会显示
+同一条可选中的只读链接。桌面仍会在本机验证商家、签名、金额、请求和支付策略，并且必须
+由用户明确点击批准后才会付款。
 
 Windows 安装包和 Ubuntu 包会注册 `entcoin://`。操作系统启动参数只接收公开 merchant
 endpoint，不接收 handoff code。短时 256-bit code 保留在商家 HTTPS 响应体中，再单独 POST

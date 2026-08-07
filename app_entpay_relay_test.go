@@ -15,6 +15,41 @@ import (
 
 const testHandoffCode = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
+func TestOpenEntPayLinkQueuesManualHandoff(t *testing.T) {
+	app := NewApp()
+	value := "entcoin://pay?merchant=https%3A%2F%2Fmerchant.example%2Fentpay%2F&v=1&handoff=" + testHandoffCode
+	result, err := app.OpenEntPayLink(value)
+	if err != nil || result.Message != "Payment request queued" {
+		t.Fatalf("OpenEntPayLink() = %+v, %v", result, err)
+	}
+	select {
+	case launch := <-app.handoffQueue:
+		if launch.Merchant != "https://merchant.example/entpay/" || launch.Handoff != testHandoffCode {
+			t.Fatalf("queued launch = %+v", launch)
+		}
+	default:
+		t.Fatal("manual payment link was not queued")
+	}
+}
+
+func TestOpenEntPayLinkRejectsIncompleteManualHandoff(t *testing.T) {
+	for name, value := range map[string]string{
+		"bootstrap only": "entcoin://pay?merchant=https%3A%2F%2Fmerchant.example%2Fentpay%2F&v=1",
+		"short handoff":  "entcoin://pay?merchant=https%3A%2F%2Fmerchant.example%2Fentpay%2F&v=1&handoff=short",
+		"wrong scheme":   "https://merchant.example/entpay/",
+	} {
+		t.Run(name, func(t *testing.T) {
+			app := NewApp()
+			if _, err := app.OpenEntPayLink(value); err == nil {
+				t.Fatal("invalid manual payment link was accepted")
+			}
+			if len(app.handoffQueue) != 0 {
+				t.Fatal("invalid manual payment link was queued")
+			}
+		})
+	}
+}
+
 func TestEntPayRelayRequiresBootstrappedMerchantOrigin(t *testing.T) {
 	merchant := "https://merchant.example/entpay/"
 	app := NewApp(entpay.LaunchRequest{Merchant: merchant})
