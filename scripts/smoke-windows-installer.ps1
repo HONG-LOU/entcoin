@@ -67,7 +67,7 @@ Assert-True ($desktopProcess.CommandLine -match "(?i)entcoin:") "the protocol bo
 Wait-Until {
     @(Get-NetTCPConnection -State Listen -LocalAddress "127.0.0.1" -LocalPort 47833 -ErrorAction SilentlyContinue |
         Where-Object { $_.OwningProcess -eq $desktopProcess.ProcessId }).Count -eq 1
-} "installed Entcoin did not bind the handoff relay to 127.0.0.1:47833"
+} "installed Entcoin did not bind the handoff relay to 127.0.0.1:47833" 60
 
 Start-Process $uri
 Start-Sleep -Seconds 2

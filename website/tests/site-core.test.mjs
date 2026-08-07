@@ -198,15 +198,15 @@ test("homepage translation keys are all defined", async () => {
   for (const assetName of [
     "entcoin-amd64-installer.exe",
     "Entcoin.exe",
-    "entcoin_1.5.3_amd64.deb",
+    "entcoin_1.5.4_amd64.deb",
     "entcoin-cli-linux-amd64",
     "entcoin-cli.exe",
   ]) {
-    assert.ok(html.includes(`/downloads/v1.5.3/${assetName}`), assetName);
+    assert.ok(html.includes(`/downloads/v1.5.4/${assetName}`), assetName);
   }
   assert.ok(
     html.includes(
-      "https://github.com/HONG-LOU/entcoin/releases/download/v1.5.3/SHA256SUMS.txt",
+      "https://github.com/HONG-LOU/entcoin/releases/download/v1.5.4/SHA256SUMS.txt",
     ),
     "GitHub checksum source",
   );
@@ -227,9 +227,9 @@ test("desktop update fallback names the current official release", async () => {
     await readFile(new URL("../update.json", import.meta.url), "utf8"),
   );
   assert.deepEqual(manifest, {
-    version: "1.5.3",
+    version: "1.5.4",
     published_at: "2026-08-07T00:00:00Z",
-    release_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.3",
+    release_url: "https://github.com/HONG-LOU/entcoin/releases/tag/v1.5.4",
   });
 });
 
