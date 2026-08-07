@@ -342,6 +342,12 @@ test("production nginx host isolates the website and read-only status proxy", as
   assert.match(nginx, /Accept-Ranges "bytes"/);
   assert.match(nginx, /max-age=31536000, immutable/);
   assert.match(nginx, /Content-Security-Policy/);
+  const entPayLocation = nginx.match(
+    /location \^~ \/entpay\/ \{([\s\S]*?)\n    \}/,
+  )?.[1];
+  assert.ok(entPayLocation, "EntPay proxy location must exist");
+  assert.match(entPayLocation, /add_header Strict-Transport-Security/);
+  assert.doesNotMatch(entPayLocation, /Content-Security-Policy/);
   const structuredData = html.match(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
   )?.[1];
