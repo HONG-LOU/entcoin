@@ -93,6 +93,9 @@ server {
         proxy_connect_timeout 3s;
         proxy_read_timeout 25s;
         client_max_body_size 128k;
+
+        # Keep the upstream route-specific CSP instead of inheriting the website CSP.
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     }
 
     location ^~ /wallet/ {
