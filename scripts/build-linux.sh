@@ -20,8 +20,8 @@ if [[ $version != "$project_version" ]]; then
     exit 1
 fi
 
-command -v go >/dev/null || { echo "Go 1.26.5 is required" >&2; exit 1; }
-go version | grep -q 'go1\.26\.5' || { echo "Go 1.26.5 is required" >&2; exit 1; }
+command -v go >/dev/null || { echo "Go 1.26.6 is required" >&2; exit 1; }
+go version | grep -q 'go1\.26\.6' || { echo "Go 1.26.6 is required" >&2; exit 1; }
 command -v wails >/dev/null || { echo "Wails v2.13.0 is required" >&2; exit 1; }
 wails version | grep -q 'v2\.13\.0' || { echo "Wails v2.13.0 is required" >&2; exit 1; }
 command -v dpkg-deb >/dev/null || { echo "dpkg-deb is required" >&2; exit 1; }

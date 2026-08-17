@@ -5,6 +5,29 @@ compatibility boundary; a `mainnet` identity is not a security or audit claim.
 
 ## [Unreleased]
 
+## [1.5.5] - 2026-08-17
+
+### Added
+
+- Added five-item pagination to the desktop Agent Pay request inbox, including
+  previous/next controls and a stable page indicator.
+- Added a visible row-level delete action for requests that can be removed
+  without losing payment tracking.
+
+### Changed
+
+- Allowed awaiting-approval requests and retryable requests with no broadcast
+  transaction to be removed alongside terminal history.
+- Kept delivered artifacts on disk when their Agent Pay history is deleted.
+
+### Security
+
+- Active payments, post-broadcast sessions, and retryable sessions with a
+  transaction ID remain non-deletable so recovery and delivery tracking cannot
+  be discarded while money may be in flight.
+- Upgraded release builds from Go 1.26.5 to Go 1.26.6, removing six reachable
+  standard-library vulnerabilities reported by `govulncheck`.
+
 ## [1.5.4] - 2026-08-07
 
 ### Added

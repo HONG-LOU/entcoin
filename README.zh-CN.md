@@ -17,15 +17,15 @@
 
 ---
 
-Entcoin v1.5.4 是一个紧凑、可独立验证的 PoW 主网实现。启动一个桌面程序，
+Entcoin v1.5.5 是一个紧凑、可独立验证的 PoW 主网实现。启动一个桌面程序，
 即可同时运行钱包、SQLite 账本、完整区块与交易验证、节点同步、实时中继和可选矿工；
 无需外部数据库、后台守护进程或浏览器页面。
 
 > `entropy-mainnet-v1` 是主网的永久兼容标识。产品名称升级为 Entcoin 不改变创世块、
-> 地址、钱包派生方式或链数据；现有用户可原地升级到 v1.5.4。
+> 地址、钱包派生方式或链数据；现有用户可原地升级到 v1.5.5。
 
 > **强制更新：**v1.2.0 已被替代。它仍认为共识 v2 会在高度 160000 激活，因此会拒绝
-> 已在高度 125555 启用规则 v2 的正式主链。所有 v1.2.0 节点和矿工都必须安装 v1.5.4。
+> 已在高度 125555 启用规则 v2 的正式主链。所有 v1.2.0 节点和矿工都必须安装 v1.5.5。
 
 ## 核心能力
 
@@ -51,12 +51,12 @@ Entcoin v1.5.4 是一个紧凑、可独立验证的 PoW 主网实现。启动一
 | --- | --- |
 | Windows 10/11 x64 | `entcoin-amd64-installer.exe` |
 | Windows 便携版 | `Entcoin.exe` |
-| Ubuntu 24.04+ amd64 | `entcoin_1.5.4_amd64.deb` |
+| Ubuntu 24.04+ amd64 | `entcoin_1.5.5_amd64.deb` |
 | Windows / Linux 无头节点 | `entcoin-cli.exe` / `entcoin-cli-linux-amd64` |
 | Windows / Linux Agent 支付 | `entpay.exe` / `entpay-linux-amd64` |
 
 下载后应使用同一 Release 中的 `SHA256SUMS.txt` 或
-`SHA256SUMS-linux.txt` 校验。GitHub 还为 v1.5.4 产物发布构建来源证明。
+`SHA256SUMS-linux.txt` 校验。GitHub 还为 v1.5.5 产物发布构建来源证明。
 
 Windows 构建只有在发布环境配置可信 Authenticode 证书时才会签名；未签名构建可能触发
 SmartScreen。SHA-256 能证明文件与发布清单一致，但不能替代代码签名、独立审计或主机安全。
@@ -64,7 +64,7 @@ SmartScreen。SHA-256 能证明文件与发布清单一致，但不能替代代�
 Ubuntu 安装：
 
 ```bash
-sudo apt install ./entcoin_1.5.4_amd64.deb
+sudo apt install ./entcoin_1.5.5_amd64.deb
 entcoin
 ```
 
@@ -185,7 +185,7 @@ go build -trimpath -o build/bin/entcoin-cli ./cmd/entcoin
 
 ## 安全边界
 
-v1.5.4 继承 v1.2.1 已审计的共识规则，并通过全量测试、竞态检测、
+v1.5.5 继承 v1.2.1 已审计的共识规则，并通过全量测试、竞态检测、
 静态分析和可达漏洞扫描。基础安全审计与本次共识升级证据分别记录在
 [v1.1.0 安全审计报告](docs/security-audit-v1.1.0.md)和
 [v1.2.1 共识升级审计](docs/consensus-upgrade-audit-v1.2.md)。
@@ -204,7 +204,7 @@ v1.5.4 继承 v1.2.1 已审计的共识规则，并通过全量测试、竞态�
 
 ## 从源码验证
 
-要求 Go 1.26.5 与 Node.js 22：
+要求 Go 1.26.6 与 Node.js 22：
 
 ```bash
 go test -count=1 ./...
@@ -222,7 +222,7 @@ npm run build
 Linux 发布构建还需要 Wails v2.13.0、GTK3、WebKitGTK 4.1 与 `dpkg-deb`：
 
 ```bash
-./scripts/build-linux.sh 1.5.4
+./scripts/build-linux.sh 1.5.5
 ```
 
 ## 文档
@@ -234,7 +234,7 @@ Linux 发布构建还需要 Wails v2.13.0、GTK3、WebKitGTK 4.1 与 `dpkg-deb`�
 - [公网 Seed](docs/public-seed.md)
 - [EntPay Agent 支付](docs/entpay.md)
 - [安全策略](SECURITY.md)
-- [v1.5.4 中英文发布说明](RELEASE_NOTES.md)
+- [v1.5.5 中英文发布说明](RELEASE_NOTES.md)
 - [后续路线图](docs/next-step.md)
 
 Entcoin 采用 [MIT License](LICENSE) 开源。

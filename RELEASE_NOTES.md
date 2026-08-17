@@ -1,112 +1,71 @@
-# Entcoin v1.5.4
+# Entcoin v1.5.5
 
 English | [简体中文](#简体中文)
 
-Entcoin v1.5.4 adds a reliable manual EntPay handoff fallback while keeping
-delivery a merchant-independent desktop contract
-without changing `entropy-mainnet-v1`, consensus, transaction encoding, wallet
-formats, addresses, balances, chain data, or peer compatibility.
+Entcoin v1.5.5 makes a busy Agent Pay inbox easier to manage while preserving
+payment recovery records. It does not change `entropy-mainnet-v1`, consensus,
+transaction encoding, wallet formats, addresses, balances, chain data, EntPay
+Invoice or Receipt signatures, or peer compatibility.
 
-## Agent Pay desktop
+## Agent Pay request management
 
-The desktop now includes an Agent Pay workspace for incoming requests, review,
-payment progress, verified results, history, and settings. Before payment it
-shows the merchant identity, product, human-readable input, exact amount, fee
-ceiling, active wallet, expiry, and verification evidence. Every new Invoice
-requires a visible click on the exact-amount Pay button; opening a link never
-authorizes payment.
+The desktop now shows at most five Agent Pay requests per inbox page. Previous
+and next controls keep long histories inside the workspace instead of extending
+the page indefinitely, and selecting a new page opens its first request.
 
-Payment reuses the desktop's active `node.Service` instead of opening a second
-wallet database. The client journals the transaction before broadcast and
-persists a revision-checked state machine in a separate `entpay-client.db`, so
-post-broadcast submit, confirmation, claim, Receipt verification, and artifact
-delivery can resume without creating another payment.
+Every safely removable row has a persistent trash action. Awaiting-approval
+requests, terminal history, and retryable requests that have not broadcast a
+transaction can be removed directly from the inbox or detail view. Completed
+delivery files remain on disk when their history entry is removed.
 
-Every new merchant returns the same `entpay-result-v1` envelope: a verified
-summary plus opaque JSON data. The desktop does not branch on merchant or
-product IDs. Verified artifacts of any allowed media type use bounded downloads,
-safe names, atomic saves, hash evidence, and explicit open/reveal actions; media
-is not embedded in the payment UI. New services can deploy without a desktop
-release. Merchant launch also uses same-page protocol navigation, avoiding the
-empty `about:blank` tab created by browser popup handling.
+## Payment safety boundary
 
-## Secure browser handoff
+The desktop and SQLite store enforce the same deletion policy. Active payments,
+post-broadcast sessions, and retryable sessions with a transaction ID cannot be
+deleted. Their records remain available for submit, confirmation, Receipt, and
+artifact recovery after a restart.
 
-If Windows or the browser does not open Entcoin, every generic merchant page
-can now copy a short-lived manual payment link. Paste it into Agent Pay's
-payment-link field in the desktop. Clipboard-denied browsers expose the same
-value in a selectable read-only field. The desktop performs the same local
-merchant, signature, amount, request, and policy checks and still requires an
-explicit approval click before payment.
-
-Windows installers and Ubuntu packages register `entcoin://`. The operating
-system receives only a public merchant endpoint:
-
-```text
-entcoin://pay?v=1&merchant=https%3A%2F%2Fmerchant.example%2Fentpay%2F
-```
-
-The short-lived 256-bit handoff code stays in the merchant HTTPS response and
-is POSTed separately to the desktop's fixed `127.0.0.1:47833` relay. The relay
-requires an exact, recently bootstrapped merchant Origin, strict JSON and PNA
-preflight, accepts one bounded request, and cannot approve or send a payment.
-Secret-bearing system launch arguments are rejected.
-
-Gateway handoff capsules are encrypted at rest, stored under digest-only codes,
-bound to a client nonce, short-lived, rate-limited, and redeemed with generic
-not-found responses. The desktop encrypts recovery capabilities with Windows
-DPAPI or Linux Secret Service backed XChaCha20-Poly1305. Merchant address or
-signing-key changes block payment until the user explicitly establishes trust
-again.
+Opening or deleting a request never authorizes payment. Every new Invoice still
+requires the user to review the verified merchant, request, amount, wallet,
+expiry, and fee ceiling before clicking the exact-amount payment button.
 
 ## Compatibility and artifacts
 
-The existing `entpay agent` and `entpay agent-ui` commands remain available for
-automation, development, and compatibility. Invoice and Receipt signatures are
-unchanged. Windows artifacts include `entpay.exe`; Linux artifacts include
-`entpay-linux-amd64` and the Ubuntu amd64 package. Published artifacts are
-covered by SHA-256 checksums and GitHub build-provenance attestations.
+Windows and Ubuntu users can upgrade in place without migrating wallet or chain
+data. The stable release includes the Windows desktop, installer, CLI, EntPay
+binary and seed deployment package, plus the Linux desktop, CLI, EntPay binary
+and Ubuntu amd64 package. All published files are covered by platform SHA-256
+manifests and GitHub build-provenance attestations. Windows artifacts may remain
+unsigned when no Authenticode certificate is configured and can therefore show
+a SmartScreen warning. Release builds use Go 1.26.6, which removes six reachable
+standard-library vulnerabilities present in the previous Go 1.26.5 toolchain.
 
 ## 简体中文
 
-Entcoin v1.5.4 增加了可靠的 EntPay 手工交接兜底，同时继续把交付统一为
-与商家无关的桌面协议，并且不改变
-`entropy-mainnet-v1`、共识、交易编码、钱包格式、地址、余额、链数据或节点兼容性。
+Entcoin v1.5.5 改善了桌面 Agent 支付请求较多时的管理体验，同时保留付款恢复所需记录。
+本版本不改变 `entropy-mainnet-v1`、共识、交易编码、钱包格式、地址、余额、链数据、
+EntPay Invoice/Receipt 签名或节点兼容性。
 
-## 桌面 Agent 支付
+## Agent 支付请求管理
 
-桌面端新增 Agent 支付工作台，包含待处理请求、付款审核、进度、已验证结果、历史和设置。
-付款前会显示商家身份、商品、人类可读请求、准确金额、手续费上限、当前钱包、有效期和验证
-证据。每张新账单都必须由用户点击带准确金额的支付按钮；打开链接永远不会授权付款。
+桌面端收件箱现在每页最多显示 5 条 Agent 支付请求。上一页、下一页和页码会把较长历史
+固定在工作区内，不再让页面无限向下延伸；切换页面时会自动打开该页第一条请求。
 
-付款复用桌面正在运行的 `node.Service`，不会再打开第二个钱包数据库。客户端在广播前记录
-交易，并把带 revision 校验的状态机持久化到独立 `entpay-client.db`。广播后的提交、确认、
-领取、Receipt 验证和文件交付可以在重启后继续，且不会创建第二笔付款。
+每条可安全移除的请求都会常驻显示垃圾桶按钮。待批准请求、终态历史，以及尚未广播交易的
+可重试请求，可以直接从收件箱或详情页删除。删除已完成记录时，已交付文件仍保留在磁盘上。
 
-所有新商家统一返回 `entpay-result-v1`：一段已验证摘要和不透明 JSON 数据。桌面端不再按
-商家或商品 ID 分支。任何允许类型的已验证附件都采用有界下载、安全文件名、原子保存和
-哈希证据，只提供打开与定位操作，不在支付界面内嵌媒体。新增服务无需发布桌面新版。
-商家启动桌面时改为当前页面协议导航，不再因弹窗机制留下空白 `about:blank` 标签页。
+## 付款安全边界
 
-## 安全浏览器交接
+桌面与 SQLite 存储执行相同删除策略。正在付款、已经广播，以及带 transaction ID 的可重试
+会话不能删除，因此重启后仍可继续提交、确认、Receipt 验证和文件交付恢复。
 
-如果 Windows 或浏览器没有打开 Entcoin，任何使用通用协议的商家页面现在都可以复制一条
-短期手工支付链接，再粘贴到桌面 Agent 支付的支付链接输入框。浏览器无剪贴板权限时会显示
-同一条可选中的只读链接。桌面仍会在本机验证商家、签名、金额、请求和支付策略，并且必须
-由用户明确点击批准后才会付款。
-
-Windows 安装包和 Ubuntu 包会注册 `entcoin://`。操作系统启动参数只接收公开 merchant
-endpoint，不接收 handoff code。短时 256-bit code 保留在商家 HTTPS 响应体中，再单独 POST
-到桌面的固定 `127.0.0.1:47833` relay。Relay 要求最近通过 bootstrap 的完全匹配 Origin、
-严格 JSON 和 PNA 预检，只接受一次有界请求，而且不能批准或发送付款。任何含秘密 handoff
-的系统启动参数都会被拒绝。
-
-Gateway capsule 静态加密保存，只存 code digest，绑定客户端 nonce，并执行短时有效期、限流
-和统一 404。桌面恢复 capability 使用 Windows DPAPI，或 Linux Secret Service 配合
-XChaCha20-Poly1305 加密。商家地址或签名密钥变化时会阻止付款，直到用户显式重新建立信任。
+打开或删除请求都不会授权付款。每张新 Invoice 仍要求用户检查已验证商家、请求、金额、钱包、
+有效期和手续费上限，并亲自点击带准确金额的支付按钮。
 
 ## 兼容性与产物
 
-现有 `entpay agent` 和 `entpay agent-ui` 继续作为自动化、开发和兼容入口；Invoice/Receipt
-签名字段保持不变。Windows 产物包含 `entpay.exe`，Linux 产物包含 `entpay-linux-amd64` 和
-Ubuntu amd64 包。正式发布产物由 SHA-256 checksum 与 GitHub build provenance 覆盖。
+Windows 与 Ubuntu 用户可以原地升级，无需迁移钱包或链数据。稳定 Release 包含 Windows
+桌面程序、安装器、CLI、EntPay 和 seed 部署包，以及 Linux 桌面程序、CLI、EntPay 和
+Ubuntu amd64 包。所有文件均由平台 SHA-256 清单与 GitHub build provenance 覆盖。
+如果发布环境没有配置 Authenticode 证书，Windows 产物仍可能未签名并触发 SmartScreen。
+发布构建升级到 Go 1.26.6，移除了旧 Go 1.26.5 工具链中的 6 个可达标准库漏洞。

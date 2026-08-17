@@ -45,7 +45,7 @@ PWA 使用两个官方节点：
 
 ## 本地构建
 
-前置条件为 Go 1.26.5、Node.js 和 npm：
+前置条件为 Go 1.26.6、Node.js 和 npm：
 
 ```bash
 cd mobile

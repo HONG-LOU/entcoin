@@ -7,11 +7,11 @@ if (-not (Test-Path -LiteralPath $nsis)) {
 }
 $env:PATH = "$(Split-Path -Parent $nsis);$env:PATH"
 if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
-    throw "Go 1.26.5 is required"
+    throw "Go 1.26.6 is required"
 }
 $goVersion = (& go version 2>&1 | Out-String)
-if ($LASTEXITCODE -ne 0 -or $goVersion -notmatch 'go1\.26\.5') {
-    throw "Go 1.26.5 is required; got: $($goVersion.Trim())"
+if ($LASTEXITCODE -ne 0 -or $goVersion -notmatch 'go1\.26\.6') {
+    throw "Go 1.26.6 is required; got: $($goVersion.Trim())"
 }
 if (-not (Get-Command wails -ErrorAction SilentlyContinue)) {
     throw "Wails v2.13.0 is required: go install github.com/wailsapp/wails/v2/cmd/wails@v2.13.0"
