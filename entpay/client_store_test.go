@@ -81,6 +81,44 @@ func TestClientStoreTransitionRevisionAndLegality(t *testing.T) {
 	}
 }
 
+func TestClientStoreDeletesOnlySafeRequestStages(t *testing.T) {
+	protector, _ := newXChaChaProtector(bytes.Repeat([]byte{6}, 32))
+	store, err := OpenClientStore(filepath.Join(t.TempDir(), "client.db"), protector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = store.Close() })
+	create := func(stage ClientStage, transactionID string) ClientSession {
+		code, _ := newOpaqueToken()
+		nonce, _ := newOpaqueToken()
+		session, createErr := store.CreateReceived(context.Background(), LaunchRequest{Merchant: "https://merchant.example/", Handoff: code}, nonce)
+		if createErr != nil {
+			t.Fatal(createErr)
+		}
+		if _, updateErr := store.database.Exec(`UPDATE sessions SET stage = ?, transaction_id = ? WHERE id = ?`, stage, transactionID, session.ID); updateErr != nil {
+			t.Fatal(updateErr)
+		}
+		return session
+	}
+
+	awaiting := create(StageAwaitingApproval, "")
+	if err := store.DeleteSession(context.Background(), awaiting.ID); err != nil {
+		t.Fatalf("delete awaiting approval: %v", err)
+	}
+	retryable := create(StageFailedRetryable, "")
+	if err := store.DeleteSession(context.Background(), retryable.ID); err != nil {
+		t.Fatalf("delete unpaid retryable request: %v", err)
+	}
+	paid := create(StageFailedRetryable, "tx1")
+	if err := store.DeleteSession(context.Background(), paid.ID); !errors.Is(err, ErrClientStage) {
+		t.Fatalf("delete paid retryable request error = %v", err)
+	}
+	active := create(StageConfirming, "tx2")
+	if err := store.DeleteSession(context.Background(), active.ID); !errors.Is(err, ErrClientStage) {
+		t.Fatalf("delete active request error = %v", err)
+	}
+}
+
 func TestClientStorePresentsLegacyPayloadAsGenericResult(t *testing.T) {
 	protector, _ := newXChaChaProtector(bytes.Repeat([]byte{8}, 32))
 	store, err := OpenClientStore(filepath.Join(t.TempDir(), "client.db"), protector)

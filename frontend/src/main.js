@@ -6,6 +6,8 @@ import {
   BadgeCheck,
   CircleAlert,
   CircleCheck,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
   Cpu,
@@ -56,6 +58,8 @@ const appIcons = {
   BadgeCheck,
   CircleAlert,
   CircleCheck,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
   Cpu,
@@ -1375,7 +1379,7 @@ async function heartbeat() {
 }
 
 initializeI18n();
-initializeEntPay({ invoke, showToast, activateView });
+initializeEntPay({ invoke, showToast, activateView, refreshIcons: () => createIcons({ icons: appIcons }) });
 if (window.runtime?.EventsOnMultiple) {
   window.runtime.EventsOnMultiple("entcoin:update-progress", renderUpdateProgress, -1);
 }

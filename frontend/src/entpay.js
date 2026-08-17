@@ -2,6 +2,8 @@ import { currentLocale } from "./i18n.js";
 
 const ACTIVE_STAGES = new Set(["preparing_payment", "broadcast", "submitting", "confirming", "fulfilling", "verifying"]);
 const SENT_STAGES = new Set(["broadcast", "submitting", "confirming", "fulfilling", "verifying", "complete"]);
+const DELETABLE_STAGES = new Set(["awaiting_approval", "complete", "invalid", "expired", "rejected", "failed_terminal"]);
+export const ENTPAY_PAGE_SIZE = 5;
 
 const stageCopy = Object.freeze({
   received: "Received",
@@ -28,6 +30,8 @@ let invokeBackend;
 let notify;
 let activate;
 let settingsRevision = 0;
+let currentPage = 0;
+let refreshIcons = () => {};
 
 const byID = (id) => document.getElementById(id);
 
@@ -90,13 +94,41 @@ function mergeSession(session) {
   sessions.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 }
 
+export function entpayPageCount(itemCount, pageSize = ENTPAY_PAGE_SIZE) {
+  return Math.max(1, Math.ceil(Math.max(0, Number(itemCount) || 0) / pageSize));
+}
+
+export function canDeleteEntPaySession(session) {
+  return DELETABLE_STAGES.has(session?.stage) || (session?.stage === "failed_retryable" && !paymentSent(session));
+}
+
+async function deleteSession(session, button) {
+  if (!canDeleteEntPaySession(session) || button.disabled) return;
+  button.disabled = true;
+  try {
+    const result = await invokeBackend("DeleteEntPaySession", session.id);
+    sessions = sessions.filter((item) => item.id !== session.id);
+    if (selectedID === session.id) selectedID = "";
+    currentPage = Math.min(currentPage, entpayPageCount(sessions.length) - 1);
+    if (!selectedID && sessions.length) selectedID = sessions[currentPage * ENTPAY_PAGE_SIZE]?.id || sessions[0].id;
+    notify(result?.message || "Request deleted");
+    await refreshEntPay(true);
+  } catch (error) {
+    button.disabled = false;
+    notify(error?.message || "History could not be deleted", "error");
+  }
+}
+
 function renderList() {
   const list = byID("entpay-list");
   list.replaceChildren();
   byID("entpay-count").textContent = String(sessions.length);
-  for (const session of sessions) {
+  const pageCount = entpayPageCount(sessions.length);
+  currentPage = Math.min(currentPage, pageCount - 1);
+  const pageStart = currentPage * ENTPAY_PAGE_SIZE;
+  for (const session of sessions.slice(pageStart, pageStart + ENTPAY_PAGE_SIZE)) {
     const item = element("li", "entpay-row");
-    const button = element("button", selectedID === session.id ? "selected" : "");
+    const button = element("button", `entpay-row-select${selectedID === session.id ? " selected" : ""}`);
     button.type = "button";
     button.dataset.sessionId = session.id;
     button.append(
@@ -107,9 +139,34 @@ function renderList() {
     );
     button.addEventListener("click", () => selectSession(session.id));
     item.append(button);
+    if (canDeleteEntPaySession(session)) {
+      const remove = element("button", "entpay-row-delete");
+      remove.type = "button";
+      remove.title = "Delete request";
+      remove.setAttribute("aria-label", "Delete request");
+      const icon = element("i");
+      icon.dataset.lucide = "trash-2";
+      remove.append(icon);
+      remove.addEventListener("click", () => deleteSession(session, remove));
+      item.append(remove);
+    }
     list.append(item);
   }
   if (!sessions.length) list.append(element("li", "entpay-list-empty", "No Agent Pay requests yet"));
+  const pagination = byID("entpay-pagination");
+  pagination.hidden = pageCount <= 1;
+  byID("entpay-page-status").textContent = `${currentPage + 1} / ${pageCount}`;
+  byID("entpay-page-previous").disabled = currentPage === 0;
+  byID("entpay-page-next").disabled = currentPage === pageCount - 1;
+  refreshIcons();
+}
+
+async function showPage(page) {
+  currentPage = Math.max(0, Math.min(page, entpayPageCount(sessions.length) - 1));
+  const first = sessions[currentPage * ENTPAY_PAGE_SIZE];
+  if (first) selectedID = first.id;
+  renderList();
+  if (first) await selectSession(first.id);
 }
 
 function detailRow(term, value, code = false) {
@@ -253,14 +310,9 @@ function renderDetail(detail) {
 		actions.prepend(actionButton("Show in folder", "secondary-button", () => invokeBackend("RevealEntPayArtifact", session.id).catch((error) => notify(error?.message || "Artifact unavailable", "error"))));
 		actions.prepend(actionButton("Open file", "secondary-button", () => invokeBackend("OpenEntPayArtifact", session.id).catch((error) => notify(error?.message || "Artifact unavailable", "error"))));
 	}
-	if (["complete", "invalid", "expired", "rejected", "failed_terminal"].includes(session.stage)) {
-		actions.append(actionButton("Delete history", "secondary-button", async () => {
-			try {
-				await invokeBackend("DeleteEntPaySession", session.id);
-				selectedID = "";
-				await refreshEntPay(true);
-			} catch (error) { notify(error?.message || "History could not be deleted", "error"); }
-		}));
+	if (canDeleteEntPaySession(session)) {
+		const label = ["awaiting_approval", "failed_retryable"].includes(session.stage) ? "Delete request" : "Delete history";
+		actions.append(actionButton(label, "secondary-button", (event) => deleteSession(session, event.currentTarget)));
 	}
   root.append(actions);
 }
@@ -305,10 +357,13 @@ export async function refreshEntPay(force = false) {
   }
 }
 
-export function initializeEntPay({ invoke, showToast, activateView }) {
+export function initializeEntPay({ invoke, showToast, activateView, refreshIcons: renderIcons = () => {} }) {
   invokeBackend = invoke;
   notify = showToast;
   activate = activateView;
+  refreshIcons = renderIcons;
+  byID("entpay-page-previous").addEventListener("click", () => void showPage(currentPage - 1));
+  byID("entpay-page-next").addEventListener("click", () => void showPage(currentPage + 1));
   byID("entpay-link-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const input = byID("entpay-link");
@@ -356,6 +411,7 @@ export function initializeEntPay({ invoke, showToast, activateView }) {
     window.runtime.EventsOnMultiple("entcoin:entpay-incoming", (session) => {
       mergeSession(session);
       selectedID = session.id;
+      currentPage = 0;
       byID("entpay-unread").hidden = false;
       activate("entpay");
       renderList();

@@ -146,7 +146,10 @@ func (s *ClientStore) SaveSettings(ctx context.Context, input ClientSettings, ex
 }
 
 func (s *ClientStore) DeleteSession(ctx context.Context, id string) error {
-	result, err := s.database.ExecContext(ctx, `DELETE FROM sessions WHERE id = ? AND stage IN ('complete','invalid','expired','rejected','failed_terminal')`, id)
+	result, err := s.database.ExecContext(ctx, `DELETE FROM sessions WHERE id = ? AND (
+		stage IN ('awaiting_approval','complete','invalid','expired','rejected','failed_terminal')
+		OR (stage = 'failed_retryable' AND COALESCE(transaction_id, '') = '')
+	)`, id)
 	if err != nil {
 		return err
 	}

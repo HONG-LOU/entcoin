@@ -10,11 +10,16 @@
 .entpay-inbox { min-width: 0; border-right: 1px solid #d8ddda; }
 .entpay-inbox-title { height: 43px; display: flex; align-items: center; justify-content: space-between; padding-right: 18px; font-size: 11px; text-transform: uppercase; }
 .entpay-inbox-title span { color: #68716d; font-variant-numeric: tabular-nums; }
-.entpay-list { margin: 0; padding: 0; list-style: none; }
+.entpay-list { min-height: 460px; margin: 0; padding: 0; list-style: none; }
 .entpay-row { border-top: 1px solid #e4e8e5; }
-.entpay-row button { position: relative; width: 100%; min-height: 92px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; padding: 13px 18px 13px 12px; text-align: left; color: #111413; background: transparent; border: 0; border-left: 3px solid transparent; }
-.entpay-row button:hover { background: #eef2ef; }
-.entpay-row button.selected { background: #e7f7f2; border-left-color: #58d6bd; }
+.entpay-row { position: relative; }
+.entpay-row-select { position: relative; width: 100%; min-height: 92px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; padding: 13px 42px 13px 12px; text-align: left; color: #111413; background: transparent; border: 0; border-left: 3px solid transparent; }
+.entpay-row-select:hover { background: #eef2ef; }
+.entpay-row-select.selected { background: #e7f7f2; border-left-color: #58d6bd; }
+.entpay-row-delete { position: absolute; top: 8px; right: 8px; z-index: 1; width: 28px; height: 28px; display: grid; place-items: center; padding: 0; color: #7a827e; background: transparent; border: 0; border-radius: 4px; opacity: 0.68; }
+.entpay-row:hover .entpay-row-delete, .entpay-row-delete:focus-visible { opacity: 1; }
+.entpay-row-delete:hover { color: #b94735; background: #fff0ed; }
+.entpay-row-delete svg { width: 14px; height: 14px; }
 .entpay-row strong, .entpay-row-merchant { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .entpay-row strong { font-size: 12px; }
 .entpay-row-merchant { grid-column: 1 / -1; color: #68716d; font-size: 10px; }
@@ -23,6 +28,13 @@
 .stage-failed_terminal, .stage-invalid, .stage-expired { color: #b94735; }
 .stage-failed_retryable { color: #9a650f; }
 .entpay-list-empty { padding: 24px 18px; color: #68716d; font-size: 11px; }
+.entpay-pagination { height: 42px; display: flex; align-items: center; justify-content: center; gap: 12px; border-top: 1px solid #d8ddda; }
+.entpay-pagination[hidden] { display: none; }
+.entpay-pagination .icon-button { width: 28px; height: 28px; color: #4d5752; background: transparent; border: 0; }
+.entpay-pagination .icon-button:hover:not(:disabled) { background: #eef2ef; }
+.entpay-pagination .icon-button:disabled { color: #b8c0bc; }
+.entpay-pagination svg { width: 15px; height: 15px; }
+.entpay-pagination span { min-width: 42px; color: #68716d; text-align: center; font-size: 10px; font-variant-numeric: tabular-nums; }
 .entpay-detail { min-width: 0; padding: 25px 0 32px 30px; }
 .entpay-empty { max-width: 380px; margin: 92px auto; text-align: center; color: #68716d; }
 .entpay-empty svg { width: 30px; height: 30px; color: #58a995; }
@@ -85,6 +97,7 @@
 @media (max-width: 700px) {
   .entpay-desk { grid-template-columns: minmax(0, 1fr); }
   .entpay-inbox { border-right: 0; border-bottom: 1px solid #d8ddda; }
+  .entpay-list { min-height: 0; }
   .entpay-detail { padding-left: 0; }
   .entpay-detail-header, .entpay-result-header { align-items: flex-start; flex-direction: column; gap: 8px; }
   .entpay-result-header { padding: 14px 0; }

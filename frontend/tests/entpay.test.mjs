@@ -5,7 +5,7 @@ globalThis.window = {
   localStorage: { getItem: () => "en", setItem: () => {} },
 };
 
-const { entpayStageLabel, formatEnt, normalizeEntPayResult, parseEnt, paymentSent, revisionMatches } = await import("../src/entpay.js");
+const { canDeleteEntPaySession, entpayPageCount, entpayStageLabel, formatEnt, normalizeEntPayResult, parseEnt, paymentSent, revisionMatches } = await import("../src/entpay.js");
 
 test("formats atomic EntPay amounts exactly without floating point", () => {
   assert.equal(formatEnt(1), "0.00000001 ENT");
@@ -45,4 +45,19 @@ test("generic EntPay results require a schema, summary and opaque data", () => {
   );
   assert.equal(normalizeEntPayResult({ summary: "Missing schema", data: {} }), null);
   assert.equal(normalizeEntPayResult({ schema: "entpay-result-v1", summary: "", data: {} }), null);
+});
+
+test("paginates payment requests in compact five-item pages", () => {
+  assert.equal(entpayPageCount(0), 1);
+  assert.equal(entpayPageCount(5), 1);
+  assert.equal(entpayPageCount(6), 2);
+  assert.equal(entpayPageCount(200), 40);
+});
+
+test("only exposes deletion when request tracking can be safely removed", () => {
+  assert.equal(canDeleteEntPaySession({ stage: "awaiting_approval" }), true);
+  assert.equal(canDeleteEntPaySession({ stage: "failed_retryable" }), true);
+  assert.equal(canDeleteEntPaySession({ stage: "failed_retryable", transaction_id: "tx1" }), false);
+  assert.equal(canDeleteEntPaySession({ stage: "confirming", transaction_id: "tx1" }), false);
+  assert.equal(canDeleteEntPaySession({ stage: "complete", transaction_id: "tx1" }), true);
 });
